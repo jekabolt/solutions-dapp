@@ -3,26 +3,25 @@ package bunt
 import (
 	"fmt"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
-	"github.com/tidwall/buntdb"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 )
 
-func (bunt *BuntDB) GetAllToUpload() ([]*store.NFTMintRequest, error) {
+func (bunt *BuntDB) GetAllToUpload() ([]nft.NFTMintRequest, error) {
 	mrs, err := bunt.GetAllNFTMintRequests()
 	if err != nil {
 		return nil, fmt.Errorf("GetAllToUpload:GetAllNFTMintRequests:err [%v]", err.Error())
 	}
-	var toUpload []*store.NFTMintRequest
+	var toUpload []nft.NFTMintRequest
 	for _, mr := range mrs {
-		if mr.Status == store.StatusUploaded || mr.Status == store.StatusUploadedOffchain {
+		if mr.Status == nft.StatusUploaded || mr.Status == nft.StatusUploadedOffchain {
 			toUpload = append(toUpload, mr)
 		}
 	}
 	return toUpload, nil
 }
 
-func (bunt *BuntDB) UpsertNFT(p *store.NFTMintRequest) (*store.NFTMintRequest, error) {
-	// nonexist
+func (bunt *BuntDB) UpsertNFT(p *nft.NFTMintRequest) (*nft.NFTMintRequest, error) {
+	// not exist
 	mr, err := bunt.GetNFTMintRequestById(fmt.Sprint(p.Id))
 	if err != nil {
 		return nil, fmt.Errorf("UpsertNFT:GetNFTMintRequestById:err [%v]", err.Error())
@@ -32,27 +31,30 @@ func (bunt *BuntDB) UpsertNFT(p *store.NFTMintRequest) (*store.NFTMintRequest, e
 		return nil, fmt.Errorf("UpsertNFT:GetNFTMintRequestById:NFTOffchain is empty ")
 	}
 
-	mr.Status = store.StatusUploadedOffchain
+	mr.Status = nft.StatusUploadedOffchain
 	mr.NFTOffchain = p.NFTOffchain
 
-	return mr, bunt.db.Update(func(tx *buntdb.Tx) error {
-		tx.Set(fmt.Sprintf("%s:%d", allNFTMintRequests, mr.Id), mr.String(), nil)
-		return nil
-	})
+	err = bunt.Set(allNFTMintRequests, fmt.Sprint(mr.Id), mr.String())
+	if err != nil {
+		return nil, fmt.Errorf("UpsertNFT:Set [%v]", err.Error())
+	}
+	return mr, err
 }
 
-func (bunt *BuntDB) DeleteNFT(id string) (*store.NFTMintRequest, error) {
-	// nonexist
+func (bunt *BuntDB) DeleteNFT(id string) (*nft.NFTMintRequest, error) {
+	// not exist
 	mr, err := bunt.GetNFTMintRequestById(id)
 	if err != nil {
 		return nil, fmt.Errorf("UpsertNFT:GetNFTMintRequestById:err [%v]", err.Error())
 	}
 
-	mr.Status = store.StatusUnknown
+	mr.Status = nft.StatusUnknown
 	mr.NFTOffchain = ""
 
-	return mr, bunt.db.Update(func(tx *buntdb.Tx) error {
-		tx.Set(fmt.Sprintf("%s:%d", allNFTMintRequests, mr.Id), mr.String(), nil)
-		return nil
-	})
+	err = bunt.Set(allNFTMintRequests, fmt.Sprint(mr.Id), mr.String())
+
+	if err != nil {
+		return nil, fmt.Errorf("UpsertNFT:Set [%v]", err.Error())
+	}
+	return mr, err
 }

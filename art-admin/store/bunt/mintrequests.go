@@ -1,81 +1,81 @@
 package bunt
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
-	"github.com/tidwall/buntdb"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 )
 
 const (
 	allNFTMintRequests = "mintrequests"
 )
 
-func (bunt *BuntDB) UpsertNFTMintRequest(p *store.NFTMintRequest) (*store.NFTMintRequest, error) {
-	// new
-	if p.Id == 0 && !bunt.keyUsed(allNFTMintRequests, p.Id) {
+type mintRequestStore struct {
+	*BuntDB
+}
+
+// NftStore returns a metadata store
+func (bdb *BuntDB) NFTStore() nft.Store {
+	return &mintRequestStore{
+		BuntDB: bdb,
+	}
+}
+
+func (bunt *BuntDB) UpsertNFTMintRequest(mr *nft.NFTMintRequest) (*nft.NFTMintRequest, error) {
+	if mr.Id == 0 {
 		var err error
-		p.Id, err = bunt.getNextKey(allNFTMintRequests)
+		mr.Id, err = bunt.GetNextKey(allNFTMintRequests)
 		if err != nil {
 			return nil, fmt.Errorf("UpsertNFTMintRequest:getNextKey [%v]", err.Error())
 		}
 	}
-	p.NFTOffchain = ""
-	p.Status = store.StatusUnknown
-	return p, bunt.db.Update(func(tx *buntdb.Tx) error {
-		tx.Set(fmt.Sprintf("%s:%d", allNFTMintRequests, p.Id), p.String(), nil)
-		return nil
-	})
-}
+	mr.NFTOffchain = ""
+	mr.Status = nft.StatusUnknown
 
-func (db *BuntDB) GetNFTMintRequestById(id string) (*store.NFTMintRequest, error) {
-	prd := &store.NFTMintRequest{}
-	err := db.db.View(func(tx *buntdb.Tx) error {
-		NFTMintRequestStr, err := tx.Get(fmt.Sprintf("%s:%s", allNFTMintRequests, id))
-		if err != nil {
-			return err
-		}
-		return json.Unmarshal([]byte(NFTMintRequestStr), prd)
-	})
+	err := bunt.Set(allNFTMintRequests, fmt.Sprint(mr.Id), mr.String())
 	if err != nil {
-		return nil, fmt.Errorf("GetNFTMintRequestById:db.db.View:err [%v]", err.Error())
+		return nil, fmt.Errorf("UpsertNFTMintRequest:Set [%v]", err.Error())
 	}
-	return prd, err
+	return mr, nil
 }
 
-func (bunt *BuntDB) UpdateStatusNFTMintRequest(p *store.NFTMintRequest, status store.NFTStatus) (*store.NFTMintRequest, error) {
+func (bunt *BuntDB) GetNFTMintRequestById(id string) (*nft.NFTMintRequest, error) {
+	prd := nft.NFTMintRequest{}
+	err := bunt.GetJSONById(allNFTMintRequests, id, &prd)
+	if err != nil {
+		return nil, fmt.Errorf("GetNFTMintRequestById:GetJSONById [%v]", err.Error())
+	}
+	return &prd, err
+}
+
+func (bunt *BuntDB) UpdateStatusNFTMintRequest(p *nft.NFTMintRequest, status nft.NFTStatus) (*nft.NFTMintRequest, error) {
 	p.Status = status
-	return p, bunt.db.Update(func(tx *buntdb.Tx) error {
-		tx.Set(fmt.Sprintf("%s:%d", allNFTMintRequests, p.Id), p.String(), nil)
-		return nil
-	})
+	return p, bunt.Set(allNFTMintRequests, fmt.Sprint(p.Id), p.String())
 }
 
-func (bunt *BuntDB) GetAllNFTMintRequests() ([]*store.NFTMintRequest, error) {
-	nftMRsS := "["
-	nftMRs := &[]*store.NFTMintRequest{}
-	err := bunt.db.View(func(tx *buntdb.Tx) error {
-		tx.Ascend(allNFTMintRequests, func(_, nftMRStr string) bool {
-			nftMRsS += nftMRStr + ","
-			return true
-		})
-		return nil
-	})
+func (bunt *BuntDB) GetAllNFTMintRequests() ([]nft.NFTMintRequest, error) {
+	nftMRs := []nft.NFTMintRequest{}
+	err := bunt.GetAllJSON(allNFTMintRequests, &nftMRs)
 	if err != nil {
-		return nil, fmt.Errorf("GetAllNFTMintRequests:db.db.View:err [%v]", err.Error())
+		return nil, fmt.Errorf("GetAllNFTMintRequests:GetAllJSON [%v]", err.Error())
 	}
-	if len(nftMRsS) != 1 {
-		nftMRsS = nftMRsS[:len(nftMRsS)-1]
+
+	return nftMRs, err
+}
+
+func (bunt *BuntDB) GetAllTest() ([]string, error) {
+	ss, err := bunt.GetAll(allNFTMintRequests)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllNFTMintRequests:GetAllJSON [%v]", err.Error())
 	}
-	nftMRsS += "]"
-	return *nftMRs, json.Unmarshal([]byte(nftMRsS), nftMRs)
+
+	return ss, err
 }
 
 func (bunt *BuntDB) DeleteNFTMintRequestById(id string) error {
-	err := bunt.db.Update(func(tx *buntdb.Tx) error {
-		_, err := tx.Delete(fmt.Sprintf("%s:%s", allNFTMintRequests, id))
-		return err
-	})
+	err := bunt.Delete(allNFTMintRequests, id)
+	if err != nil {
+		return fmt.Errorf("DeleteNFTMintRequestById:GetAllJSON [%v]", err.Error())
+	}
 	return err
 }

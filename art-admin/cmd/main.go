@@ -6,11 +6,8 @@ import (
 	"fmt"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/app"
-	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/config"
-	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/eth"
-	"github.com/jekabolt/solutions-dapp/art-admin/ipfs"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -36,19 +33,19 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init db err:[%s]", err.Error()))
 	}
 
-	desc, err := descriptions.Init(cfg.Descriptions)
+	desc, err := cfg.Descriptions.Init()
 
-	b, err := bucket.InitBucket(cfg.Bucket)
+	b, err := cfg.Bucket.Init()
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init s3 bucket err:[%s]", err.Error()))
 	}
 
-	eth, err := eth.InitEtherscan(context.Background(), cfg.Etherscan, db)
+	eth, err := eth.InitEtherscan(context.Background(), cfg.Etherscan, db.NFTStore())
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
 	}
 
-	ipfs, err := ipfs.InitMoralis(cfg.IPFS, desc)
+	ipfs, err := cfg.IPFS.Init(desc)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
 	}

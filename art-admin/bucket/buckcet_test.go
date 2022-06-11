@@ -28,7 +28,7 @@ func skipCI(t *testing.T) {
 }
 
 func BucketFromConst() (*Bucket, error) {
-	bucketConf := &S3BucketConfig{
+	c := &Config{
 		S3AccessKey:       S3AccessKey,
 		S3SecretAccessKey: S3SecretAccessKey,
 		S3Endpoint:        S3Endpoint,
@@ -36,7 +36,7 @@ func BucketFromConst() (*Bucket, error) {
 		S3BucketLocation:  bucketLocation,
 		ImageStorePrefix:  imageStorePrefix,
 	}
-	return InitBucket(bucketConf)
+	return c.Init()
 }
 
 func imageToB64ByPath(filePath string) (string, error) {

@@ -21,19 +21,19 @@ func (s *Server) upsertNFT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := s.DB.UpsertNFT(data.NFTMintRequest); err != nil {
+	if _, err := s.nftStore.UpsertNFT(data.NFTMintRequest); err != nil {
 		log.Error().Err(err).Msgf("upsertNFTMintRequest:s.DB.UpsertNFTMintRequest [%v]", err.Error())
 		render.Render(w, r, ErrInternalServerError(err))
 		return
 	}
-	render.Render(w, r, NewNFTMintResponse(data.NFTMintRequest))
+	render.Render(w, r, NewNFTMintResponse(*data.NFTMintRequest))
 }
 
 func (s *Server) deleteNFT(w http.ResponseWriter, r *http.Request) {
 	sp := strings.Split(r.URL.Path, "/")
 	id := sp[len(sp)-1]
 
-	if _, err := s.DB.DeleteNFT(id); err != nil {
+	if _, err := s.nftStore.DeleteNFT(id); err != nil {
 		log.Error().Err(err).Msgf("upsertNFTMintRequest:s.DB.UpsertNFTMintRequest [%v]", err.Error())
 		render.Render(w, r, ErrInternalServerError(err))
 		return

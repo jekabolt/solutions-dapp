@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/render"
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 )
 
 // errors
@@ -89,18 +89,18 @@ func (i *AuthResponse) Render(w http.ResponseWriter, r *http.Request) error {
 // nft mints request
 
 type NFTMintResponse struct {
-	NFTMintRequest *store.NFTMintRequest `json:"mint"`
+	NFTMintRequest *nft.NFTMintRequest `json:"mint"`
 }
 
-func NewNFTMintResponse(mr *store.NFTMintRequest) *NFTMintResponse {
-	return &NFTMintResponse{NFTMintRequest: mr}
+func NewNFTMintResponse(mr nft.NFTMintRequest) *NFTMintResponse {
+	return &NFTMintResponse{NFTMintRequest: &mr}
 }
 
 func (mr *NFTMintResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return mr.NFTMintRequest.Validate()
 }
 
-func NewNFTMintRequestListResponse(nftMintRequests []*store.NFTMintRequest) []render.Renderer {
+func NewNFTMintRequestListResponse(nftMintRequests []nft.NFTMintRequest) []render.Renderer {
 	list := []render.Renderer{}
 	for _, nftMr := range nftMintRequests {
 		list = append(list, NewNFTMintResponse(nftMr))

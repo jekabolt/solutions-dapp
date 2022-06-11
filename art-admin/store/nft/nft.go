@@ -1,4 +1,4 @@
-package store
+package nft
 
 import (
 	"encoding/json"
@@ -7,6 +7,20 @@ import (
 
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
 )
+
+type Store interface {
+	UpsertNFTMintRequest(p *NFTMintRequest) (*NFTMintRequest, error)
+	GetNFTMintRequestById(id string) (*NFTMintRequest, error)
+	UpdateStatusNFTMintRequest(p *NFTMintRequest, status NFTStatus) (*NFTMintRequest, error)
+	GetAllNFTMintRequests() ([]NFTMintRequest, error)
+	DeleteNFTMintRequestById(id string) error
+
+	GetAllToUpload() ([]NFTMintRequest, error)
+	UpsertNFT(p *NFTMintRequest) (*NFTMintRequest, error)
+	DeleteNFT(id string) (*NFTMintRequest, error)
+
+	GetAllTest() ([]string, error)
+}
 
 type NFTStatus string
 

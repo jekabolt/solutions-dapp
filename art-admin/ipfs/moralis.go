@@ -12,35 +12,35 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type MoralisConfig struct {
+type Config struct {
 	APIKey  string `env:"MORALIS_API_KEY"`
 	Timeout string `env:"MORALIS_TIMEOUT" envDefault:"10s"`
 	BaseURL string `env:"MORALIS_BASE_URL" envDefault:"https://deep-index.moralis.io/api/v2/"`
 }
 
 type Moralis struct {
-	cli *fasthttp.Client
-	*MoralisConfig
+	cli     *fasthttp.Client
+	c       *Config
 	BaseURL *url.URL
 	desc    *descriptions.Store
 }
 
-func InitMoralis(cfg *MoralisConfig, desc *descriptions.Store) (*Moralis, error) {
-	tOut, err := time.ParseDuration(cfg.Timeout)
-	if err != nil && cfg.Timeout != "" {
+func (c *Config) Init(desc *descriptions.Store) (*Moralis, error) {
+	tOut, err := time.ParseDuration(c.Timeout)
+	if err != nil && c.Timeout != "" {
 		return nil, fmt.Errorf("InitMoralis:time.ParseDuration [%s]", err.Error())
 	}
-	baseURL, err := url.Parse(cfg.BaseURL)
+	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("initSUTClient:url.Parse %s", err)
 	}
 	hc := initHTTPClient(tOut)
 
 	return &Moralis{
-		MoralisConfig: cfg,
-		cli:           hc,
-		BaseURL:       baseURL,
-		desc:          desc,
+		c:       c,
+		cli:     hc,
+		BaseURL: baseURL,
+		desc:    desc,
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func (m *Moralis) post(path string, reqBody []byte, data interface{}) error {
 	req.Header.SetMethod(http.MethodPost)
 	req.Header.SetContentType("application/json")
 	req.SetRequestURI(m.makeURL(path))
-	req.Header.Set("X-API-Key", m.APIKey)
+	req.Header.Set("X-API-Key", m.c.APIKey)
 
 	if m.makeURL(path) != "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder" {
 		return fmt.Errorf("request:bad url %s ----- %s ", m.makeURL(path), "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder")

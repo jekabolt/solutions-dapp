@@ -3,161 +3,90 @@ package bunt
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 	"github.com/matryer/is"
-	"github.com/tidwall/buntdb"
 )
 
 func TestCreateD(t *testing.T) {
-	p := &store.NFTMintRequest{}
+	p := &nft.NFTMintRequest{}
 	bs, _ := json.Marshal(p)
 	fmt.Println("---", string(bs))
 }
 
-func buntFromConst() (*BuntDB, error) {
-	c := &Config{
+func TestBuntDBI(t *testing.T) {
+	is := is.New(t)
+
+	c := Config{
 		DBPath: ":memory:",
 	}
-	return c.InitDB()
-}
-func (b *BuntDB) addTestObj(is *is.I, index string) {
-	i, err := b.getNextKey(index)
-	is.NoErr(err)
-	fmt.Println(i)
 
-	b.db.Update(func(tx *buntdb.Tx) error {
+	bdb, err := c.InitDB()
+	is.NoErr(err)
+
+	ok := bdb.KeyUsed(allMetadataRequests, firstId)
+	is.True(!ok)
+
+	testVal := "testVal-%s"
+	for i := 0; i < 100; i++ {
+		err = bdb.SetNext(allMetadataRequests, fmt.Sprintf(testVal, strconv.Itoa(i)))
 		is.NoErr(err)
-		tx.Set(fmt.Sprintf("%s:%d", index, i), "test", nil)
-		return nil
-	})
-}
-
-func TestGetLastId(t *testing.T) {
-	is := is.New(t)
-	b, err := buntFromConst()
+	}
+	all, err := bdb.GetAll(allMetadataRequests)
 	is.NoErr(err)
+	is.Equal(len(all), 100)
 
-	index := "test"
-
-	keyN, err := b.getNextKey(index)
-	is.NoErr(err)
-	is.Equal(keyN, firstId)
-
-	mTest := map[string]string{}
-	for i := keyN; i < keyN+100; i++ {
-		b.addTestObj(is, index)
-		mTest[fmt.Sprintf("%s:%d", index, i)] = index
+	for i := 0; i < 100; i++ {
+		ok = bdb.KeyUsed(allMetadataRequests, firstId+i)
+		is.True(ok) // key should be used
 	}
 
-	m := map[string]string{}
-	b.db.View(func(tx *buntdb.Tx) error {
-		tx.Ascend("", func(key, val string) bool {
-			m[key] = val
-			return true
-		})
-		return nil
-	})
-	is.Equal(m, mTest)
-
-}
-
-func getTestNFTMintRequest() *store.NFTMintRequest {
-	return &store.NFTMintRequest{
-		Id:         0,
-		ETHAddress: "0x0",
-		TxHash:     "0x0",
-		SampleImages: []bucket.Image{
-			{
-				FullSize: "https://ProductImages.com/img.jpg",
-			},
-			{
-				FullSize: "https://ProductImages2.com/img.jpg",
-			},
-		},
-		Description: "test",
-		Status:      store.StatusUnknown,
-	}
-}
-
-func TestCRUDNFTMintRequest(t *testing.T) {
-	is := is.New(t)
-	b, err := buntFromConst()
-	is.NoErr(err)
-
-	nftMR := getTestNFTMintRequest()
-	// new
-	_, err = b.UpsertNFTMintRequest(nftMR)
-	is.NoErr(err)
-
-	nftMRs, err := b.GetAllNFTMintRequests()
-	is.NoErr(err)
-	is.Equal(len(nftMRs), 1)
-
-	// for _, p := range nftMRs {
-	// 	fmt.Printf("--kekek %+v-- \n", p.Status)
-	// }
-
-	nftMR = nftMRs[0]
-	nftMR.Status = store.StatusPending
-
-	_, err = b.UpsertNFTMintRequest(nftMR)
-	is.NoErr(err)
-
-	nftMRs, err = b.GetAllNFTMintRequests()
-	is.NoErr(err)
-	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, nftMR.Status)
-
-	nftMR.NFTOffchain = "offchain url"
-	_, err = b.UpsertNFT(nftMR)
-	is.NoErr(err)
-
-	nftMRs, err = b.GetAllNFTMintRequests()
-	is.NoErr(err)
-	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, store.StatusUploadedOffchain)
-	is.Equal(nftMRs[0].NFTOffchain, nftMR.NFTOffchain)
-
-	_, err = b.DeleteNFT(fmt.Sprint(nftMR.Id))
-	is.NoErr(err)
-
-	nftMRs, err = b.GetAllNFTMintRequests()
-	is.NoErr(err)
-	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, store.StatusUnknown)
-	is.Equal(nftMRs[0].NFTOffchain, "")
-
-	err = b.DeleteNFTMintRequestById(fmt.Sprint(nftMR.Id))
-	is.NoErr(err)
-
-	nftMRs, err = b.GetAllNFTMintRequests()
-	is.NoErr(err)
-	is.Equal(len(nftMRs), 0)
-
-	n := 100
-
-	for i := 0; i < n; i++ {
-		nftMR.Id = 0
-		nftMR.ETHAddress = fmt.Sprintf("0x%d", i)
-		_, err := b.UpsertNFTMintRequest(nftMR)
+	for i := 0; i < 100; i++ {
+		err = bdb.Delete(allMetadataRequests, strconv.Itoa(i+firstId))
 		is.NoErr(err)
 	}
 
-	// add another type of keys
-	index := "test"
-	for i := 0; i < n; i++ {
-		b.addTestObj(is, index)
+	all, err = bdb.GetAll(allMetadataRequests)
+	is.NoErr(err)
+	is.Equal(len(all), 0)
+
+	for i := 0; i < 100; i++ {
+		err = bdb.SetNext(allMetadataRequests, fmt.Sprintf(`{"id": %d}`, i))
+	}
+	type test struct {
+		Id int `json:"id"`
 	}
 
-	nftMRs, err = b.GetAllNFTMintRequests()
+	all, err = bdb.GetAll(allMetadataRequests)
 	is.NoErr(err)
-	is.Equal(len(nftMRs), n)
+	is.Equal(len(all), 100)
 
-	// for _, p := range nftMRs {
-	// 	fmt.Println(p.Id)
-	// }
+	for i := 0; i < 100; i++ {
+		ts := test{}
+		err = bdb.GetJSONById(allMetadataRequests, strconv.Itoa(i+firstId), &ts)
+		is.NoErr(err)
+		is.Equal(ts.Id, i)
+	}
+
+	ts := []test{}
+	bdb.GetAllJSON(allMetadataRequests, &ts)
+	is.Equal(len(all), 100)
+
+	for i := 0; i < 100; i++ {
+		err = bdb.Delete(allMetadataRequests, strconv.Itoa(i+firstId))
+		is.NoErr(err)
+	}
+
+	id := firstId + 1
+	err = bdb.Set(allMetadataRequests, fmt.Sprint(id), "test")
+	is.NoErr(err)
+
+	ok = bdb.KeyUsed(allMetadataRequests, id)
+	is.True(ok)
+
+	ok = bdb.KeyUsed(allMetadataRequests, id+1)
+	is.True(!ok)
 
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 
 func (s *Server) uploadOffchain(w http.ResponseWriter, r *http.Request) {
 
-	mrs, err := s.DB.GetAllToUpload()
+	mrs, err := s.nftStore.GetAllToUpload()
 	if err != nil {
 		log.Error().Err(err).Msgf("uploadIPFS:DB.GetAllToUpload [%v]", err.Error())
 		render.Render(w, r, ErrInvalidRequest(err))
@@ -41,17 +42,14 @@ func (s *Server) uploadOffchain(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO: QUEUE THIS SHITt
-	// TODO: QUEUE THIS SHIT
-	// TODO: QUEUE THIS SHIT
-
-	url, err = s.Bucket.UploadMetadata(metadata)
+	url, err := s.Bucket.UploadMetadata(metadata)
 	if err != nil {
 		log.Error().Err(err).Msgf("uploadIPFS:ipfs.BulkUploadIPFS [%v]", err.Error())
 		render.Render(w, r, ErrInternalServerError(err))
 		return
 	}
 
+	fmt.Println("url - ", url)
 }
 
 func (s *Server) uploadIPFS(w http.ResponseWriter, r *http.Request) {

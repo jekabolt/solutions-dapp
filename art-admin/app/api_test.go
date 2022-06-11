@@ -12,8 +12,8 @@ import (
 	"github.com/jekabolt/solutions-dapp/art-admin/auth"
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/config"
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
 	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 	"github.com/matryer/is"
 )
 
@@ -33,7 +33,7 @@ var (
 )
 
 func BucketFromConst() (*bucket.Bucket, error) {
-	bucketConf := &bucket.S3BucketConfig{
+	bucketConf := &bucket.Config{
 		S3AccessKey:       S3AccessKey,
 		S3SecretAccessKey: S3SecretAccessKey,
 		S3Endpoint:        S3Endpoint,
@@ -41,7 +41,7 @@ func BucketFromConst() (*bucket.Bucket, error) {
 		S3BucketLocation:  bucketLocation,
 		ImageStorePrefix:  imageStorePrefix,
 	}
-	return bucket.InitBucket(bucketConf)
+	return bucketConf.Init()
 }
 
 func buntFromConst() (*bunt.BuntDB, error) {
@@ -68,9 +68,10 @@ func InitServerFromConst() (*Server, error) {
 	}
 
 	return &Server{
-		DB:     b,
-		Bucket: bucket,
-		Auth:   ac.New(),
+		nftStore:      b.NFTStore(),
+		metadataStore: b.MetadataStore(),
+		Bucket:        bucket,
+		Auth:          ac.New(),
 		Config: &config.Config{
 			Port:  serverPort,
 			Hosts: hosts,
@@ -172,7 +173,7 @@ func TestAuthTokenByPasswordAndRefresh(t *testing.T) {
 
 func getNFTMintRequestReq(t *testing.T, ethAddr string) *bytes.Reader {
 	is := is.New(t)
-	nft := &store.NFTMintRequest{
+	nft := &nft.NFTMintRequest{
 		Id:         0,
 		ETHAddress: ethAddr,
 		TxHash:     "0x0",
@@ -186,7 +187,7 @@ func getNFTMintRequestReq(t *testing.T, ethAddr string) *bytes.Reader {
 		},
 		MintSequenceNumber: 1,
 		Description:        "test",
-		Status:             store.StatusUnknown,
+		Status:             nft.StatusUnknown,
 	}
 
 	nftBytes, err := json.Marshal(nft)
@@ -197,7 +198,7 @@ func getNFTMintRequestReq(t *testing.T, ethAddr string) *bytes.Reader {
 	return bytes.NewReader(nftBytes)
 }
 
-func NFTMintRequestFromRespReq(t *testing.T, nft store.NFTMintRequest) *bytes.Reader {
+func NFTMintRequestFromRespReq(t *testing.T, nft nft.NFTMintRequest) *bytes.Reader {
 	is := is.New(t)
 
 	nftBytes, err := json.Marshal(nft)

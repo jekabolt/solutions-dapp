@@ -7,14 +7,14 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 	"github.com/rs/zerolog/log"
 )
 
 func (s *Server) deleteNFTMintRequestById(w http.ResponseWriter, r *http.Request) {
 	sp := strings.Split(r.URL.Path, "/")
 	id := sp[len(sp)-1]
-	if err := s.DB.DeleteNFTMintRequestById(id); err != nil {
+	if err := s.nftStore.DeleteNFTMintRequestById(id); err != nil {
 		log.Error().Err(err).Msgf("deleteNFTMintRequestById:s.DB.DeleteNFTMintRequestById [%v]", err.Error())
 		render.Render(w, r, ErrInternalServerError(err))
 		return
@@ -23,7 +23,7 @@ func (s *Server) deleteNFTMintRequestById(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Server) getAllNFTMintRequestsList(w http.ResponseWriter, r *http.Request) {
-	nftMRs, err := s.DB.GetAllNFTMintRequests()
+	nftMRs, err := s.nftStore.GetAllNFTMintRequests()
 	if err != nil {
 		log.Error().Err(err).Msgf("getAllNFTMintRequestsList:s.DB.GetAllNFTMintRequests [%v]", err.Error())
 		render.Render(w, r, ErrInternalServerError(err))
@@ -71,15 +71,15 @@ func (s *Server) upsertNFTMintRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	req.SampleImages = sampleImages
 
-	if _, err := s.DB.UpsertNFTMintRequest(req.NFTMintRequest); err != nil {
+	if _, err := s.nftStore.UpsertNFTMintRequest(req.NFTMintRequest); err != nil {
 		log.Error().Err(err).Msgf("upsertNFTMintRequest:s.DB.UpsertNFTMintRequest [%v]", err.Error())
 		render.Render(w, r, ErrInternalServerError(err))
 	}
-	render.Render(w, r, NewNFTMintResponse(req.NFTMintRequest))
+	render.Render(w, r, NewNFTMintResponse(*req.NFTMintRequest))
 }
 
 type NFTMintRequestRequest struct {
-	*store.NFTMintRequest
+	*nft.NFTMintRequest
 }
 
 func (p *NFTMintRequestRequest) Bind(r *http.Request) error {

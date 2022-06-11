@@ -31,7 +31,7 @@ type desc struct {
 	Image       string   `json:"image"`
 }
 
-func Init(c *Config) (*Store, error) {
+func (c *Config) Init() (*Store, error) {
 	s := &Store{
 		m: make(map[int]desc),
 		c: c,

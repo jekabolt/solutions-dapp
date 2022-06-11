@@ -4,7 +4,7 @@ import (
 	"github.com/minio/minio-go"
 )
 
-type S3BucketConfig struct {
+type Config struct {
 	S3AccessKey         string `env:"S3_ACCESS_KEY" envDefault:"xxx"`
 	S3SecretAccessKey   string `env:"S3_SECRET_ACCESS_KEY" envDefault:"xxx"`
 	S3Endpoint          string `env:"S3_ENDPOINT" envDefault:"fra1.digitaloceanspaces.com"`
@@ -18,7 +18,7 @@ type S3BucketConfig struct {
 
 type Bucket struct {
 	*minio.Client
-	*S3BucketConfig
+	*Config
 }
 
 type B64Image struct {
@@ -26,10 +26,10 @@ type B64Image struct {
 	ContentType string
 }
 
-func InitBucket(bc *S3BucketConfig) (*Bucket, error) {
-	cli, err := minio.New(bc.S3Endpoint, bc.S3AccessKey, bc.S3SecretAccessKey, true)
+func (c *Config) Init() (*Bucket, error) {
+	cli, err := minio.New(c.S3Endpoint, c.S3AccessKey, c.S3SecretAccessKey, true)
 	return &Bucket{
-		Client:         cli,
-		S3BucketConfig: bc,
+		Client: cli,
+		Config: c,
 	}, err
 }

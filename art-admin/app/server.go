@@ -7,21 +7,24 @@ import (
 	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/eth"
 	"github.com/jekabolt/solutions-dapp/art-admin/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/metadata"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 )
 
 type Server struct {
-	DB     store.Store
-	Bucket *bucket.Bucket
-	Auth   *auth.Auth
-	Config *config.Config
-	eth    *eth.Etherscan
-	ipfs   *ipfs.Moralis
-	descs  *descriptions.Store
+	nftStore      nft.Store
+	metadataStore metadata.Store
+	Bucket        *bucket.Bucket
+	Auth          *auth.Auth
+	Config        *config.Config
+	eth           *eth.Etherscan
+	ipfs          *ipfs.Moralis
+	descs         *descriptions.Store
 }
 
 func InitServer(
-	db store.Store,
+	db *bunt.BuntDB,
 	bucket *bucket.Bucket,
 	cfg *config.Config,
 	eth *eth.Etherscan,
@@ -30,12 +33,13 @@ func InitServer(
 ) *Server {
 	a := cfg.Auth.New()
 	return &Server{
-		DB:     db,
-		Bucket: bucket,
-		Auth:   a,
-		Config: cfg,
-		eth:    eth,
-		ipfs:   ipfs,
-		descs:  descs,
+		nftStore:      db.NFTStore(),
+		metadataStore: db.MetadataStore(),
+		Bucket:        bucket,
+		Auth:          a,
+		Config:        cfg,
+		eth:           eth,
+		ipfs:          ipfs,
+		descs:         descs,
 	}
 }

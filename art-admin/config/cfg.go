@@ -18,9 +18,9 @@ type Config struct {
 
 	Bunt         *bunt.Config
 	Auth         *auth.Config
-	Bucket       *bucket.S3BucketConfig
-	Etherscan    *eth.EtherscanConfig
-	IPFS         *ipfs.MoralisConfig
+	Bucket       *bucket.Config
+	Etherscan    *eth.Config
+	IPFS         *ipfs.Config
 	Descriptions *descriptions.Config
 
 	Debug          bool `env:"DEBUG" envDefault:"false"`
@@ -33,9 +33,9 @@ func GetConfig() (*Config, error) {
 	cfg := &Config{
 		Auth:         &auth.Config{},
 		Bunt:         &bunt.Config{},
-		Bucket:       &bucket.S3BucketConfig{},
-		Etherscan:    &eth.EtherscanConfig{},
-		IPFS:         &ipfs.MoralisConfig{},
+		Bucket:       &bucket.Config{},
+		Etherscan:    &eth.Config{},
+		IPFS:         &ipfs.Config{},
 		Descriptions: &descriptions.Config{},
 	}
 

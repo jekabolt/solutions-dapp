@@ -8,8 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
+	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 	"github.com/matryer/is"
 )
 
@@ -37,16 +38,24 @@ const (
 )
 
 func InitMoralisFromConst() (*Moralis, error) {
-	cfg := &MoralisConfig{
+	cfgMoralis := &Config{
 		APIKey:  MORALIS_API_KEY,
 		Timeout: MORALIS_TIMEOUT,
 		BaseURL: MORALIS_BASE_URL,
 	}
-	return InitMoralis(cfg)
+	cfgDecription := &descriptions.Config{
+		Path:           "etc/descriptions.json",
+		CollectionName: "Solutions #",
+	}
+	desc, err := cfgDecription.Init()
+	if err != nil {
+		return nil, err
+	}
+	return cfgMoralis.Init(desc)
 }
 
-func getTestMrs() []*store.NFTMintRequest {
-	return []*store.NFTMintRequest{
+func getTestMrs() []nft.NFTMintRequest {
+	return []nft.NFTMintRequest{
 		{
 			NFTOffchain: testImage,
 		},

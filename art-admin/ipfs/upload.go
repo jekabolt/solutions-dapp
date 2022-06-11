@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/store"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 )
 
 const (
@@ -47,7 +47,7 @@ func (ufs *UploadFolder) GetIPFSImage() (*IpfsImage, error) {
 	}, nil
 }
 
-func mintRequestsToUpload(mrs []*store.NFTMintRequest) ([]byte, error) {
+func mintRequestsToUpload(mrs []nft.NFTMintRequest) ([]byte, error) {
 	uf := []UploadFolder{}
 	for _, mr := range mrs {
 		ext, err := bucket.GetExtensionFromB64String(mr.NFTOffchain)
@@ -62,7 +62,7 @@ func mintRequestsToUpload(mrs []*store.NFTMintRequest) ([]byte, error) {
 	return json.Marshal(uf)
 }
 
-func (m *Moralis) BulkUploadIPFS(mrs []*store.NFTMintRequest) (map[int]bucket.Metadata, error) {
+func (m *Moralis) BulkUploadIPFS(mrs []nft.NFTMintRequest) (map[int]bucket.Metadata, error) {
 	reqBody, err := mintRequestsToUpload(mrs)
 	if err != nil {
 		return nil, fmt.Errorf("BulkUploadIPFS:mintRequestsToUpload [%v]", err.Error())

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
-	"github.com/nanmu42/etherscan-api"
+	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+	etherscan "github.com/nanmu42/etherscan-api"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,10 +17,14 @@ type Config struct {
 	RefreshTime     string `env:"REFRESH_TIME" envDefault:"10m"`
 }
 
+type ETHCli interface {
+	ERC721Transfers(contractAddress, address *string, startBlock *int, endBlock *int, page int, offset int, desc bool) (txs []etherscan.ERC721Transfer, err error)
+}
+
 type Etherscan struct {
-	nftStore nft.Store
+	mintRequestStore bunt.MintRequestStore
 	*Config
-	*etherscan.Client
+	ethCli      ETHCli
 	refreshTime time.Duration
 	TTLMap      map[int]int // map[buntId]count
 }
@@ -29,17 +33,17 @@ const (
 	maxCountTTL = 10
 )
 
-func InitEtherscan(ctx context.Context, cfg *Config, nftStore nft.Store) (*Etherscan, error) {
-	tf, err := time.ParseDuration(cfg.RefreshTime)
-	if err != nil && cfg.RefreshTime != "" {
+func (c *Config) InitEtherscan(ctx context.Context, mintRequestStore bunt.MintRequestStore) (*Etherscan, error) {
+	tf, err := time.ParseDuration(c.RefreshTime)
+	if err != nil && c.RefreshTime != "" {
 		return nil, fmt.Errorf("InitEtherscan:time.ParseDuration [%s]", err.Error())
 	}
 	eth := Etherscan{
-		nftStore:    nftStore,
-		Config:      cfg,
-		Client:      etherscan.New(etherscan.Network(cfg.Network), cfg.APIKey),
-		TTLMap:      make(map[int]int),
-		refreshTime: tf,
+		mintRequestStore: mintRequestStore,
+		Config:           c,
+		ethCli:           etherscan.New(etherscan.Network(c.Network), c.APIKey),
+		TTLMap:           make(map[int]int),
+		refreshTime:      tf,
 	}
 	eth.StartTxStatusUpdate(ctx)
 	return &eth, nil
@@ -71,68 +75,68 @@ var (
 	desc       = false
 )
 
-func (eth *Etherscan) getTxStatus(txHash, address string) (nft.NFTStatus, error) {
-	txs, err := eth.ERC721Transfers(&txHash, &address, &startBlock, &endBlock, page, offset, desc)
+func (e *Etherscan) getTxStatus(txHash, address string) (bunt.NFTStatus, error) {
+	txs, err := e.ethCli.ERC721Transfers(&txHash, &address, &startBlock, &endBlock, page, offset, desc)
 	if err != nil {
 		return "", err
 	}
 
 	found := false
 	for _, tx := range txs {
-		if tx.ContractAddress == eth.ContractAddress &&
+		if tx.ContractAddress == e.ContractAddress &&
 			tx.To == address {
 			found = true
 
 			if tx.Confirmations >= 10 {
 
 				// TODO: check for double spend
-				return nft.StatusCompleted, nil
+				return bunt.StatusCompleted, nil
 			}
 
 			if tx.Confirmations <= 10 {
 
 				// TODO: check for double spend
-				return nft.StatusPending, nil
+				return bunt.StatusPending, nil
 			}
 
 		}
 
 		if !found {
-			return nft.StatusFailed, nil
+			return bunt.StatusFailed, nil
 		}
 	}
 
-	return nft.StatusUnknown, nil
+	return bunt.StatusUnknown, nil
 
 }
 
 func (eth *Etherscan) TxStatusUpdate() error {
-	mrs, err := eth.nftStore.GetAllNFTMintRequests()
+	mrs, err := eth.mintRequestStore.GetAllNFTMintRequests()
 	if err != nil {
 		return err
 	}
 
 	for _, mr := range mrs {
-		if mr.Status == nft.StatusUnknown ||
-			mr.Status == nft.StatusPending {
+		if mr.Status == bunt.StatusUnknown.String() ||
+			mr.Status == bunt.StatusPending.String() {
 
-			eth.TTLMap[mr.Id]++
-			status, err := eth.getTxStatus(mr.TxHash, mr.ETHAddress)
+			eth.TTLMap[int(mr.NftMintRequest.Id)]++
+			status, err := eth.getTxStatus(mr.NftMintRequest.TxHash, mr.NftMintRequest.EthAddress)
 			if err != nil {
 				log.Error().Msgf("TxStatusUpdate:getTxStatus [%s]", err.Error())
 			}
 
-			if ok := mr.Status != status; ok {
+			if ok := mr.Status != status.String(); ok {
 				log.Debug().Msgf("TxStatusUpdate:update [%s]", status)
-				_, err := eth.nftStore.UpdateStatusNFTMintRequest(&mr, nft.StatusFailed)
+				_, err := eth.mintRequestStore.UpdateStatusNFTMintRequest(fmt.Sprint(mr.NftMintRequest.Id), bunt.StatusFailed)
 				if err != nil {
 					log.Error().Msgf("TxStatusUpdate:UpdateStatusNFTMintRequest [%s]", err.Error())
 				}
 			}
 
-			if eth.TTLMap[mr.Id] >= maxCountTTL {
-				log.Debug().Msgf("TxStatusUpdate:delete [%s]", nft.StatusFailed)
-				_, err := eth.nftStore.UpdateStatusNFTMintRequest(&mr, nft.StatusBad)
+			if eth.TTLMap[int(mr.NftMintRequest.Id)] >= maxCountTTL {
+				log.Debug().Msgf("TxStatusUpdate:delete [%s]", bunt.StatusFailed)
+				_, err := eth.mintRequestStore.UpdateStatusNFTMintRequest(fmt.Sprint(mr.NftMintRequest.Id), bunt.StatusBad)
 				if err != nil {
 					log.Error().Msgf("TxStatusUpdate:UpdateStatusNFTMintRequest [%s]", err.Error())
 				}

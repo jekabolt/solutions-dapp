@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package auth;
+option go_package = "go.mxc.org/airdrops/api/auth";
+
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service Auth {
+    rpc Login (LoginRequest) returns (LoginResponse) {
+      option (google.api.http) = {
+        post: "/api/auth/login"
+        body: "*"
+      };
+  }
+}
+
+message LoginRequest {
+  string password = 2;
+}
+
+message LoginResponse {
+  string auth_token = 1;
+}
+

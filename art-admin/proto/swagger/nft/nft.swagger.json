@@ -1,0 +1,374 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "nft/nft.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Nft"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/nft": {
+      "post": {
+        "operationId": "UpdateNFTOffchainUrl",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftUpdateNFTOffchainUrlRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/ipfs": {
+      "post": {
+        "summary": "TODO: add rpc for getting metadata offchain url",
+        "operationId": "UploadIPFSMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "properties": {}
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/offchain": {
+      "post": {
+        "operationId": "UploadOffchainMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftMetadataOffchainUrl"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "properties": {}
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/requests": {
+      "get": {
+        "operationId": "ListNFTMintRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestListArray"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      },
+      "post": {
+        "operationId": "UpsertNFTMintRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestToUpload"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/requests/{id}": {
+      "delete": {
+        "operationId": "DeleteNFTMintRequestById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftDeleteStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/{id}": {
+      "delete": {
+        "operationId": "DeleteNFOffchainUrl",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "nftDeleteStatus": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "nftImageList": {
+      "type": "object",
+      "properties": {
+        "fullSize": {
+          "type": "string"
+        },
+        "compressed": {
+          "type": "string"
+        }
+      },
+      "title": "image"
+    },
+    "nftImageToUpload": {
+      "type": "object",
+      "properties": {
+        "raw": {
+          "type": "string"
+        }
+      }
+    },
+    "nftMetadataOffchainUrl": {
+      "type": "object",
+      "properties": {
+        "Url": {
+          "type": "string"
+        }
+      },
+      "title": "Upload offchain metadata _metadata.json"
+    },
+    "nftNFTMintRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ethAddress": {
+          "type": "string"
+        },
+        "TxHash": {
+          "type": "string"
+        },
+        "mintSequenceNumber": {
+          "type": "string",
+          "format": "int64"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "nftNFTMintRequestListArray": {
+      "type": "object",
+      "properties": {
+        "nftMintRequests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+          }
+        }
+      }
+    },
+    "nftNFTMintRequestToUpload": {
+      "type": "object",
+      "properties": {
+        "sampleImages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftImageToUpload"
+          }
+        },
+        "nftMintRequest": {
+          "$ref": "#/definitions/nftNFTMintRequest"
+        }
+      }
+    },
+    "nftNFTMintRequestWithStatus": {
+      "type": "object",
+      "properties": {
+        "sampleImages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftImageList"
+          }
+        },
+        "nftMintRequest": {
+          "$ref": "#/definitions/nftNFTMintRequest"
+        },
+        "status": {
+          "type": "string"
+        },
+        "nftOffchainUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "nftUpdateNFTOffchainUrlRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "nftOffchainUrl": {
+          "type": "string"
+        }
+      },
+      "title": "Update NFT offchain url"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

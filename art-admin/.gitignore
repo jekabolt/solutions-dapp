@@ -9,6 +9,8 @@ bin
 .env-local
 
 *coverage*
+internal/static/static_gen.go
+*/swagger/*.json
 
 #
 layout

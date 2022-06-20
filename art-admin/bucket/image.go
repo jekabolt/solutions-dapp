@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/minio/minio-go"
 )
 
@@ -18,24 +19,24 @@ type PathExtra struct {
 	MintSequence string
 }
 
-type Image struct {
-	RawB64Image *string `json:"raw,omitempty"`
-	FullSize    string  `json:"fullSize"`
-	Compressed  string  `json:"compressed"`
-}
+// // type Image struct {
+// // 	RawB64Image *string `json:"raw,omitempty"`
+// // 	FullSize    string  `json:"fullSize"`
+// // 	Compressed  string  `json:"compressed"`
+// // }
 
-func (i *Image) Validate() error {
-	if i == nil {
-		return fmt.Errorf("missing Image")
-	}
-	if len(i.FullSize) == 0 {
-		return fmt.Errorf("missing Image FullSize")
-	}
-	if len(i.Compressed) == 0 {
-		return fmt.Errorf("missing Image Compressed")
-	}
-	return nil
-}
+// func (i *Image) Validate() error {
+// 	if i == nil {
+// 		return fmt.Errorf("missing Image")
+// 	}
+// 	if len(i.FullSize) == 0 {
+// 		return fmt.Errorf("missing Image FullSize")
+// 	}
+// 	if len(i.Compressed) == 0 {
+// 		return fmt.Errorf("missing Image Compressed")
+// 	}
+// 	return nil
+// }
 
 // upload image to bucket return url
 func (b *Bucket) UploadImageToBucket(img io.Reader, contentType string, prefix string, pe *PathExtra) (string, error) {
@@ -74,12 +75,12 @@ func (b64Img *B64Image) B64ToImage() (image.Image, error) {
 	var err error
 	switch b64Img.ContentType {
 	case "data:image/jpeg":
-		img, err = JPGFromB64(b64Img.Content)
+		img, err = jpgFromB64(b64Img.Content)
 		if err != nil {
 			return nil, fmt.Errorf("B64ToImage:JPGFromB64: [%v]", err.Error())
 		}
 	case "data:image/png":
-		img, err = PNGFromB64(b64Img.Content)
+		img, err = pngFromB64(b64Img.Content)
 		if err != nil {
 			return nil, fmt.Errorf("B64ToImage:PNGFromB64: [%v]", err.Error())
 		}
@@ -102,7 +103,7 @@ func (b *Bucket) UploadSingleImage(img image.Image, quality int, prefix string, 
 	var buf bytes.Buffer
 	imgWriter := bufio.NewWriter(&buf)
 
-	err := EncodeJPG(imgWriter, img, quality)
+	err := encodeJPG(imgWriter, img, quality)
 	if err != nil {
 		return "", fmt.Errorf("Upload:EncodeJPG: [%v]", err.Error())
 	}
@@ -116,8 +117,8 @@ func (b *Bucket) UploadSingleImage(img image.Image, quality int, prefix string, 
 }
 
 // compose internal image object (with FullSize & Compressed formats) and upload it to S3
-func (b *Bucket) UploadImageObj(img image.Image, pe *PathExtra) (*Image, error) {
-	imgObj := &Image{}
+func (b *Bucket) UploadImageObj(img image.Image, pe *PathExtra) (*pb_nft.ImageList, error) {
+	imgObj := &pb_nft.ImageList{}
 	var err error
 
 	imgObj.FullSize, err = b.UploadSingleImage(img, 100, "og", pe)
@@ -133,7 +134,7 @@ func (b *Bucket) UploadImageObj(img image.Image, pe *PathExtra) (*Image, error) 
 }
 
 // get raw image from b64 encoded string and upload fullsize and compressed images to s3
-func (b *Bucket) UploadContentImage(rawB64Image string, pe *PathExtra) (*Image, error) {
+func (b *Bucket) UploadContentImage(rawB64Image string, pe *PathExtra) (*pb_nft.ImageList, error) {
 	img, err := imageFromString(rawB64Image)
 	if err != nil {
 		return nil, err

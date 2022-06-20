@@ -2,20 +2,23 @@ package bunt
 
 import (
 	"fmt"
-
-	"github.com/jekabolt/solutions-dapp/art-admin/store/metadata"
 )
 
 const (
 	allMetadataRequests = "metadata"
 )
 
+type MetadataStore interface {
+	AddOffchainMetadata(url string) error
+	GetAllOffchainMetadata() ([]string, error)
+}
+
 type metadataStore struct {
 	*BuntDB
 }
 
 // MetadataStore returns a metadata store
-func (bdb *BuntDB) MetadataStore() metadata.Store {
+func (bdb *BuntDB) MetadataStore() MetadataStore {
 	return &metadataStore{
 		BuntDB: bdb,
 	}

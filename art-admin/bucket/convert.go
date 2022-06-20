@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-func PNGFromB64(b64Image []byte) (image.Image, error) {
+func pngFromB64(b64Image []byte) (image.Image, error) {
 	reader := base64.NewDecoder(base64.StdEncoding, bytes.NewReader(b64Image))
 	i, err := png.Decode(reader)
 	if err != nil {
@@ -19,7 +19,7 @@ func PNGFromB64(b64Image []byte) (image.Image, error) {
 	return i, nil
 }
 
-func JPGFromB64(b64Image []byte) (image.Image, error) {
+func jpgFromB64(b64Image []byte) (image.Image, error) {
 	reader := base64.NewDecoder(base64.StdEncoding, bytes.NewReader(b64Image))
 	i, err := jpeg.Decode(reader)
 	if err != nil {
@@ -28,7 +28,7 @@ func JPGFromB64(b64Image []byte) (image.Image, error) {
 	return i, nil
 }
 
-func EncodeJPG(w io.Writer, img image.Image, quality int) error {
+func encodeJPG(w io.Writer, img image.Image, quality int) error {
 	var err error
 	var rgba *image.RGBA
 	if nrgba, ok := img.(*image.NRGBA); ok {

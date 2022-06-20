@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/app/css/login.css">
+    <script defer src="/app/js/login.js"></script>
+    <script defer src="/app/js/api.js"></script>
+</head>
+
+<body class="login">
+    <div id="login" class="container">
+        <h2 class="text-center">dashboard</h2>
+        <br>
+        <form class="loginForm">
+            <div class="input-group">
+                <label for="username" class="label">Username</label>
+                <input type="text" id="username" class="input">
+                <span class="error-message"></span>
+            </div>
+            <br>
+            <div class="input-group">
+                <label for="password" class="label">Password</label>
+                <input type="password" id="password" class="input">
+                <span class="error-message"></span>
+            </div>
+            <br>
+            <button class="button" type="submit">Login</button>
+        </form>
+    </div>
+
+    <div id="dashboard" class="container">
+        <h1 class="text-center">Dashboard</h1>
+        <br>
+        <br>
+        <br>
+
+        <h3>Submit single airdrop</h3>
+        <br>
+        <form class="single-airdrop">
+            <div class="input-group">
+                <label for="email" class="label">email</label>
+                <input type="text" id="email" class="input">
+                <span class="error-message"></span>
+            </div>
+            <br>
+            <div class="input-group">
+                <label for="supernodeId" class="label">supernodeId</label>
+                <input type="text" id="supernodeId" class="input">
+                <span class="error-message"></span>
+            </div>
+            <br>
+            <div class="input-group">
+                <label for="amount" class="label">amount</label>
+                <input type="text" id="amount" class="input">
+                <span class="error-message"></span>
+            </div>
+            <br>
+            <div class="input-group">
+                <label for="currency" class="label">currency</label>
+                <input type="text" id="currency" class="input">
+                <span class="error-message"></span>
+            </div>
+            <br>
+            <div class="input-group">
+                <label for="purpose" class="label">purpose</label>
+                <input type="text" id="purpose" class="input">
+                <span class="error-message"></span>
+            </div>
+
+            <br>
+            <button class="button" type="submit">submit</button>
+        </form>
+
+        <br>
+        <br>
+        <br>
+
+        <h3>Submit .csv airdrops</h3>
+        <br>
+        <form class="multiple-airdrop">
+            <div class="input-group">
+                <label for="file" class="label">file</label>
+                <input type="file" id="input_file" accept=".csv" class="input">
+                <span class="error-message"></span>
+            </div>
+
+            <br>
+            <button class="button" type="submit">submit</button>
+        </form>
+
+        <br>
+        <br>
+        <br>
+
+        <form class="list-all-airdrops">
+            <button class="button" type="submit">list all</button>
+        </form>
+
+        <form class="list-failed-airdrops">
+            <button class="button" type="submit">list failed</button>
+        </form>
+
+        <form class="list-pending-airdrops">
+            <button class="button" type="submit">list pending</button>
+        </form>
+
+        <br>
+        <br>
+        <br>
+
+
+        <button class="button" onClick="window.location.reload();" id="logout">Log Out</button>
+        <br>
+    </div>
+</body>
+
+</html>

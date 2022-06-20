@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
+	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 )
 
 const (
@@ -47,22 +47,22 @@ func (ufs *UploadFolder) GetIPFSImage() (*IpfsImage, error) {
 	}, nil
 }
 
-func mintRequestsToUpload(mrs []nft.NFTMintRequest) ([]byte, error) {
+func mintRequestsToUpload(mrs []*pb_nft.NFTMintRequestWithStatus) ([]byte, error) {
 	uf := []UploadFolder{}
 	for _, mr := range mrs {
-		ext, err := bucket.GetExtensionFromB64String(mr.NFTOffchain)
+		ext, err := bucket.GetExtensionFromB64String(mr.NftOffchainUrl)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("can't get file extension from offchain url")
 		}
 		uf = append(uf, UploadFolder{
-			Path:    fmt.Sprintf("%d.%s", mr.MintSequenceNumber, ext),
-			Content: mr.NFTOffchain,
+			Path:    fmt.Sprintf("%d.%s", mr.NftMintRequest.MintSequenceNumber, ext),
+			Content: mr.NftOffchainUrl,
 		})
 	}
 	return json.Marshal(uf)
 }
 
-func (m *Moralis) BulkUploadIPFS(mrs []nft.NFTMintRequest) (map[int]bucket.Metadata, error) {
+func (m *Moralis) BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]bucket.Metadata, error) {
 	reqBody, err := mintRequestsToUpload(mrs)
 	if err != nil {
 		return nil, fmt.Errorf("BulkUploadIPFS:mintRequestsToUpload [%v]", err.Error())

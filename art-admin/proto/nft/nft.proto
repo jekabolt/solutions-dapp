@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package nft;
+option go_package = "github.com/jekabolt/solutions-dapp/art-admin";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+// import "google/protobuf/timestamp.proto";
+
+
+service Nft {
+  rpc UpsertNFTMintRequest (NFTMintRequestToUpload) returns (NFTMintRequestWithStatus){
+    option (google.api.http) = {
+      post : "/api/nft/requests"
+      body : "*"
+    };
+  }
+
+  rpc ListNFTMintRequests (google.protobuf.Empty) returns (NFTMintRequestListArray){
+    option (google.api.http) = {
+      get : "/api/nft/requests"
+    };
+  }
+     
+  rpc DeleteNFTMintRequestById (DeleteId) returns (DeleteStatus) {
+    option (google.api.http) = {
+			delete: "/api/nft/requests/{id}"
+		};
+  }
+
+  rpc UpdateNFTOffchainUrl (UpdateNFTOffchainUrlRequest) returns (NFTMintRequestWithStatus){
+    option (google.api.http) = {
+      post : "/api/nft"
+      body : "*"
+    };
+  }
+
+  rpc DeleteNFOffchainUrl (DeleteId) returns (NFTMintRequestWithStatus) {
+    option (google.api.http) = {
+			delete: "/api/nft/{id}"
+		};
+  }
+
+  rpc UploadOffchainMetadata (google.protobuf.Empty) returns (MetadataOffchainUrl) {
+    option (google.api.http) = {
+      post : "/api/nft/offchain"
+      body : "*"
+    };
+  }
+
+  // TODO: add rpc for getting metadata offchain url
+  rpc UploadIPFSMetadata (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/nft/ipfs"
+      body : "*"
+    };
+  }
+
+}
+
+// image
+message ImageList {
+  string fullSize = 1;
+  string compressed = 2;
+}
+
+message ImageToUpload {
+  string raw = 1;
+}
+
+
+message NFTMintRequest {
+  int64 id = 1;
+  string ethAddress = 2;
+  string TxHash = 3;
+  int64  mintSequenceNumber = 4;
+  string description = 6;
+}
+
+message NFTMintRequestToUpload {
+  repeated ImageToUpload sampleImages = 1;
+  NFTMintRequest nftMintRequest = 2;
+}
+
+message NFTMintRequestWithStatus {
+  repeated ImageList sampleImages = 1;
+  NFTMintRequest nftMintRequest = 2;
+  string status = 3;
+  string nftOffchainUrl = 4;
+}
+
+message NFTMintRequestListArray {
+  repeated NFTMintRequestWithStatus nftMintRequests = 1;
+}
+
+// delete
+message DeleteId {
+  string id = 1;
+}
+
+message DeleteStatus {
+  string message = 1;
+}
+
+// Update NFT offchain url 
+message UpdateNFTOffchainUrlRequest {
+  string id = 1;
+  string nftOffchainUrl = 2;
+}
+
+
+// Upload offchain metadata _metadata.json
+message MetadataOffchainUrl {
+  string Url = 1;
+}

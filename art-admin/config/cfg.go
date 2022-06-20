@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/caarlos0/env/v6"
-	"github.com/jekabolt/solutions-dapp/art-admin/auth"
+	"github.com/jekabolt/solutions-dapp/art-admin/app"
+	"github.com/jekabolt/solutions-dapp/art-admin/app/auth"
+	"github.com/jekabolt/solutions-dapp/art-admin/app/nft"
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/eth"
@@ -17,26 +19,30 @@ type Config struct {
 	Hosts []string `env:"HOSTS" envSeparator:"|"`
 
 	Bunt         *bunt.Config
-	Auth         *auth.Config
 	Bucket       *bucket.Config
 	Etherscan    *eth.Config
 	IPFS         *ipfs.Config
 	Descriptions *descriptions.Config
+	Server       *app.Config
+	Nft          *nft.Config
+	Auth         *auth.Config
 
-	Debug          bool `env:"DEBUG" envDefault:"false"`
-	NFTTotalSupply int  `env:"NFT_TOTAL_SUPPLY" envDefault:"1000"`
+	Debug bool `env:"DEBUG" envDefault:"false"`
 }
 
 func GetConfig() (*Config, error) {
 	var err error
 
 	cfg := &Config{
-		Auth:         &auth.Config{},
+		// Auth:         &auth.Config{},
 		Bunt:         &bunt.Config{},
 		Bucket:       &bucket.Config{},
 		Etherscan:    &eth.Config{},
 		IPFS:         &ipfs.Config{},
 		Descriptions: &descriptions.Config{},
+		Server:       &app.Config{},
+		Nft:          &nft.Config{},
+		Auth:         &auth.Config{},
 	}
 
 	err = env.Parse(cfg)

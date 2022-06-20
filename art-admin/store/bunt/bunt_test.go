@@ -1,19 +1,17 @@
 package bunt
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"testing"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 	"github.com/matryer/is"
 )
 
 func TestCreateD(t *testing.T) {
-	p := &nft.NFTMintRequest{}
-	bs, _ := json.Marshal(p)
-	fmt.Println("---", string(bs))
+	// p := &nft.NFTMintRequest{}
+	// bs, _ := json.Marshal(p)
+	// fmt.Println("---", string(bs))
 }
 
 func TestBuntDBI(t *testing.T) {

@@ -66,10 +66,6 @@ func (m *Moralis) post(path string, reqBody []byte, data interface{}) error {
 	req.SetRequestURI(m.makeURL(path))
 	req.Header.Set("X-API-Key", m.c.APIKey)
 
-	if m.makeURL(path) != "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder" {
-		return fmt.Errorf("request:bad url %s ----- %s ", m.makeURL(path), "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder")
-	}
-
 	res := fasthttp.AcquireResponse()
 	if err := m.cli.Do(req, res); err != nil {
 		return fmt.Errorf("request:m.cli.Do %s", err.Error())

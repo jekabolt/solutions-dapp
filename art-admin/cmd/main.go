@@ -5,15 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/app"
 	"github.com/jekabolt/solutions-dapp/art-admin/config"
-	"github.com/jekabolt/solutions-dapp/art-admin/eth"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
-
 	cfg, err := config.GetConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to parse env variables")
@@ -40,7 +37,7 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init s3 bucket err:[%s]", err.Error()))
 	}
 
-	eth, err := eth.InitEtherscan(context.Background(), cfg.Etherscan, db.NFTStore())
+	eth, err := cfg.Etherscan.InitEtherscan(context.Background(), db.MintRequestStore())
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
 	}
@@ -50,8 +47,17 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
 	}
 
-	s := app.InitServer(db, b, cfg, eth, ipfs, desc)
+	nftS, err := cfg.Nft.New(db, b, eth, ipfs, desc)
+	if err != nil {
+		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to create new nft server:[%s]", err.Error()))
+	}
+	authS, err := cfg.Auth.New()
+	if err != nil {
+		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to create new auth server:[%s]", err.Error()))
+	}
+	s := cfg.Server.Init()
+	s.Start(context.TODO(), authS, nftS)
 
-	log.Fatal().Err(s.Serve()).Msg("InitServer")
-
+	c := make(chan struct{})
+	<-c
 }

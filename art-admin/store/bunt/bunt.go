@@ -13,12 +13,17 @@ const (
 	firstId = 1000001
 )
 
+type Store interface {
+	MintRequestStore
+	MetadataStore
+}
+
 type Config struct {
 	DBPath string `env:"BUNT_DB_PATH" envDefault:"/tmp/storage.db"`
 }
 
 type dbi interface {
-	GetNextKey(index string) (int, error)
+	GetNextKey(index string) (int64, error)
 	KeyUsed(index string, key int) bool
 	SetNext(index, value string) error
 	Set(index, key, value string) error
@@ -54,7 +59,7 @@ func (c *Config) InitDB() (*BuntDB, error) {
 	return &bunt, nil
 }
 
-func (bunt *BuntDB) GetNextKey(index string) (int, error) {
+func (bunt *BuntDB) GetNextKey(index string) (int64, error) {
 	last := firstId
 
 	err := bunt.db.View(func(tx *buntdb.Tx) error {
@@ -73,7 +78,7 @@ func (bunt *BuntDB) GetNextKey(index string) (int, error) {
 	if err != nil {
 		return 1, fmt.Errorf("GetNextKey:db.db.View:err [%v]", err.Error())
 	}
-	return last, nil
+	return int64(last), nil
 }
 
 func (bunt *BuntDB) KeyUsed(index string, key int) bool {

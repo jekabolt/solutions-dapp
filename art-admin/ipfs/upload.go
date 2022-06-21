@@ -15,6 +15,10 @@ const (
 	uploadFolderPath = "/api/v2/ipfs/uploadFolder"
 )
 
+type IPFS interface {
+	BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]bucket.Metadata, error)
+}
+
 type UploadFolder struct {
 	Path    string `json:"path"`
 	Content string `json:"content,omitempty"`

@@ -42,12 +42,15 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
 	}
 
+	// TODO:
+	eth.StartTxStatusUpdate(context.TODO())
+
 	ipfs, err := cfg.IPFS.Init(desc)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
 	}
 
-	nftS, err := cfg.Nft.New(db, b, eth, ipfs, desc)
+	nftS, err := cfg.Nft.New(db, b, ipfs, desc)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to create new nft server:[%s]", err.Error()))
 	}

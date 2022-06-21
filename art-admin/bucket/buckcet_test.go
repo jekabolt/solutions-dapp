@@ -12,14 +12,19 @@ import (
 	"github.com/matryer/is"
 )
 
-const S3AccessKey = "YEYEN6TU2NCOPNPICGY3"
-const S3SecretAccessKey = "lyvzQ6f20TxiGE2hadU3Og7Er+f8j0GfUAB3GnZkreE"
-const S3Endpoint = "fra1.digitaloceanspaces.com"
-const bucketName = "grbpwr"
-const bucketLocation = "fra-1"
-const imageStorePrefix = "grbpwr-com"
+const (
+	S3AccessKey       = "YEYEN6TU2NCOPNPICGY3"
+	S3SecretAccessKey = "lyvzQ6f20TxiGE2hadU3Og7Er+f8j0GfUAB3GnZkreE"
+	S3Endpoint        = "fra1.digitaloceanspaces.com"
+	bucketName        = "grbpwr"
+	bucketLocation    = "fra-1"
+	imageStorePrefix  = "grbpwr-com"
 
-const jpgFilePath = "files/test.jpg"
+	baseFolder          = "solutions"
+	metadataStorePrefix = "metadata"
+
+	jpgFilePath = "files/test.jpg"
+)
 
 func skipCI(t *testing.T) {
 	if os.Getenv("CI") != "" {
@@ -27,7 +32,7 @@ func skipCI(t *testing.T) {
 	}
 }
 
-func BucketFromConst() (*Bucket, error) {
+func BucketFromConst() (FileStore, error) {
 	c := &Config{
 		S3AccessKey:       S3AccessKey,
 		S3SecretAccessKey: S3SecretAccessKey,
@@ -35,6 +40,9 @@ func BucketFromConst() (*Bucket, error) {
 		S3BucketName:      bucketName,
 		S3BucketLocation:  bucketLocation,
 		ImageStorePrefix:  imageStorePrefix,
+
+		BaseFolder:          "solutions",
+		MetadataStorePrefix: "metadata",
 	}
 	return c.Init()
 }
@@ -66,13 +74,6 @@ func TestUploadContentImage(t *testing.T) {
 	b, err := BucketFromConst()
 	is.NoErr(err)
 
-	spaces, err := b.ListBuckets()
-	is.NoErr(err)
-
-	for _, space := range spaces {
-		fmt.Println(space.Name)
-	}
-
 	jpg, err := imageToB64ByPath(jpgFilePath)
 	is.NoErr(err)
 
@@ -88,15 +89,6 @@ func TestUploadMetadata(t *testing.T) {
 
 	b, err := BucketFromConst()
 	is.NoErr(err)
-
-	spaces, err := b.ListBuckets()
-	is.NoErr(err)
-
-	for _, space := range spaces {
-		fmt.Println(space.Name)
-	}
-	b.BaseFolder = "solutions"
-	b.MetadataStorePrefix = "metadata"
 
 	url, err := b.UploadMetadata(map[int]Metadata{
 		1: {

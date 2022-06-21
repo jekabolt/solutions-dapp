@@ -2,15 +2,14 @@ package ipfs
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
+	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
-	"github.com/jekabolt/solutions-dapp/art-admin/store/nft"
 	"github.com/matryer/is"
 )
 
@@ -37,7 +36,7 @@ const (
 	MORALIS_BASE_URL = "https://deep-index.moralis.io/api/v2/"
 )
 
-func InitMoralisFromConst() (*Moralis, error) {
+func InitMoralisFromConst() (IPFS, error) {
 	cfgMoralis := &Config{
 		APIKey:  MORALIS_API_KEY,
 		Timeout: MORALIS_TIMEOUT,
@@ -54,16 +53,16 @@ func InitMoralisFromConst() (*Moralis, error) {
 	return cfgMoralis.Init(desc)
 }
 
-func getTestMrs() []nft.NFTMintRequest {
-	return []nft.NFTMintRequest{
+func getTestMrs() []*pb_nft.NFTMintRequestWithStatus {
+	return []*pb_nft.NFTMintRequestWithStatus{
 		{
-			NFTOffchain: testImage,
+			NftOffchainUrl: testImage,
 		},
 		{
-			NFTOffchain: testImage,
+			NftOffchainUrl: testImage,
 		},
 		{
-			NFTOffchain: testImage,
+			NftOffchainUrl: testImage,
 		},
 	}
 }
@@ -90,9 +89,6 @@ type desc struct {
 	MintNumber  int      `json:"mintNumber"`
 }
 
-func TestDD(t *testing.T) {
-	fmt.Print(rand.Intn(3), ",")
-}
 func TestGenDescriptions(t *testing.T) {
 	skipCI(t)
 	is := is.New(t)

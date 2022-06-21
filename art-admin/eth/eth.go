@@ -21,6 +21,11 @@ type ETHCli interface {
 	ERC721Transfers(contractAddress, address *string, startBlock *int, endBlock *int, page int, offset int, desc bool) (txs []etherscan.ERC721Transfer, err error)
 }
 
+type Watcher interface {
+	TxStatusUpdate() error
+	StartTxStatusUpdate(ctx context.Context)
+}
+
 type Etherscan struct {
 	mintRequestStore bunt.MintRequestStore
 	*Config
@@ -33,7 +38,7 @@ const (
 	maxCountTTL = 10
 )
 
-func (c *Config) InitEtherscan(ctx context.Context, mintRequestStore bunt.MintRequestStore) (*Etherscan, error) {
+func (c *Config) InitEtherscan(ctx context.Context, mintRequestStore bunt.MintRequestStore) (Watcher, error) {
 	tf, err := time.ParseDuration(c.RefreshTime)
 	if err != nil && c.RefreshTime != "" {
 		return nil, fmt.Errorf("InitEtherscan:time.ParseDuration [%s]", err.Error())

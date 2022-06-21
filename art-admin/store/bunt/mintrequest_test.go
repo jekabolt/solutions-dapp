@@ -76,7 +76,7 @@ func TestNFT(t *testing.T) {
 	is.Equal(nftMRs[0].Status, upd.Status)
 	is.Equal(nftMRs[0].NftOffchainUrl, url)
 
-	_, err = ms.DeleteNFOffchainUrl(fmt.Sprint(nftMRs[0].NftMintRequest.GetId()))
+	_, err = ms.DeleteNFTOffchainUrl(fmt.Sprint(nftMRs[0].NftMintRequest.GetId()))
 	is.NoErr(err)
 
 	nftMRs, err = ms.GetAllNFTMintRequests()

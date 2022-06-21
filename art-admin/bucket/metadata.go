@@ -10,6 +10,10 @@ import (
 	"github.com/minio/minio-go"
 )
 
+type Meta interface {
+	UploadMetadata(metadata map[int]Metadata) (string, error)
+}
+
 type Metadata struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -32,14 +36,14 @@ func (b *Bucket) UploadMetadata(metadata map[int]Metadata) (string, error) {
 	}
 
 	jsonReader := bytes.NewReader(metaB)
-	url, err := b.UploadJsonToBucket(jsonReader, contentTypeJSON)
+	url, err := b.uploadJsonToBucket(jsonReader, contentTypeJSON)
 	if err != nil {
-		return "", fmt.Errorf("Upload:UploadImageToBucket: [%v]", err.Error())
+		return "", fmt.Errorf("Upload:UploadMetadata: [%v]", err.Error())
 	}
 	return url, nil
 }
 
-func (b *Bucket) UploadJsonToBucket(json io.Reader, contentType string) (string, error) {
+func (b *Bucket) uploadJsonToBucket(json io.Reader, contentType string) (string, error) {
 
 	fp := b.getMetadataFullPath()
 

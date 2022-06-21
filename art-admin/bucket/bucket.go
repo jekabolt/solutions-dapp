@@ -16,6 +16,11 @@ type Config struct {
 	IPFSStoragePath     string `env:"IPFS_STORAGE_PATH" envDefault:""`
 }
 
+type FileStore interface {
+	Image
+	Meta
+}
+
 type Bucket struct {
 	*minio.Client
 	*Config
@@ -26,7 +31,7 @@ type B64Image struct {
 	ContentType string
 }
 
-func (c *Config) Init() (*Bucket, error) {
+func (c *Config) Init() (FileStore, error) {
 	cli, err := minio.New(c.S3Endpoint, c.S3AccessKey, c.S3SecretAccessKey, true)
 	return &Bucket{
 		Client: cli,

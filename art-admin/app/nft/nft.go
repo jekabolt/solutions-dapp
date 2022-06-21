@@ -9,7 +9,6 @@ import (
 
 	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/eth"
 	"github.com/jekabolt/solutions-dapp/art-admin/ipfs"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
@@ -20,9 +19,8 @@ import (
 type Server struct {
 	nft    *pb_nft.UnimplementedNftServer
 	db     bunt.Store
-	bucket *bucket.Bucket
-	eth    *eth.Etherscan
-	ipfs   *ipfs.Moralis
+	bucket bucket.FileStore
+	ipfs   ipfs.IPFS
 	descs  *descriptions.Store
 	c      *Config
 }
@@ -30,16 +28,16 @@ type Config struct {
 	NFTTotalSupply int `env:"NFT_TOTAL_SUPPLY" envDefault:"1000"`
 }
 
-func (c *Config) New(db bunt.Store,
-	bucket *bucket.Bucket,
-	eth *eth.Etherscan,
-	ipfs *ipfs.Moralis,
-	descs *descriptions.Store) (*Server, error) {
+func (c *Config) New(
+	db bunt.Store,
+	bucket bucket.FileStore,
+	ipfs ipfs.IPFS,
+	descs *descriptions.Store,
+) (*Server, error) {
 	s := &Server{
 		c:      c,
 		db:     db,
 		bucket: bucket,
-		eth:    eth,
 		ipfs:   ipfs,
 		descs:  descs,
 	}
@@ -47,7 +45,7 @@ func (c *Config) New(db bunt.Store,
 	return s, nil
 }
 
-func (s *Server) upsertNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRequestToUpload) (*pb_nft.NFTMintRequestWithStatus, error) {
+func (s *Server) UpsertNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRequestToUpload) (*pb_nft.NFTMintRequestWithStatus, error) {
 
 	sampleImages := []*pb_nft.ImageList{}
 	for i, si := range req.SampleImages {
@@ -110,8 +108,8 @@ func (s *Server) UpdateNFTOffchainUrl(ctx context.Context, req *pb_nft.UpdateNFT
 	return nftMR, err
 }
 
-func (s *Server) DeleteNFOffchainUrl(ctx context.Context, req *pb_nft.DeleteId) (*pb_nft.NFTMintRequestWithStatus, error) {
-	nftMR, err := s.db.DeleteNFOffchainUrl(req.Id)
+func (s *Server) DeleteNFTOffchainUrl(ctx context.Context, req *pb_nft.DeleteId) (*pb_nft.NFTMintRequestWithStatus, error) {
+	nftMR, err := s.db.DeleteNFTOffchainUrl(req.Id)
 	if err != nil {
 		log.Error().Err(err).Msgf("DeleteNFOffchainUrl:s.db.DeleteNFTMintRequestById [%v]", err.Error())
 		return nil, fmt.Errorf("cannot update nft offchain url request: %s", err.Error())

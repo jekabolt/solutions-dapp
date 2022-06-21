@@ -25,7 +25,7 @@ type Moralis struct {
 	desc    *descriptions.Store
 }
 
-func (c *Config) Init(desc *descriptions.Store) (*Moralis, error) {
+func (c *Config) Init(desc *descriptions.Store) (IPFS, error) {
 	tOut, err := time.ParseDuration(c.Timeout)
 	if err != nil && c.Timeout != "" {
 		return nil, fmt.Errorf("InitMoralis:time.ParseDuration [%s]", err.Error())

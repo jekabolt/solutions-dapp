@@ -20,7 +20,7 @@ type MintRequestStore interface {
 
 	GetAllToUpload() ([]*pb_nft.NFTMintRequestWithStatus, error)
 	UpdateNFTOffchainUrl(id string, offchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error)
-	DeleteNFOffchainUrl(id string) (*pb_nft.NFTMintRequestWithStatus, error)
+	DeleteNFTOffchainUrl(id string) (*pb_nft.NFTMintRequestWithStatus, error)
 }
 
 type NFTStatus string
@@ -159,7 +159,7 @@ func (bunt *BuntDB) UpdateNFTOffchainUrl(id string, offchainUrl string) (*pb_nft
 	return mr, err
 }
 
-func (bunt *BuntDB) DeleteNFOffchainUrl(id string) (*pb_nft.NFTMintRequestWithStatus, error) {
+func (bunt *BuntDB) DeleteNFTOffchainUrl(id string) (*pb_nft.NFTMintRequestWithStatus, error) {
 	// not exist
 	mr, err := bunt.GetNFTMintRequestById(id)
 	if err != nil {

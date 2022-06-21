@@ -19,27 +19,12 @@ type PathExtra struct {
 	MintSequence string
 }
 
-// // type Image struct {
-// // 	RawB64Image *string `json:"raw,omitempty"`
-// // 	FullSize    string  `json:"fullSize"`
-// // 	Compressed  string  `json:"compressed"`
-// // }
-
-// func (i *Image) Validate() error {
-// 	if i == nil {
-// 		return fmt.Errorf("missing Image")
-// 	}
-// 	if len(i.FullSize) == 0 {
-// 		return fmt.Errorf("missing Image FullSize")
-// 	}
-// 	if len(i.Compressed) == 0 {
-// 		return fmt.Errorf("missing Image Compressed")
-// 	}
-// 	return nil
-// }
+type Image interface {
+	UploadContentImage(rawB64Image string, pe *PathExtra) (*pb_nft.ImageList, error)
+}
 
 // upload image to bucket return url
-func (b *Bucket) UploadImageToBucket(img io.Reader, contentType string, prefix string, pe *PathExtra) (string, error) {
+func (b *Bucket) uploadImageToBucket(img io.Reader, contentType string, prefix string, pe *PathExtra) (string, error) {
 
 	fp := b.getImageFullPath(fileExtensionFromContentType(contentType), prefix, pe)
 
@@ -58,10 +43,10 @@ func (b *Bucket) UploadImageToBucket(img io.Reader, contentType string, prefix s
 	return b.GetCDNURL(fp), nil
 }
 
-func GetB64ImageFromString(rawB64Image string) (*B64Image, error) {
+func getB64ImageFromString(rawB64Image string) (*B64Image, error) {
 	ss := strings.Split(rawB64Image, ";base64,")
 	if len(ss) != 2 {
-		return nil, fmt.Errorf("GetB64ImageFromString:bad base64 image")
+		return nil, fmt.Errorf("getB64ImageFromString:bad base64 image")
 	}
 	return &B64Image{
 		Content:     []byte(ss[1]),
@@ -70,36 +55,36 @@ func GetB64ImageFromString(rawB64Image string) (*B64Image, error) {
 
 }
 
-func (b64Img *B64Image) B64ToImage() (image.Image, error) {
+func (b64Img *B64Image) b64ToImage() (image.Image, error) {
 	var img image.Image
 	var err error
 	switch b64Img.ContentType {
 	case "data:image/jpeg":
 		img, err = jpgFromB64(b64Img.Content)
 		if err != nil {
-			return nil, fmt.Errorf("B64ToImage:JPGFromB64: [%v]", err.Error())
+			return nil, fmt.Errorf("b64ToImage:JPGFromB64: [%v]", err.Error())
 		}
 	case "data:image/png":
 		img, err = pngFromB64(b64Img.Content)
 		if err != nil {
-			return nil, fmt.Errorf("B64ToImage:PNGFromB64: [%v]", err.Error())
+			return nil, fmt.Errorf("b64ToImage:PNGFromB64: [%v]", err.Error())
 		}
 	default:
-		return nil, fmt.Errorf("B64ToImage:PNGFromB64: File type is not supported [%s]", b64Img.ContentType)
+		return nil, fmt.Errorf("b64ToImage:PNGFromB64: File type is not supported [%s]", b64Img.ContentType)
 	}
 	return img, err
 }
 
 func imageFromString(rawB64Image string) (image.Image, error) {
-	b64Img, err := GetB64ImageFromString(rawB64Image)
+	b64Img, err := getB64ImageFromString(rawB64Image)
 	if err != nil {
 		return nil, err
 	}
-	return b64Img.B64ToImage()
+	return b64Img.b64ToImage()
 }
 
 // upload single image with defined quality and	prefix to bucket
-func (b *Bucket) UploadSingleImage(img image.Image, quality int, prefix string, pe *PathExtra) (string, error) {
+func (b *Bucket) uploadSingleImage(img image.Image, quality int, prefix string, pe *PathExtra) (string, error) {
 	var buf bytes.Buffer
 	imgWriter := bufio.NewWriter(&buf)
 
@@ -109,24 +94,24 @@ func (b *Bucket) UploadSingleImage(img image.Image, quality int, prefix string, 
 	}
 
 	imgReader := bufio.NewReader(&buf)
-	url, err := b.UploadImageToBucket(imgReader, contentTypeJSON, prefix, pe)
+	url, err := b.uploadImageToBucket(imgReader, contentTypeJSON, prefix, pe)
 	if err != nil {
-		return "", fmt.Errorf("Upload:UploadImageToBucket: [%v]", err.Error())
+		return "", fmt.Errorf("Upload:uploadImageToBucket: [%v]", err.Error())
 	}
 	return url, nil
 }
 
 // compose internal image object (with FullSize & Compressed formats) and upload it to S3
-func (b *Bucket) UploadImageObj(img image.Image, pe *PathExtra) (*pb_nft.ImageList, error) {
+func (b *Bucket) uploadImageObj(img image.Image, pe *PathExtra) (*pb_nft.ImageList, error) {
 	imgObj := &pb_nft.ImageList{}
 	var err error
 
-	imgObj.FullSize, err = b.UploadSingleImage(img, 100, "og", pe)
+	imgObj.FullSize, err = b.uploadSingleImage(img, 100, "og", pe)
 	if err != nil {
 		return nil, fmt.Errorf("UploadProductImage:Upload:FullSize [%v]", err.Error())
 	}
 
-	imgObj.Compressed, err = b.UploadSingleImage(img, 60, "compressed", pe)
+	imgObj.Compressed, err = b.uploadSingleImage(img, 60, "compressed", pe)
 	if err != nil {
 		return nil, fmt.Errorf("UploadProductImage:Upload:Compressed [%v]", err.Error())
 	}
@@ -139,5 +124,5 @@ func (b *Bucket) UploadContentImage(rawB64Image string, pe *PathExtra) (*pb_nft.
 	if err != nil {
 		return nil, err
 	}
-	return b.UploadImageObj(img, pe)
+	return b.uploadImageObj(img, pe)
 }

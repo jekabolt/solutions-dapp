@@ -16,6 +16,6 @@ FROM alpine:latest AS production
 WORKDIR /root/
 RUN apk --no-cache add ca-certificates
 
-COPY --from=development /art-admin/bin/ art-admin
+COPY --from=development /art-admin/bin/ .
 RUN ["chmod", "+x", "./art-admin"]
 ENTRYPOINT ["./art-admin"]

@@ -1,5 +1,4 @@
-REGISTRY=grbpwr
-IMAGE_NAME=art-admin
+REGISTRY=jekabolt
 VERSION=master
 
 build: statics
@@ -65,11 +64,11 @@ endif
 
 IMAGE_VERSION 				:= $(shell printf '%s-%s-%s' $(GIT_TAG) $(VERSION_CURRENT_DATE) $(VERSION_CURRENT_BRANCH) )
 
-
 # configuration for binary and image
-IMAGE_NAME					:= bot-detection-tool
+IMAGE_NAME					:= art-admin
 IMAGE_DOCKERFILE			:= $(DOCKERFILE_PATH)/Dockerfile
 DOCKER_IMAGE				:= $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_VERSION)
+# DOCKER_IMAGE				:= $(IMAGE_NAME):$(IMAGE_VERSION)
 
 image-build: ## build the docker image
 	docker build \

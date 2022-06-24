@@ -3,7 +3,7 @@ IMAGE_NAME=art-admin
 VERSION=master
 
 build: statics
-	go build -o ./bin/$(IMAGE_NAME) ./cmd/
+	go build -a $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o ./bin/$(IMAGE_NAME) ./cmd/	
 
 run: build
 	./bin/$(IMAGE_NAME)
@@ -16,12 +16,12 @@ coverage:
 local: build
 	source .env && ./bin/$(IMAGE_NAME)
 
-image:
-	docker build -t $(REGISTRY)/${IMAGE_NAME}:$(VERSION) .
+# image:
+# 	docker build -t $(REGISTRY)/${IMAGE_NAME}:$(VERSION) .
 
-image-run:
-	docker run --publish 8081:8081 --env-file .env \
-	--mount src=/root/bunt,target=/root/bunt,type=bind \$(REGISTRY)/${IMAGE_NAME}:$(VERSION)
+# image-run:
+# 	docker run --publish 8081:8081 --env-file .env \
+# 	--mount src=/root/bunt,target=/root/bunt,type=bind \$(REGISTRY)/${IMAGE_NAME}:$(VERSION)
 
 generate:
 	buf generate --path ./proto/nft/nft.proto \
@@ -47,3 +47,31 @@ install:
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger@latest
 	go install github.com/go-bindata/go-bindata/go-bindata@latest
 	go install golang.org/x/text/cmd/gotext@latest
+
+
+# configuration for image names
+BUILD_TYPE					:= dev # for the autobuilds will be "release"
+
+VERSION_CURRENT_BRANCH 		:= $(shell git rev-parse --abbrev-ref HEAD)
+VERSION_CURRENT_DATE 		:= $(shell date +'%Y.%m.%d')
+VERSION_GIT_COMMIT 			:= $(shell git rev-parse --short HEAD)
+VERSION_BUILD_NUMBER 		:= $(shell git rev-list --count HEAD) 
+VERSION_TAG_LONG 			:= v_._._-$(VERSION_BUILD_NUMBER:-=)-$(VERSION_GIT_COMMIT)
+
+GIT_TAG						:= $(shell git describe 2>/dev/null)
+ifeq ($(GIT_TAG),)
+	GIT_TAG					:= $(VERSION_TAG_LONG)
+endif
+
+IMAGE_VERSION 				:= $(shell printf '%s-%s-%s' $(GIT_TAG) $(VERSION_CURRENT_DATE) $(VERSION_CURRENT_BRANCH) )
+
+
+# configuration for binary and image
+IMAGE_NAME					:= bot-detection-tool
+IMAGE_DOCKERFILE			:= $(DOCKERFILE_PATH)/Dockerfile
+DOCKER_IMAGE				:= $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_VERSION)
+
+image-build: ## build the docker image
+	docker build \
+		--progress=plain \
+		-t $(DOCKER_IMAGE) .

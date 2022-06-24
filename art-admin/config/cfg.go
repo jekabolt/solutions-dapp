@@ -15,9 +15,6 @@ import (
 )
 
 type Config struct {
-	Port  string   `env:"PORT" envDefault:"8081"`
-	Hosts []string `env:"HOSTS" envSeparator:"|"`
-
 	Bunt         *bunt.Config
 	Bucket       *bucket.Config
 	Etherscan    *eth.Config

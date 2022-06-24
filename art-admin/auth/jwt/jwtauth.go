@@ -14,10 +14,9 @@ func VerifyToken(jwtAuth *jwtauth.JWTAuth, token string) (string, error) {
 	return t.Subject(), nil
 }
 
-func NewToken(jwtAuth *jwtauth.JWTAuth, ttl int) (string, error) {
+func NewToken(jwtAuth *jwtauth.JWTAuth, ttl time.Duration) (string, error) {
 	_, ts, err := jwtAuth.Encode(map[string]interface{}{
-		"exp": time.Now().Add((time.Minute) *
-			time.Duration(ttl)).Unix(),
+		"exp": time.Now().Add(ttl).Unix(),
 	})
 	if err != nil {
 		return ts, err

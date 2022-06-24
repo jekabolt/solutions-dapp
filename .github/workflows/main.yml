@@ -1,0 +1,60 @@
+name: Build and run docker image on remote
+on:
+  create:
+    tags:
+      - v*
+
+jobs:
+  push:
+    name: Push Docker image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: |
+            jekabolt/grbpwr-manager
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: push
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.ID_RSA }}
+          script: |
+            docker pull jekabolt/grbpwr-manager:${{ env.RELEASE_VERSION }}
+            docker stop grbpwr-manager 
+            docker rm grbpwr-manager
+            docker run --name=grbpwr-manager -d \
+              --restart=unless-stopped  \
+              --publish 8001:8001 \
+              --env-file /root/env/.env \
+              --mount src=/root/bunt,target=/root/bunt,type=bind \
+              jekabolt/grbpwr-manager:${{ env.RELEASE_VERSION }}

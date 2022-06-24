@@ -26,7 +26,7 @@ func TestAuth(t *testing.T) {
 		AdminPassword:            AdminPassword,
 		PasswordHasherSaltSize:   16,
 		PasswordHasherIterations: 100000,
-		JWTTTL:                   60,
+		JWTTTL:                   "60m",
 	}
 	authSrv, err := c.New()
 	is.NoErr(err)

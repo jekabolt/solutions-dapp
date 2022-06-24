@@ -11,9 +11,9 @@ type Config struct {
 	S3BucketName        string `env:"S3_BUCKET_NAME" envDefault:"grbpwr"`
 	S3BucketLocation    string `env:"S3_BUCKET_LOCATION" envDefault:"fra-1"`
 	BaseFolder          string `env:"S3_BASE_FOLDER" envDefault:"solutions"`
-	ImageStorePrefix    string `env:"IMAGE_STORE_PREFIX" envDefault:"grbpwr-com"`
-	MetadataStorePrefix string `env:"METADATA_STORE_PREFIX" envDefault:"metadata"`
-	IPFSStoragePath     string `env:"IPFS_STORAGE_PATH" envDefault:""`
+	ImageStorePrefix    string `env:"S3_IMAGE_STORE_PREFIX" envDefault:"grbpwr-com"`
+	MetadataStorePrefix string `env:"S3_METADATA_STORE_PREFIX" envDefault:"metadata"`
+	IPFSStoragePath     string `env:"S3_IPFS_STORAGE_PATH" envDefault:""`
 }
 
 type FileStore interface {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/jwtauth/v5"
 
@@ -18,6 +19,7 @@ type Server struct {
 	pb_auth.UnimplementedAuthServer
 	pwhash            *pwhash.PasswordHasher
 	jwtAuth           *jwtauth.JWTAuth
+	jwtTTL            time.Duration
 	c                 *Config
 	AdminPasswordHash string
 }
@@ -27,11 +29,15 @@ type Config struct {
 	AdminPassword            string `env:"AUTH_ADMIN_PASSWORD" envDefault:"hehe"`
 	PasswordHasherSaltSize   int    `env:"AUTH_PASSWORD_HASHER_SALT" envDefault:"16"`
 	PasswordHasherIterations int    `env:"AUTH_PASSWORD_HASHER_ITERATIONS" envDefault:"100000"`
-	JWTTTL                   int    `env:"AUTH_JWT_TTL" envDefault:"60"` // in minutes
+	JWTTTL                   string `env:"AUTH_JWT_TTL" envDefault:"60m"` // in minutes
 }
 
 // New creates a new auth server.
 func (c *Config) New() (*Server, error) {
+	ttl, err := time.ParseDuration(c.JWTTTL)
+	if err != nil && c.JWTTTL != "" {
+		return nil, fmt.Errorf("bad duration for ttl [%s] - %v", c.JWTTTL, err.Error())
+	}
 	phasher, err := pwhash.New(c.PasswordHasherSaltSize, c.PasswordHasherIterations)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create password hasher: %v", err)
@@ -43,6 +49,7 @@ func (c *Config) New() (*Server, error) {
 	s := &Server{
 		pwhash:            phasher,
 		jwtAuth:           jwtauth.New("HS256", []byte(c.JWTSecret), nil),
+		jwtTTL:            ttl,
 		c:                 c,
 		AdminPasswordHash: adminPwHash,
 	}
@@ -56,7 +63,7 @@ func (s *Server) Login(ctx context.Context, req *pb_auth.LoginRequest) (*pb_auth
 		return nil, fmt.Errorf("cannot validate password: %s", err.Error())
 	}
 
-	token, err := jwt.NewToken(s.jwtAuth, s.c.JWTTTL)
+	token, err := jwt.NewToken(s.jwtAuth, s.jwtTTL)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token: %s", err.Error())
 	}

@@ -11,10 +11,10 @@ import (
 )
 
 type Config struct {
-	APIKey          string `env:"ETHERSCAN_API_KEY"`
-	Network         string `env:"ETHERSCAN_NETWORK" envDefault:"api-rinkeby"`
-	ContractAddress string `env:"CONTRACT_ADDRESS"`
-	RefreshTime     string `env:"REFRESH_TIME" envDefault:"10m"`
+	APIKey          string `env:"ETH_ETHERSCAN_API_KEY"`
+	Network         string `env:"ETH_ETHERSCAN_NETWORK" envDefault:"api-rinkeby"`
+	ContractAddress string `env:"ETH_CONTRACT_ADDRESS"`
+	RefreshTime     string `env:"ETH_REFRESH_TIME" envDefault:"10m"`
 }
 
 type ETHCli interface {

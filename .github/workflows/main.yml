@@ -49,12 +49,12 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.ID_RSA }}
           script: |
-            docker pull jekabolt/grbpwr-manager:${{ env.RELEASE_VERSION }}
-            docker stop grbpwr-manager 
-            docker rm grbpwr-manager
-            docker run --name=grbpwr-manager -d \
+            docker pull jekabolt/solutions-dapp:${{ env.RELEASE_VERSION }}
+            docker stop solutions-dapp 
+            docker rm solutions-dapp
+            docker run --name=solutions-dapp -d \
               --restart=unless-stopped  \
               --publish 8001:8001 \
               --env-file /root/env/.env \
               --mount src=/root/bunt,target=/root/bunt,type=bind \
-              jekabolt/grbpwr-manager:${{ env.RELEASE_VERSION }}
+              jekabolt/solutions-dapp:${{ env.RELEASE_VERSION }}

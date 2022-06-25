@@ -28,11 +28,11 @@ type Moralis struct {
 func (c *Config) Init(desc *descriptions.Store) (IPFS, error) {
 	tOut, err := time.ParseDuration(c.Timeout)
 	if err != nil && c.Timeout != "" {
-		return nil, fmt.Errorf("InitMoralis:time.ParseDuration [%s]", err.Error())
+		return nil, fmt.Errorf("init ipfs:time.ParseDuration [%s]", err.Error())
 	}
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("initSUTClient:url.Parse %s", err)
+		return nil, fmt.Errorf("init ipfs :url.Parse %s", err)
 	}
 	hc := initHTTPClient(tOut)
 

@@ -74,3 +74,15 @@ image-build: ## build the docker image
 	docker build \
 		--progress=plain \
 		-t $(DOCKER_IMAGE) .
+
+
+image-run:
+	docker stop solutions-dapp \
+    docker rm solutions-dapp \
+    docker run \
+			  --name=solutions-dapp -d \
+              --restart=unless-stopped  \
+              --publish 8001:8001 \
+              --env-file .env \
+              --mount src=/root/bunt,target=/root/bunt,type=bind \
+              $(DOCKER_IMAGE)

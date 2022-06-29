@@ -48,6 +48,102 @@
         ]
       }
     },
+    "/api/nft/burn": {
+      "get": {
+        "operationId": "GetAllBurned",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftBurnList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      },
+      "post": {
+        "operationId": "Burn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftBurnRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/burn/error": {
+      "get": {
+        "operationId": "GetAllBurnedError",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftBurnList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/burn/pending": {
+      "get": {
+        "operationId": "GetAllBurnedPending",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftBurnList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
     "/api/nft/ipfs": {
       "post": {
         "summary": "TODO: add rpc for getting metadata offchain url",
@@ -195,6 +291,38 @@
         ]
       }
     },
+    "/api/nft/shipping/status": {
+      "post": {
+        "operationId": "UpdateBurnShippingStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftShippingStatusUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
     "/api/nft/{id}": {
       "delete": {
         "operationId": "DeleteNFOffchainUrl",
@@ -227,6 +355,51 @@
     }
   },
   "definitions": {
+    "nftBurnList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftBurnShippingInfo"
+          }
+        }
+      }
+    },
+    "nftBurnRequest": {
+      "type": "object",
+      "properties": {
+        "txid": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "mintSequenceNumber": {
+          "type": "string",
+          "format": "int64"
+        },
+        "shipping": {
+          "$ref": "#/definitions/nftShippingTo"
+        }
+      },
+      "title": "Burn"
+    },
+    "nftBurnShippingInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "burn": {
+          "$ref": "#/definitions/nftBurnRequest"
+        },
+        "status": {
+          "$ref": "#/definitions/nftShippingStatus"
+        }
+      }
+    },
     "nftDeleteStatus": {
       "type": "object",
       "properties": {
@@ -327,6 +500,58 @@
           "type": "string"
         },
         "nftOffchainUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "nftShippingStatus": {
+      "type": "object",
+      "properties": {
+        "trackNumber": {
+          "type": "string"
+        },
+        "timeSent": {
+          "type": "string",
+          "format": "int64"
+        },
+        "error": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "nftShippingStatusUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/nftShippingStatus"
+        }
+      }
+    },
+    "nftShippingTo": {
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "zipCode": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "email": {
           "type": "string"
         }
       }

@@ -48,6 +48,38 @@ service Nft {
     };
   }
 
+  rpc Burn (BurnRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/nft/burn"
+      body : "*"
+    };
+  }
+
+  rpc GetAllBurned (google.protobuf.Empty) returns (BurnList) {
+    option (google.api.http) = {
+      get : "/api/nft/burn"
+    };
+  }
+
+  rpc GetAllBurnedPending (google.protobuf.Empty) returns (BurnList) {
+    option (google.api.http) = {
+      get : "/api/nft/burn/pending"
+    };
+  }
+
+  rpc GetAllBurnedError (google.protobuf.Empty) returns (BurnList) {
+    option (google.api.http) = {
+      get : "/api/nft/burn/error"
+    };
+  }
+
+  rpc UpdateBurnShippingStatus (ShippingStatusUpdateRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/nft/shipping/status"
+      body : "*"
+    };
+  }
+
   // TODO: add rpc for getting metadata offchain url
   rpc UploadIPFSMetadata (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -55,6 +87,7 @@ service Nft {
       body : "*"
     };
   }
+  
 
 }
 
@@ -113,3 +146,44 @@ message UpdateNFTOffchainUrlRequest {
 message MetadataOffchainUrl {
   string Url = 1;
 }
+
+
+// Burn
+message BurnRequest {
+  string txid = 1; // burn transaction
+  string address = 2; // burner address 
+  int64  mintSequenceNumber = 3;
+  ShippingTo shipping = 4;
+}
+
+message ShippingTo {
+  string fullName = 1; 
+  string address = 2; 
+  string zipCode = 3; 
+  string city = 4; 
+  string country = 5; 
+  string email = 6; 
+}
+
+message ShippingStatus {
+  string trackNumber = 1; 
+  int64 timeSent = 2; // unix time
+  string error = 3;
+  bool success = 4;
+}
+
+message ShippingStatusUpdateRequest {
+  string id = 1;
+  ShippingStatus status = 2;
+}
+
+message BurnShippingInfo {
+  int64 id = 1;
+  BurnRequest burn = 2;
+  ShippingStatus status = 3;
+}
+
+message BurnList {
+  repeated BurnShippingInfo data = 1;
+}
+

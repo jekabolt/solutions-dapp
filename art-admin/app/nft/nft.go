@@ -167,6 +167,57 @@ func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (
 	}, nil
 }
 
+func (s *Server) Burn(ctx context.Context, req *pb_nft.BurnRequest) (*emptypb.Empty, error) {
+	err := s.db.BurnNft(req)
+	if err != nil {
+		log.Error().Err(err).Msgf("Burn:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot submit burn data: %s", err.Error())
+	}
+	return nil, err
+}
+
+func (s *Server) GetAllBurned(ctx context.Context, _ *emptypb.Empty) (*pb_nft.BurnList, error) {
+	all, err := s.db.GetBurned()
+	if err != nil {
+		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
+	}
+	return &pb_nft.BurnList{
+		Data: all,
+	}, nil
+}
+
+func (s *Server) GetAllBurnedPending(ctx context.Context, _ *emptypb.Empty) (*pb_nft.BurnList, error) {
+	pending, err := s.db.GetBurnedPending()
+	if err != nil {
+		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
+	}
+	return &pb_nft.BurnList{
+		Data: pending,
+	}, nil
+}
+
+func (s *Server) GetAllBurnedError(ctx context.Context, _ *emptypb.Empty) (*pb_nft.BurnList, error) {
+	errors, err := s.db.GetBurnedErrors()
+	if err != nil {
+		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
+	}
+	return &pb_nft.BurnList{
+		Data: errors,
+	}, nil
+}
+
+func (s *Server) UpdateBurnShippingStatus(ctx context.Context, req *pb_nft.ShippingStatusUpdateRequest) (*emptypb.Empty, error) {
+	err := s.db.UpdateShippingStatus(req)
+	if err != nil {
+		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot update shipping status: %s", err.Error())
+	}
+	return nil, err
+}
+
 // TODO: get metadata from
 func (s *Server) UploadIPFSMetadata(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, nil

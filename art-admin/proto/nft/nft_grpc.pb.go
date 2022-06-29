@@ -29,6 +29,11 @@ type NftClient interface {
 	UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffchainUrlRequest, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
 	DeleteNFOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
 	UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error)
+	Burn(ctx context.Context, in *BurnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetAllBurned(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error)
+	GetAllBurnedPending(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error)
+	GetAllBurnedError(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error)
+	UpdateBurnShippingStatus(ctx context.Context, in *ShippingStatusUpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// TODO: add rpc for getting metadata offchain url
 	UploadIPFSMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -95,6 +100,51 @@ func (c *nftClient) UploadOffchainMetadata(ctx context.Context, in *emptypb.Empt
 	return out, nil
 }
 
+func (c *nftClient) Burn(ctx context.Context, in *BurnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/nft.Nft/Burn", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nftClient) GetAllBurned(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error) {
+	out := new(BurnList)
+	err := c.cc.Invoke(ctx, "/nft.Nft/GetAllBurned", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nftClient) GetAllBurnedPending(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error) {
+	out := new(BurnList)
+	err := c.cc.Invoke(ctx, "/nft.Nft/GetAllBurnedPending", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nftClient) GetAllBurnedError(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error) {
+	out := new(BurnList)
+	err := c.cc.Invoke(ctx, "/nft.Nft/GetAllBurnedError", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nftClient) UpdateBurnShippingStatus(ctx context.Context, in *ShippingStatusUpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/nft.Nft/UpdateBurnShippingStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *nftClient) UploadIPFSMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/nft.Nft/UploadIPFSMetadata", in, out, opts...)
@@ -114,6 +164,11 @@ type NftServer interface {
 	UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error)
 	DeleteNFOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error)
 	UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error)
+	Burn(context.Context, *BurnRequest) (*emptypb.Empty, error)
+	GetAllBurned(context.Context, *emptypb.Empty) (*BurnList, error)
+	GetAllBurnedPending(context.Context, *emptypb.Empty) (*BurnList, error)
+	GetAllBurnedError(context.Context, *emptypb.Empty) (*BurnList, error)
+	UpdateBurnShippingStatus(context.Context, *ShippingStatusUpdateRequest) (*emptypb.Empty, error)
 	// TODO: add rpc for getting metadata offchain url
 	UploadIPFSMetadata(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 }
@@ -139,6 +194,21 @@ func (UnimplementedNftServer) DeleteNFOffchainUrl(context.Context, *DeleteId) (*
 }
 func (UnimplementedNftServer) UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadOffchainMetadata not implemented")
+}
+func (UnimplementedNftServer) Burn(context.Context, *BurnRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Burn not implemented")
+}
+func (UnimplementedNftServer) GetAllBurned(context.Context, *emptypb.Empty) (*BurnList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllBurned not implemented")
+}
+func (UnimplementedNftServer) GetAllBurnedPending(context.Context, *emptypb.Empty) (*BurnList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllBurnedPending not implemented")
+}
+func (UnimplementedNftServer) GetAllBurnedError(context.Context, *emptypb.Empty) (*BurnList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllBurnedError not implemented")
+}
+func (UnimplementedNftServer) UpdateBurnShippingStatus(context.Context, *ShippingStatusUpdateRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateBurnShippingStatus not implemented")
 }
 func (UnimplementedNftServer) UploadIPFSMetadata(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadIPFSMetadata not implemented")
@@ -263,6 +333,96 @@ func _Nft_UploadOffchainMetadata_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Nft_Burn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BurnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NftServer).Burn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/nft.Nft/Burn",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NftServer).Burn(ctx, req.(*BurnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Nft_GetAllBurned_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NftServer).GetAllBurned(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/nft.Nft/GetAllBurned",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NftServer).GetAllBurned(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Nft_GetAllBurnedPending_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NftServer).GetAllBurnedPending(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/nft.Nft/GetAllBurnedPending",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NftServer).GetAllBurnedPending(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Nft_GetAllBurnedError_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NftServer).GetAllBurnedError(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/nft.Nft/GetAllBurnedError",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NftServer).GetAllBurnedError(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Nft_UpdateBurnShippingStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShippingStatusUpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NftServer).UpdateBurnShippingStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/nft.Nft/UpdateBurnShippingStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NftServer).UpdateBurnShippingStatus(ctx, req.(*ShippingStatusUpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Nft_UploadIPFSMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -311,6 +471,26 @@ var Nft_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadOffchainMetadata",
 			Handler:    _Nft_UploadOffchainMetadata_Handler,
+		},
+		{
+			MethodName: "Burn",
+			Handler:    _Nft_Burn_Handler,
+		},
+		{
+			MethodName: "GetAllBurned",
+			Handler:    _Nft_GetAllBurned_Handler,
+		},
+		{
+			MethodName: "GetAllBurnedPending",
+			Handler:    _Nft_GetAllBurnedPending_Handler,
+		},
+		{
+			MethodName: "GetAllBurnedError",
+			Handler:    _Nft_GetAllBurnedError_Handler,
+		},
+		{
+			MethodName: "UpdateBurnShippingStatus",
+			Handler:    _Nft_UpdateBurnShippingStatus_Handler,
 		},
 		{
 			MethodName: "UploadIPFSMetadata",

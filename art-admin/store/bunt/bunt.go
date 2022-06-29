@@ -16,6 +16,7 @@ const (
 type Store interface {
 	MintRequestStore
 	MetadataStore
+	BurnStore
 }
 
 type Config struct {
@@ -47,6 +48,10 @@ func (c *Config) InitDB() (*BuntDB, error) {
 	}
 
 	err = bunt.db.CreateIndex(allNFTMintRequests, fmt.Sprintf("%s:*", allNFTMintRequests), buntdb.IndexJSON("id"))
+	if err != nil {
+		return nil, err
+	}
+	err = bunt.db.CreateIndex(allBurns, fmt.Sprintf("%s:*", allBurns), buntdb.IndexString)
 	if err != nil {
 		return nil, err
 	}

@@ -27,7 +27,7 @@ type NftClient interface {
 	ListNFTMintRequests(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NFTMintRequestListArray, error)
 	DeleteNFTMintRequestById(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*DeleteStatus, error)
 	UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffchainUrlRequest, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
-	DeleteNFOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
+	DeleteNFTOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
 	UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error)
 	Burn(ctx context.Context, in *BurnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAllBurned(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error)
@@ -82,9 +82,9 @@ func (c *nftClient) UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffch
 	return out, nil
 }
 
-func (c *nftClient) DeleteNFOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error) {
+func (c *nftClient) DeleteNFTOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error) {
 	out := new(NFTMintRequestWithStatus)
-	err := c.cc.Invoke(ctx, "/nft.Nft/DeleteNFOffchainUrl", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/nft.Nft/DeleteNFTOffchainUrl", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ type NftServer interface {
 	ListNFTMintRequests(context.Context, *emptypb.Empty) (*NFTMintRequestListArray, error)
 	DeleteNFTMintRequestById(context.Context, *DeleteId) (*DeleteStatus, error)
 	UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error)
-	DeleteNFOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error)
+	DeleteNFTOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error)
 	UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error)
 	Burn(context.Context, *BurnRequest) (*emptypb.Empty, error)
 	GetAllBurned(context.Context, *emptypb.Empty) (*BurnList, error)
@@ -189,8 +189,8 @@ func (UnimplementedNftServer) DeleteNFTMintRequestById(context.Context, *DeleteI
 func (UnimplementedNftServer) UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNFTOffchainUrl not implemented")
 }
-func (UnimplementedNftServer) DeleteNFOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNFOffchainUrl not implemented")
+func (UnimplementedNftServer) DeleteNFTOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNFTOffchainUrl not implemented")
 }
 func (UnimplementedNftServer) UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadOffchainMetadata not implemented")
@@ -297,20 +297,20 @@ func _Nft_UpdateNFTOffchainUrl_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Nft_DeleteNFOffchainUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Nft_DeleteNFTOffchainUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NftServer).DeleteNFOffchainUrl(ctx, in)
+		return srv.(NftServer).DeleteNFTOffchainUrl(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/nft.Nft/DeleteNFOffchainUrl",
+		FullMethod: "/nft.Nft/DeleteNFTOffchainUrl",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).DeleteNFOffchainUrl(ctx, req.(*DeleteId))
+		return srv.(NftServer).DeleteNFTOffchainUrl(ctx, req.(*DeleteId))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -465,8 +465,8 @@ var Nft_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Nft_UpdateNFTOffchainUrl_Handler,
 		},
 		{
-			MethodName: "DeleteNFOffchainUrl",
-			Handler:    _Nft_DeleteNFOffchainUrl_Handler,
+			MethodName: "DeleteNFTOffchainUrl",
+			Handler:    _Nft_DeleteNFTOffchainUrl_Handler,
 		},
 		{
 			MethodName: "UploadOffchainMetadata",

@@ -22,7 +22,7 @@ import (
 )
 
 type Server struct {
-	gc *grpc.Server
+	gs *grpc.Server
 	c  *Config
 }
 
@@ -41,7 +41,7 @@ type Config struct {
 
 func (c *Config) Init() *Server {
 	return &Server{
-		gc: grpc.NewServer(),
+		gs: grpc.NewServer(),
 		c:  c,
 	}
 }
@@ -52,13 +52,14 @@ func (s *Server) Start(ctx context.Context,
 	nftServer *nft.Server,
 ) (err error) {
 
-	s.gc = grpc.NewServer()
-	pb_auth.RegisterAuthServer(s.gc, authServer)
+	s.gs = grpc.NewServer()
+	pb_auth.RegisterAuthServer(s.gs, authServer)
+	pb_nft.RegisterNftServer(s.gs, nftServer)
 
 	var clientHTTPHandler http.Handler
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			s.gc.ServeHTTP(w, r)
+			s.gs.ServeHTTP(w, r)
 		} else {
 			if clientHTTPHandler == nil {
 				w.WriteHeader(http.StatusNotImplemented)

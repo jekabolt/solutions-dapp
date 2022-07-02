@@ -174,7 +174,7 @@ func local_request_Nft_UpdateNFTOffchainUrl_0(ctx context.Context, marshaler run
 
 }
 
-func request_Nft_DeleteNFOffchainUrl_0(ctx context.Context, marshaler runtime.Marshaler, client NftClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Nft_DeleteNFTOffchainUrl_0(ctx context.Context, marshaler runtime.Marshaler, client NftClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq DeleteId
 	var metadata runtime.ServerMetadata
 
@@ -196,12 +196,12 @@ func request_Nft_DeleteNFOffchainUrl_0(ctx context.Context, marshaler runtime.Ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
-	msg, err := client.DeleteNFOffchainUrl(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.DeleteNFTOffchainUrl(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Nft_DeleteNFOffchainUrl_0(ctx context.Context, marshaler runtime.Marshaler, server NftServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Nft_DeleteNFTOffchainUrl_0(ctx context.Context, marshaler runtime.Marshaler, server NftServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq DeleteId
 	var metadata runtime.ServerMetadata
 
@@ -223,7 +223,7 @@ func local_request_Nft_DeleteNFOffchainUrl_0(ctx context.Context, marshaler runt
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
-	msg, err := server.DeleteNFOffchainUrl(ctx, &protoReq)
+	msg, err := server.DeleteNFTOffchainUrl(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -516,7 +516,7 @@ func RegisterNftHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 
 	})
 
-	mux.Handle("DELETE", pattern_Nft_DeleteNFOffchainUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_Nft_DeleteNFTOffchainUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -527,7 +527,7 @@ func RegisterNftHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Nft_DeleteNFOffchainUrl_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Nft_DeleteNFTOffchainUrl_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -535,7 +535,7 @@ func RegisterNftHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 			return
 		}
 
-		forward_Nft_DeleteNFOffchainUrl_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Nft_DeleteNFTOffchainUrl_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -821,7 +821,7 @@ func RegisterNftHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 
 	})
 
-	mux.Handle("DELETE", pattern_Nft_DeleteNFOffchainUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_Nft_DeleteNFTOffchainUrl_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -830,14 +830,14 @@ func RegisterNftHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Nft_DeleteNFOffchainUrl_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Nft_DeleteNFTOffchainUrl_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Nft_DeleteNFOffchainUrl_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Nft_DeleteNFTOffchainUrl_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -993,7 +993,7 @@ var (
 
 	pattern_Nft_UpdateNFTOffchainUrl_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "nft"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Nft_DeleteNFOffchainUrl_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "nft", "id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Nft_DeleteNFTOffchainUrl_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "nft", "id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Nft_UploadOffchainMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "nft", "offchain"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -1019,7 +1019,7 @@ var (
 
 	forward_Nft_UpdateNFTOffchainUrl_0 = runtime.ForwardResponseMessage
 
-	forward_Nft_DeleteNFOffchainUrl_0 = runtime.ForwardResponseMessage
+	forward_Nft_DeleteNFTOffchainUrl_0 = runtime.ForwardResponseMessage
 
 	forward_Nft_UploadOffchainMetadata_0 = runtime.ForwardResponseMessage
 

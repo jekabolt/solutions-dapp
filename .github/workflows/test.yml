@@ -23,7 +23,8 @@ jobs:
 
       - name: Install dependencies 
         run: |
-          cd art-admin && make install
+          cd art-admin && make install && 
+          export PATH="$PATH:$(go env GOPATH)/bin" 
 
       - name: Run tests
         run: |

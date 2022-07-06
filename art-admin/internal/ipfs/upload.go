@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 )
 
@@ -46,7 +46,7 @@ func (ufs *UploadFolder) GetIPFSImage() (*IpfsImage, error) {
 	}
 
 	return &IpfsImage{
-		Path:           fmt.Sprintf("/ipfs/%s", ipfsPath),
+		Path:           ipfsPath,
 		SequenceNumber: sequenceNumber,
 	}, nil
 }

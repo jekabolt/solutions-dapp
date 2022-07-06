@@ -7,11 +7,11 @@ import (
 	"github.com/jekabolt/solutions-dapp/art-admin/app"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/auth"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/nft"
-	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/eth"
-	"github.com/jekabolt/solutions-dapp/art-admin/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/eth"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 )
 
 type Config struct {

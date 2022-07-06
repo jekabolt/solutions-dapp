@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/ipfs"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
-	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+
 	"github.com/matryer/is"
 )
 

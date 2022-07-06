@@ -14,7 +14,7 @@ func TestGenDescriptions(t *testing.T) {
 	is := is.New(t)
 
 	// Load adjectives
-	a, err := os.Open("../etc/adjectives.json")
+	a, err := os.Open("../../etc/adjectives.json")
 	is.NoErr(err)
 
 	bs, err := ioutil.ReadAll(a)
@@ -29,7 +29,7 @@ func TestGenDescriptions(t *testing.T) {
 	is.NoErr(err)
 
 	// Load images
-	i, err := os.Open("../etc/mockimages.json")
+	i, err := os.Open("../../etc/mockimages.json")
 	is.NoErr(err)
 
 	bs, err = ioutil.ReadAll(i)
@@ -55,7 +55,7 @@ func TestGenDescriptions(t *testing.T) {
 	bs, err = json.Marshal(descs)
 	is.NoErr(err)
 
-	f, err := os.Create("../etc/descriptions.json")
+	f, err := os.Create("../../etc/descriptions.json")
 	is.NoErr(err)
 
 	_, err = f.WriteString(string(bs))

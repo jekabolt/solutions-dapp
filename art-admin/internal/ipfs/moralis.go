@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/valyala/fasthttp"
 )
 

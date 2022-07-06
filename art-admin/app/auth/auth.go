@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-chi/jwtauth/v5"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/auth/jwt"
-	"github.com/jekabolt/solutions-dapp/art-admin/auth/pwhash"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/auth/jwt"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/auth/pwhash"
 	pb_auth "github.com/jekabolt/solutions-dapp/art-admin/proto/auth"
 )
 

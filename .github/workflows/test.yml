@@ -21,14 +21,12 @@ jobs:
       - name: Set up buf 
         uses: bufbuild/buf-setup-action@v1.6.0
 
-      - name: Install dependencies 
+      - name: Install and test 
         run: |
           cd art-admin && make install && 
           export PATH="$PATH:$(go env GOPATH)/bin" 
-
-      - name: Run tests
-        run: |
-          cd art-admin && make test
+          make test
+          
     
 
     

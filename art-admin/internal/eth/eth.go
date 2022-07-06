@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 	etherscan "github.com/nanmu42/etherscan-api"
 	"github.com/rs/zerolog/log"
 )

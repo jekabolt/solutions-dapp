@@ -15,13 +15,6 @@ coverage:
 local: build
 	source .env && ./bin/$(IMAGE_NAME)
 
-# image:
-# 	docker build -t $(REGISTRY)/${IMAGE_NAME}:$(VERSION) .
-
-# image-run:
-# 	docker run --publish 8081:8081 --env-file .env \
-# 	--mount src=/root/bunt,target=/root/bunt,type=bind \$(REGISTRY)/${IMAGE_NAME}:$(VERSION)
-
 generate:
 	buf generate --path ./proto/nft/nft.proto \
 	--path ./proto/auth/auth.proto
@@ -86,3 +79,10 @@ image-run:
               --env-file .env \
               --mount src=/root/bunt,target=/root/bunt,type=bind \
               $(DOCKER_IMAGE)
+
+test: generate
+	# we only have non-generated code in ./internal, so we only count coverage for it
+	go test -cover -coverprofile coverage.out -coverpkg ./app/...,./internal/... ./...
+	# IMPORTANT: required coverage can only be increased
+	go tool cover -func coverage.out | \
+		awk 'END { print "Coverage: " $$3; if ($$3+0 < 49.9) { print "Insufficient coverage"; exit 1; } }'

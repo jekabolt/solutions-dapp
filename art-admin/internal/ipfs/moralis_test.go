@@ -7,9 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/descriptions"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
-	"github.com/jekabolt/solutions-dapp/art-admin/store/bunt"
+
 	"github.com/matryer/is"
 )
 
@@ -43,7 +44,7 @@ func InitMoralisFromConst() (IPFS, error) {
 		BaseURL: MORALIS_BASE_URL,
 	}
 	cfgDecription := &descriptions.Config{
-		Path:           "etc/descriptions.json",
+		Path:           "../../etc/descriptions.json",
 		CollectionName: "Solutions #",
 	}
 	desc, err := cfgDecription.Init()
@@ -57,12 +58,21 @@ func getTestMrs() []*pb_nft.NFTMintRequestWithStatus {
 	return []*pb_nft.NFTMintRequestWithStatus{
 		{
 			NftOffchainUrl: testImage,
+			NftMintRequest: &pb_nft.NFTMintRequest{
+				MintSequenceNumber: 1,
+			},
 		},
 		{
 			NftOffchainUrl: testImage,
+			NftMintRequest: &pb_nft.NFTMintRequest{
+				MintSequenceNumber: 2,
+			},
 		},
 		{
 			NftOffchainUrl: testImage,
+			NftMintRequest: &pb_nft.NFTMintRequest{
+				MintSequenceNumber: 3,
+			},
 		},
 	}
 }
@@ -93,7 +103,7 @@ func TestGenDescriptions(t *testing.T) {
 	skipCI(t)
 	is := is.New(t)
 
-	a, err := os.Open("../etc/adjectives.json")
+	a, err := os.Open("../../etc/adjectives.json")
 	is.NoErr(err)
 
 	bs, err := ioutil.ReadAll(a)
@@ -118,7 +128,7 @@ func TestGenDescriptions(t *testing.T) {
 	bs, err = json.Marshal(descs)
 	is.NoErr(err)
 
-	f, err := os.Create("../etc/descriptions.json")
+	f, err := os.Create("../../etc/descriptions.json")
 	is.NoErr(err)
 
 	_, err = f.WriteString(string(bs))

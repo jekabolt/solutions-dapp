@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: Push Docker image
+    name: Run tests and check coverage
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -20,11 +20,11 @@ jobs:
 
       - name: Install dependencies 
         run: |
-          make install
+          cd art-admin && make install
 
       - name: Run tests
         run: |
-          make test
+          cd art-admin && make test
     
 
     

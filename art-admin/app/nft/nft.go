@@ -45,30 +45,39 @@ func (c *Config) New(
 
 	return s, nil
 }
+func (s *Server) UploadRawImage(ito *pb_nft.ImageToUpload, pe *bucket.PathExtra) (*pb_nft.ImageList, error) {
+	switch {
+	case ito.Raw == "":
+		log.Error().Msgf("UploadRawImage empty raw image")
+		return nil, fmt.Errorf("cannot upload raw image: raw is empty")
+	case !strings.Contains(ito.Raw, "https://"), !strings.Contains(ito.Raw, "https://"):
+		return &pb_nft.ImageList{
+			FullSize:   ito.Raw,
+			Compressed: ito.Raw,
+		}, nil
+	default:
+		img, err := s.bucket.UploadContentImage(ito.Raw, pe)
+		if err != nil {
+			log.Error().Err(err).Msgf("UploadRawImage:s.Bucket.UploadContentImage [%v]", err.Error())
+			return nil, fmt.Errorf("cannot upload raw image: %s", err.Error())
+		}
+		return img, err
+	}
+}
 
 func (s *Server) UpsertNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRequestToUpload) (*pb_nft.NFTMintRequestWithStatus, error) {
-
 	sampleImages := []*pb_nft.ImageList{}
+	pe := &bucket.PathExtra{
+		TxHash:  req.NftMintRequest.TxHash,
+		EthAddr: req.NftMintRequest.EthAddress,
+	}
 	for i, si := range req.SampleImages {
-		if si.Raw != "" &&
-			!strings.Contains(si.Raw, "https://") {
-
-			img, err := s.bucket.UploadContentImage(si.Raw, &bucket.PathExtra{
-				TxHash:       req.NftMintRequest.TxHash,
-				EthAddr:      req.NftMintRequest.EthAddress,
-				MintSequence: fmt.Sprintf("%d-%d", req.NftMintRequest.MintSequenceNumber, i),
-			})
-			if err != nil {
-				log.Error().Err(err).Msgf("upsertNFTMintRequest:s.Bucket.UploadContentImage [%v]", err.Error())
-				return nil, fmt.Errorf("cannot upload raw image: %s", err.Error())
-			}
-			sampleImages = append(sampleImages, img)
-		} else {
-			sampleImages = append(sampleImages, &pb_nft.ImageList{
-				FullSize:   si.Raw,
-				Compressed: si.Raw,
-			})
+		pe.MintSequence = fmt.Sprintf("%d-%d", req.NftMintRequest.MintSequenceNumber, i)
+		img, err := s.UploadRawImage(si, pe)
+		if err != nil {
+			return nil, err
 		}
+		sampleImages = append(sampleImages, img)
 	}
 
 	mr, err := s.db.UpsertNFTMintRequest(req, sampleImages)
@@ -101,7 +110,11 @@ func (s *Server) DeleteNFTMintRequestById(ctx context.Context, req *pb_nft.Delet
 }
 
 func (s *Server) UpdateNFTOffchainUrl(ctx context.Context, req *pb_nft.UpdateNFTOffchainUrlRequest) (*pb_nft.NFTMintRequestWithStatus, error) {
-	nftMR, err := s.db.UpdateNFTOffchainUrl(req.Id, req.NftOffchainUrl)
+	img, err := s.UploadRawImage(req.NftOffchainUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+	nftMR, err := s.db.UpdateNFTOffchainUrl(req.Id, img.FullSize)
 	if err != nil {
 		log.Error().Err(err).Msgf("UpdateNFTOffchainUrl:s.db.UpdateNFTOffchainUrl [%v]", err.Error())
 		return nil, fmt.Errorf("cannot update nft offchain url request: %s", err.Error())

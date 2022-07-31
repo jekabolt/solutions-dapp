@@ -134,8 +134,10 @@ func TestNft(t *testing.T) {
 
 	// update mint offchain url
 	resp, err = s.UpdateNFTOffchainUrl(ctx, &pb_nft.UpdateNFTOffchainUrlRequest{
-		Id:             fmt.Sprint(list.NftMintRequests[0].NftMintRequest.Id),
-		NftOffchainUrl: "https://example.com/offchain.jpg",
+		Id: fmt.Sprint(list.NftMintRequests[0].NftMintRequest.Id),
+		NftOffchainUrl: &pb_nft.ImageToUpload{
+			Raw: "https://example.com/offchain.jpg",
+		},
 	})
 	is.NoErr(err)
 	is.Equal(resp.Status, bunt.StatusUploadedOffchain.String())
@@ -152,7 +154,7 @@ func TestNft(t *testing.T) {
 	list, err = s.ListNFTMintRequests(ctx, nil)
 	is.NoErr(err)
 	is.Equal(len(list.NftMintRequests), 2)
-	is.Equal(list.NftMintRequests[0].NftOffchainUrl, "https://example.com/offchain.jpg")
+	is.Equal(list.NftMintRequests[0].NftOffchainUrl, "https://example.com/full.jpg")
 	is.Equal(list.NftMintRequests[0].Status, bunt.StatusUploadedOffchain.String())
 
 	// delete offchain url

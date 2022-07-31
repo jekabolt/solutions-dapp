@@ -28,4 +28,5 @@ todo:
 - [ ] use [useQuery](https://tanstack.com/query/v4/docs/reference/useQuery?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useQuery) for fetching data (if is has okay bundle size...didnt check yet)
 - [ ] change build dir to art-admin/..../static
 - [ ] add docker + make files, add run commands to readme
+- [ ] color mode (theme)
 - [ ] think of todos

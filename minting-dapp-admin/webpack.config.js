@@ -2,6 +2,9 @@ const path = require('path');
 const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TsConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+// remove ? (275kb/80kb gzipped)
+const { BundleStatsWebpackPlugin } = require('bundle-stats-webpack-plugin');
 
 const webpackDev = require('./webpack.dev');
 
@@ -21,14 +24,21 @@ module.exports = merge([
           exclude: /node_modules/,
           resolve: {
             extensions: ['.ts', '.tsx', '.json'],
+            plugins: [
+              new TsConfigPathsPlugin(),
+            ],
           },
           use: 'ts-loader',
         },
         {
           test: /\.scss$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+          use: [
+            { loader: MiniCssExtractPlugin.loader },
+            { loader: "css-loader", options: { modules: true } },
+            { loader: "sass-loader" },
+          ],
         },
-      ]
+      ],
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -37,6 +47,7 @@ module.exports = merge([
       new MiniCssExtractPlugin({
         filename: '[name].[contenthash].css',
       }),
+      new BundleStatsWebpackPlugin(),
     ],
   },
   process.env.NODE_ENV !== 'production' ? webpackDev : {},

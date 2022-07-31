@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import styles from './test.module.scss';
+import styles from 'styles/test.module.scss';
 
 const Test = () => {
   const [sum, setSum] = useState(0);

@@ -1,0 +1,29 @@
+@import './variables.scss';
+
+* {
+  box-sizing: border-box;
+  // reset native padding and margins
+  margin: 0;
+  padding: 0;
+  background-color: $grey;
+}
+
+header {
+  padding: 20px;
+  height: 250px;
+  border: 2px solid pink;
+}
+
+.main-view {
+  display: flex;
+}
+
+.sidebar {
+  border: 2px solid orangered;
+  width: 20%;
+}
+
+.route-page {
+  border: 2px solid greenyellow;
+  width: 80%;
+}

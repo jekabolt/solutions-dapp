@@ -1,6 +1,6 @@
 # <minting-dapp> admin panel
 
-### tech stack
+### core tech stack
 `react`
 `webpack`
 `typescript`
@@ -14,6 +14,7 @@ to clone and install deps:
 ```
 git clone git@github.com:jekabolt/solutions-dapp.git
 cd ./solutions-dapp/minting-dapp-admin
+git checkout dev-admin
 yarn install
 ```
 to run dev server:
@@ -29,4 +30,5 @@ todo:
 - [ ] change build dir to art-admin/..../static
 - [ ] add docker + make files, add run commands to readme
 - [ ] color mode (theme)
+- [ ] check bundle routing
 - [ ] think of todos

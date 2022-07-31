@@ -384,8 +384,8 @@
           "type": "string"
         },
         "mintSequenceNumber": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "shipping": {
           "$ref": "#/definitions/nftShippingTo"
@@ -397,8 +397,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "burn": {
           "$ref": "#/definitions/nftBurnRequest"
@@ -456,8 +456,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "internal id in db"
         },
         "ethAddress": {
@@ -469,8 +469,8 @@
           "title": "hash of mint transaction"
         },
         "mintSequenceNumber": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "title": "sequence number of minted nft"
         },
         "description": {
@@ -542,8 +542,8 @@
           "type": "string"
         },
         "timeSent": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "error": {
           "type": "string"

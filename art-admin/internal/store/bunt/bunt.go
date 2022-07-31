@@ -24,7 +24,7 @@ type Config struct {
 }
 
 type dbi interface {
-	GetNextKey(index string) (int64, error)
+	GetNextKey(index string) (int32, error)
 	KeyUsed(index string, key int) bool
 	SetNext(index, value string) error
 	Set(index, key, value string) error
@@ -64,7 +64,7 @@ func (c *Config) InitDB() (*BuntDB, error) {
 	return &bunt, nil
 }
 
-func (bunt *BuntDB) GetNextKey(index string) (int64, error) {
+func (bunt *BuntDB) GetNextKey(index string) (int32, error) {
 	last := firstId
 
 	err := bunt.db.View(func(tx *buntdb.Tx) error {
@@ -83,7 +83,7 @@ func (bunt *BuntDB) GetNextKey(index string) (int64, error) {
 	if err != nil {
 		return 1, fmt.Errorf("GetNextKey:db.db.View:err [%v]", err.Error())
 	}
-	return int64(last), nil
+	return int32(last), nil
 }
 
 func (bunt *BuntDB) KeyUsed(index string, key int) bool {

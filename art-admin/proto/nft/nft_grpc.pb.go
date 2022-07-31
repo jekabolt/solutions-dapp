@@ -23,11 +23,17 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NftClient interface {
+	//  Method used in ui for submitting drawing nft reference
 	UpsertNFTMintRequest(ctx context.Context, in *NFTMintRequestToUpload, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
+	//  List all mint requests
 	ListNFTMintRequests(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NFTMintRequestListArray, error)
+	//  Delete mint requests by internal id
 	DeleteNFTMintRequestById(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*DeleteStatus, error)
+	// Upload resulted nft offchain from b64
 	UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffchainUrlRequest, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
+	// Remove nft offchain url from mint request
 	DeleteNFTOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
+	// Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
 	UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error)
 	Burn(ctx context.Context, in *BurnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAllBurned(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BurnList, error)
@@ -158,11 +164,17 @@ func (c *nftClient) UploadIPFSMetadata(ctx context.Context, in *emptypb.Empty, o
 // All implementations should embed UnimplementedNftServer
 // for forward compatibility
 type NftServer interface {
+	//  Method used in ui for submitting drawing nft reference
 	UpsertNFTMintRequest(context.Context, *NFTMintRequestToUpload) (*NFTMintRequestWithStatus, error)
+	//  List all mint requests
 	ListNFTMintRequests(context.Context, *emptypb.Empty) (*NFTMintRequestListArray, error)
+	//  Delete mint requests by internal id
 	DeleteNFTMintRequestById(context.Context, *DeleteId) (*DeleteStatus, error)
+	// Upload resulted nft offchain from b64
 	UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error)
+	// Remove nft offchain url from mint request
 	DeleteNFTOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error)
+	// Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
 	UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error)
 	Burn(context.Context, *BurnRequest) (*emptypb.Empty, error)
 	GetAllBurned(context.Context, *emptypb.Empty) (*BurnList, error)

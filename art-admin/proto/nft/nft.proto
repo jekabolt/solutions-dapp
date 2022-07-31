@@ -9,6 +9,7 @@ import "google/protobuf/empty.proto";
 
 
 service Nft {
+  //  Method used in ui for submitting drawing nft reference 
   rpc UpsertNFTMintRequest (NFTMintRequestToUpload) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft/requests"
@@ -16,18 +17,21 @@ service Nft {
     };
   }
 
+  //  List all mint requests  
   rpc ListNFTMintRequests (google.protobuf.Empty) returns (NFTMintRequestListArray){
     option (google.api.http) = {
       get : "/api/nft/requests"
     };
   }
-     
+
+  //  Delete mint requests by internal id 
   rpc DeleteNFTMintRequestById (DeleteId) returns (DeleteStatus) {
     option (google.api.http) = {
 			delete: "/api/nft/requests/{id}"
 		};
   }
 
+  // Upload resulted nft offchain from b64
   rpc UpdateNFTOffchainUrl (UpdateNFTOffchainUrlRequest) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft"
@@ -35,12 +39,14 @@ service Nft {
     };
   }
 
+  // Remove nft offchain url from mint request 
   rpc DeleteNFTOffchainUrl (DeleteId) returns (NFTMintRequestWithStatus) {
     option (google.api.http) = {
 			delete: "/api/nft/{id}"
 		};
   }
 
+  // Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
   rpc UploadOffchainMetadata (google.protobuf.Empty) returns (MetadataOffchainUrl) {
     option (google.api.http) = {
       post : "/api/nft/offchain"
@@ -91,59 +97,93 @@ service Nft {
 
 }
 
-// image
+// Links to images 
 message ImageList {
+  // link to fullsized image 
   string fullSize = 1;
+  // link to compressed image 
   string compressed = 2;
 }
 
+// B64 raw image or link
 message ImageToUpload {
+  // base64 encoded image if it starts from "http://" or  "https://" will be stored as link if not will be uploaded to s3
   string raw = 1;
 }
 
 
+// Mint request info 
 message NFTMintRequest {
+  // internal id in db 
   int64 id = 1;
+  // eth address of minter account 
   string ethAddress = 2;
+  // hash of mint transaction 
   string TxHash = 3;
+  // sequence number of minted nft 
   int64  mintSequenceNumber = 4;
+  // user defined description of drawing 
   string description = 6;
 }
 
+// Images and request info for submitting nft
 message NFTMintRequestToUpload {
+  // array of images from which nft should be referenced
   repeated ImageToUpload sampleImages = 1;
+  // mint request info 
   NFTMintRequest nftMintRequest = 2;
 }
 
+// NFT request as is with status 
+// list of statuses 
+// StatusUnknown          NFTStatus = "unknown"
+// StatusPending          NFTStatus = "pending"
+// StatusCompleted        NFTStatus = "completed"
+// StatusFailed           NFTStatus = "failed"
+// StatusBad              NFTStatus = "bad"
+// StatusUploadedOffchain NFTStatus = "uploadedOffchain"
+// StatusUploaded         NFTStatus = "uploaded”
 message NFTMintRequestWithStatus {
+  // array of images from which nft should be referenced
   repeated ImageList sampleImages = 1;
+  // mint request info 
   NFTMintRequest nftMintRequest = 2;
+  // status
   string status = 3;
+  // resulted nft url uploaded offchain i.e to s3 can be empty 
   string nftOffchainUrl = 4;
 }
 
+// List of all submitted mint requests 
 message NFTMintRequestListArray {
+  // uploaded mint request with status
   repeated NFTMintRequestWithStatus nftMintRequests = 1;
 }
 
-// delete
+// Delete mint request offchain url 
 message DeleteId {
+  // internal id in db 
   string id = 1;
 }
 
+// response for deleteing status 
 message DeleteStatus {
+  // error message 
   string message = 1;
 }
 
 // Update NFT offchain url 
 message UpdateNFTOffchainUrlRequest {
+  // internai id 
   string id = 1;
-  string nftOffchainUrl = 2;
+  // resulted nft raw image b64 encoded
+  ImageToUpload nftOffchainUrl = 2;
 }
 
 
 // Upload offchain metadata _metadata.json
 message MetadataOffchainUrl {
+  // all metadata json url uploaded to s3 will be used to upload to ipfs 
   string Url = 1;
 }
 

@@ -131,7 +131,7 @@ func (s *Server) authHandler(ctx context.Context) (http.Handler, error) {
 	mux := runtime.NewServeMux(runtime.WithMarshalerOption(
 		runtime.MIMEWildcard,
 		&runtime.JSONPb{
-			EnumsAsInts:  false,
+			EnumsAsInts:  true,
 			EmitDefaults: true,
 		},
 	))
@@ -151,7 +151,7 @@ func (s *Server) nftHandler(ctx context.Context) (http.Handler, error) {
 	mux := runtime.NewServeMux(runtime.WithMarshalerOption(
 		runtime.MIMEWildcard,
 		&runtime.JSONPb{
-			EnumsAsInts:  false,
+			EnumsAsInts:  true,
 			EmitDefaults: true,
 		},
 	))

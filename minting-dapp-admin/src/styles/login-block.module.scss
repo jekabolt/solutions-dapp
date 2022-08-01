@@ -1,0 +1,46 @@
+.loginBlock {
+  button {
+    font-size: 40px;
+    padding: 5px;
+  }
+
+  .loginModal {
+    height: 500px;
+    width: 700px;
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 2;
+    padding: 20px;
+
+    .close {
+      cursor: pointer;
+      font-size: 30px;
+      text-align: center;
+      color: white;
+      background-color: burlywood;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    input {
+      font-size: 30px;
+      color: black;
+      margin-right: 20px;
+
+    }
+  }
+
+  .overlay {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}

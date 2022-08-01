@@ -31,4 +31,6 @@ todo:
 - [ ] add docker + make files, add run commands to readme
 - [ ] color mode (theme)
 - [ ] check bundle routing
+- [ ] prior todos
+- [ ] add protected wrapper to routes with auth
 - [ ] think of todos

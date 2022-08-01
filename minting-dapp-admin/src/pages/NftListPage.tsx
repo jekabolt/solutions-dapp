@@ -1,11 +1,16 @@
 import { FC, Fragment } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { NftPreview } from 'components/NftPreview';
+import { QUERIES } from 'api/queries';
 import styles from 'styles/nft-list-page.module.scss';
 
 export const NftListPage: FC = () => {
+  // const {} = useQuery(QUERIES.getNftRequest, );
   // get nft from backend 
   const nft = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+  
 
   return (
     <div className={styles.container}>

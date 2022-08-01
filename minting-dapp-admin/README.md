@@ -7,7 +7,7 @@
 `SCSS`
 
 ### env
-`node version >= 14`
+`node version >= 15.0.1` (make sure its correct, im using 16.16)
 
 ### run locally
 to clone and install deps:

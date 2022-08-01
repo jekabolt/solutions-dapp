@@ -1,0 +1,31 @@
+.header {
+  height: 100px;
+  color: white;
+  font-weight: 100;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  background-color: rgb(36, 10, 50);
+}
+
+.mainView {
+  display: flex;
+  // 100px is header 30px is footer
+  min-height: calc(100vh - 130px);
+  background-color: #64562b;
+}
+
+// .sidebar {
+//   border: 2px solid orangered;
+//   width: 20%;
+// }
+
+// .route-page {
+//   border: 2px solid greenyellow;
+//   width: 80%;
+// }
+
+.footer {
+  height: 30px;
+  // line-height: 30px;
+  // text-align: center;
+  background-color: white;
+}

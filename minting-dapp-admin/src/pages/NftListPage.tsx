@@ -1,15 +1,15 @@
-import { FC, Fragment } from 'react';
+import { FC, Fragment, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+import { getNftRequests, QUERIES } from 'api';
 import { NftPreview } from 'components/NftPreview';
+import { Context } from 'context';
+
 import styles from 'styles/nft-list-page.module.scss';
 
 export const NftListPage: FC = () => {
-  // const {} = useQuery(QUERIES.getNftRequest, );
-  // get nft from backend 
-  const nft = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-  
+  const { state: { authToken } } = useContext(Context);
+  const { data } = useQuery([QUERIES.getNftRequests, authToken], ({ queryKey }) => getNftRequests(queryKey[1]));
 
   return (
     <div className={styles.container}>
@@ -17,7 +17,7 @@ export const NftListPage: FC = () => {
         <h3>some sort of data</h3>
       </div>
       <div className={styles.nftList}>
-        {nft.map(({ }, index) => (
+        {data?.data.nftMintRequests && data.data.nftMintRequests.map((nftRequest, index) => (
           // change key
           <Fragment key={index}>
             <NftPreview />

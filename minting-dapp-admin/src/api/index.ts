@@ -1,18 +1,21 @@
 import axios from 'axios';
 
 export enum QUERIES {
-  getNftRequest = 'getNftRequest',
+  getNftRequests = 'getNftRequests',
 }
 
 export enum MUTATIONS {
   login = 'login',
 }
 
+const getAuthHeaders = (authToken: string) => ({
+  'Grpc-Metadata-Authorization': `Bearer ${authToken}`,
+});
+
 export function login(password: string) {
   return axios.post('/api/auth/login', { password });
-}
+};
 
-function getNftRequests(address: string) {
-  return axios.get(`/api/nft/requests/${address}`);
-}
-
+export function getNftRequests(authToken: string) {
+  return axios.get('/api/nft/requests', { headers: getAuthHeaders(authToken) });
+};

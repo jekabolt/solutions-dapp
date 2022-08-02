@@ -1,15 +1,21 @@
-import { FC, useState, ChangeEvent, FormEvent } from 'react';
+import { FC, useState, ChangeEvent, FormEvent, useEffect, useContext } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import { login } from 'api';
-
+import { Context } from 'context';
 import styles from 'styles/login-block.module.scss';
 
 export const LoginBlock: FC = () => {
+  const { dispatch } = useContext(Context);
   const [isModalOpen, setModalVisability] = useState(false);
   const [password, setPassword] = useState('');
-  // all data from request is here
-  const mutation = useMutation(login);
+  const { mutate, data } = useMutation(login);
+
+  useEffect(() => {
+    if (data?.data.authToken) {
+      dispatch({ type: 'setAuthToken', payload: data.data.authToken});
+    }
+  }, [data?.data.authToken]);
 
   const toggleModal = () => {
     setModalVisability(v => !v);
@@ -17,8 +23,7 @@ export const LoginBlock: FC = () => {
 
   const handlePasswordSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // implement login, auth token, cookies, etc.
-    mutation.mutate(password);
+    mutate(password);
     toggleModal();
   };
 

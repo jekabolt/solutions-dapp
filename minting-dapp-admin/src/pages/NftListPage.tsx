@@ -2,7 +2,6 @@ import { FC, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { NftPreview } from 'components/NftPreview';
-import { QUERIES } from 'api/queries';
 import styles from 'styles/nft-list-page.module.scss';
 
 export const NftListPage: FC = () => {

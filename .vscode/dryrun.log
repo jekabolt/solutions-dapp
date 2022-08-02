@@ -1,6 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory `/Users/jekabolt/go/src/github.com/jekabolt/solutions-dapp'
-make: Leaving directory `/Users/jekabolt/go/src/github.com/jekabolt/solutions-dapp'
- 
-make: *** No targets specified and no makefile found.  Stop.
-

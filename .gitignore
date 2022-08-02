@@ -1,3 +1,38 @@
-smart-contract/artifacts/*
-smart-contract/build/*
-smart-contract/cache/*
+*/artifacts/*
+*/build/*
+*/cache/*
+
+# Editor
+.vscode
+
+# Misc.
+.DS_Store
+
+genconfig
+*.env
+*.bak
+# hidden files
+.*
+
+# logs
+*.log
+
+# test coverage
+coverage.out
+
+# configuration
+*.toml
+/configuration/ecc
+
+# dependencies
+/vendor/
+
+# certs
+/certs/
+
+# builds
+/dist/
+/build/
+/internal/migrations/migrations_gen.go
+/docs/public/
+dep-graph.pdf

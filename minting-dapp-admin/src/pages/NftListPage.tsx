@@ -17,6 +17,10 @@ export const NftListPage: FC = () => {
         <h3>some sort of data</h3>
       </div>
       <div className={styles.nftList}>
+        <div style={{ backgroundColor: authToken ? 'lightgreen' : 'red' }}>auth</div>
+        <br />
+        <br />
+        <div style={{ backgroundColor: data?.data.nftMintRequests ? 'lightgreen' : 'red' }}>getNftRequests</div>
         {data?.data.nftMintRequests && data.data.nftMintRequests.map((nftRequest: any, index: number) => (
           // change key
           <Fragment key={index}>

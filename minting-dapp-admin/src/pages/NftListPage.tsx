@@ -17,7 +17,7 @@ export const NftListPage: FC = () => {
         <h3>some sort of data</h3>
       </div>
       <div className={styles.nftList}>
-        {data?.data.nftMintRequests && data.data.nftMintRequests.map((nftRequest, index) => (
+        {data?.data.nftMintRequests && data.data.nftMintRequests.map((nftRequest: any, index: number) => (
           // change key
           <Fragment key={index}>
             <NftPreview />

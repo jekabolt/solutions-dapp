@@ -10,7 +10,7 @@ contract SYSToken is ERC721Enumerable, Ownable {
   string public baseExtension = ".json";
   uint256 public cost = 0.05 ether;
   uint256 public maxSupply = 10000;
-  uint256 public maxMintAmount = 20;
+  uint256 public maxMintAmount = 5;
   bool public paused = false;
   bool public revealed = false;
   string public notRevealedUri;
@@ -45,6 +45,14 @@ contract SYSToken is ERC721Enumerable, Ownable {
     for (uint256 i = 1; i <= _mintAmount; i++) {
       _safeMint(msg.sender, supply + i);
     }
+  }
+
+  function ownerById(uint256 tokenId)
+    public
+    view
+    returns (address)
+  {
+    return ownerOf(tokenId);
   }
 
   function walletOfOwner(address _owner)

@@ -33,4 +33,5 @@ todo:
 - [ ] check bundle routing
 - [ ] prior todos
 - [ ] add protected wrapper to routes with auth
+- [ ] move proto files to upper scope (both client and server generates it)
 - [ ] think of todos

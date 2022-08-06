@@ -47,3 +47,4 @@ dep-graph.pdf
 
 # typescript
 **/next-env.d.ts
+.DS_Store

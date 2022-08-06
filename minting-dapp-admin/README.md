@@ -1,27 +1,43 @@
 # <minting-dapp> admin panel
 
-### core tech stack
-`react`
-`webpack`
-`typescript`
-`SCSS`
-
 ### env
-`node version >= 15.0.1` (make sure its correct, im using 16.16)
+`node version >= 16`
 
-### run locally
-to clone and install deps:
+### clone
 ```
 git clone git@github.com:jekabolt/solutions-dapp.git
-cd ./solutions-dapp/minting-dapp-admin
 git checkout dev-admin
-yarn install
+cd ./solutions-dapp/minting-dapp-admin
 ```
-to run dev server:
-`yarn dev`
 
-to build:
-`yarn build`
+### run locally without Makefile
+```
+yarn install #to install
+
+yarn dev #to run
+
+yarn build:dev #to build dev
+
+yarn build:dist #to build dist
+```
+
+### run locally without Makefile
+```
+make install #to install
+
+make run-local #to run
+
+make build-local #to build dev
+
+make build-dist #to build dist
+
+make generate-proto #to generate proto-http
+```
+
+### run in docker
+```
+  TODO
+```
 
 todo:
 - [x] setup react app (typescript + react + webpack + scss)

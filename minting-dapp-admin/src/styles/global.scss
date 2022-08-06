@@ -1,38 +1,12 @@
 @import './variables.scss';
-
 * {
-  box-sizing: border-box;
-  // reset native padding and margins
-  margin: 0;
-  padding: 0;
-<<<<<<< HEAD
-  background-color: $grey;
-}
-
-header {
-  padding: 20px;
-  height: 250px;
-  border: 2px solid pink;
-}
-
-.main-view {
-  display: flex;
-}
-
-.sidebar {
-  border: 2px solid orangered;
-  width: 20%;
-}
-
-.route-page {
-  border: 2px solid greenyellow;
-  width: 80%;
-}
-=======
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    box-sizing: border-box;
+    // reset native padding and margins
+    margin: 0;
+    padding: 0;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
 // body {
 //   background-color: $grey;
 // }
->>>>>>> 910ce0f57929e011abf7ac9af44dd93f7c3ef56c

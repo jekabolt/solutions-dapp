@@ -26,6 +26,7 @@ coverage.out
 
 # dependencies
 /vendor/
+**/node_modules
 
 # certs
 /certs/
@@ -36,3 +37,6 @@ coverage.out
 /internal/migrations/migrations_gen.go
 /docs/public/
 dep-graph.pdf
+
+# typescript
+**/next-env.d.ts

@@ -5,7 +5,6 @@ option go_package = "go.mxc.org/airdrops/api/auth";
 
 
 import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
 
 service Auth {
     rpc Login (LoginRequest) returns (LoginResponse) {

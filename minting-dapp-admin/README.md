@@ -34,6 +34,8 @@ make build-dist #to build dist
 make generate-proto #to generate proto-http
 ```
 
+to use `make generate-proto` make sure you have GO `.bin`, `protoc` compiler and `proto->http` ([protoc-gen-typescript-http](https://github.com/einride/protoc-gen-typescript-http)) generator  available in working dir 
+
 ### run in docker
 ```
   TODO

@@ -12,3 +12,9 @@ build-local: ## Build dev version
 
 build-dist: ## Build dist version
 	yarn build:dist
+
+generate-proto: ## Generate proto-http files from nft.proto and auth.proto
+	protoc \
+		--typescript-http_out=./src/api/proto-http \
+		--proto_path=../art-admin/proto \
+		../art-admin/proto/nft/nft.proto ../art-admin/proto/auth/auth.proto 

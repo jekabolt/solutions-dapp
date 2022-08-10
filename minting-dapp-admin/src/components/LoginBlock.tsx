@@ -12,10 +12,10 @@ export const LoginBlock: FC = () => {
   const { mutate, data } = useMutation(login);
 
   useEffect(() => {
-    if (data?.data.authToken) {
-      dispatch({ type: 'setAuthToken', payload: data.data.authToken});
+    if (data?.authToken) {
+      dispatch({ type: 'setAuthToken', payload: data.authToken});
     }
-  }, [data?.data.authToken]);
+  }, [data?.authToken]);
 
   const toggleModal = () => {
     setModalVisability(v => !v);

@@ -18,8 +18,6 @@ minting-dapp-admin/dist
 genconfig
 *.env
 *.bak
-# hidden files
-.*
 
 # logs
 *.log

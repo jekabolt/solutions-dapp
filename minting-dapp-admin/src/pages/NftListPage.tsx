@@ -20,8 +20,8 @@ export const NftListPage: FC = () => {
         <div style={{ backgroundColor: authToken ? 'lightgreen' : 'red' }}>auth</div>
         <br />
         <br />
-        <div style={{ backgroundColor: data?.data.nftMintRequests ? 'lightgreen' : 'red' }}>getNftRequests</div>
-        {data?.data.nftMintRequests && data.data.nftMintRequests.map((nftRequest: any, index: number) => (
+        <div style={{ backgroundColor: data?.nftMintRequests ? 'lightgreen' : 'red' }}>getNftRequests</div>
+        {data?.nftMintRequests && data.nftMintRequests.map((nftRequest: any, index: number) => (
           // change key
           <Fragment key={index}>
             <NftPreview />

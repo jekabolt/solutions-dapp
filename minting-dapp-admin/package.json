@@ -11,8 +11,8 @@
     "build:dev": "NODE_ENV=development webpack",
     "build:dist": "NODE_ENV=production webpack",
     "fix": "yarn lint && yarn format",
-    "lint": "eslint --fix './src/**/*.{ts,tsx,json}'",
-    "format": "prettier --write './src/**/*.{ts,tsx,scss,md,json}' --config ./.prettierrc"
+    "lint": "eslint --fix './src/**/*.{js,ts,tsx,json}'",
+    "format": "prettier --write './src/**/*.{js,ts,tsx,scss,md,json}' --config ./.prettierrc"
   },
   "devDependencies": {
     "@tanstack/react-location-devtools": "^3.4.4",

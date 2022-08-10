@@ -21,21 +21,20 @@ type RequestType = {
 
 type RequestHandler = (request: RequestType) => Promise<unknown>;
 
-export function createAuthClient(
-  handler: RequestHandler
-): Auth {
+export function createAuthClient(handler: RequestHandler): Auth {
   return {
-    Login(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    Login(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/auth/login`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<LoginResponse>;
     },

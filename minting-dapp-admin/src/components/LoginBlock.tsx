@@ -13,12 +13,12 @@ export const LoginBlock: FC = () => {
 
   useEffect(() => {
     if (data?.authToken) {
-      dispatch({ type: 'setAuthToken', payload: data.authToken});
+      dispatch({ type: 'setAuthToken', payload: data.authToken });
     }
   }, [data?.authToken]);
 
   const toggleModal = () => {
-    setModalVisability(v => !v);
+    setModalVisability((v) => !v);
   };
 
   const handlePasswordSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -27,9 +27,9 @@ export const LoginBlock: FC = () => {
     toggleModal();
   };
 
-  const handlePasswordChange = ((e: ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-  });
+  };
 
   return (
     <div className={styles.loginBlock}>
@@ -37,10 +37,12 @@ export const LoginBlock: FC = () => {
       {isModalOpen && (
         <>
           <div className={styles.loginModal}>
-            <div className={styles.close} onClick={toggleModal}>close modal</div>
+            <div className={styles.close} onClick={toggleModal}>
+              close modal
+            </div>
             <form onSubmit={handlePasswordSubmit}>
-              <input onChange={handlePasswordChange} type="password" placeholder="password" />
-              <button type="submit">login</button>
+              <input onChange={handlePasswordChange} type='password' placeholder='password' />
+              <button type='submit'>login</button>
             </form>
           </div>
           <div className={styles.overlay}></div>

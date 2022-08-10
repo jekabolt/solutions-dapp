@@ -8,8 +8,12 @@ import { Context } from 'context';
 import styles from 'styles/nft-list-page.module.scss';
 
 export const NftListPage: FC = () => {
-  const { state: { authToken } } = useContext(Context);
-  const { data } = useQuery([QUERIES.getNftRequests, authToken], ({ queryKey }) => getNftRequests(queryKey[1]));
+  const {
+    state: { authToken },
+  } = useContext(Context);
+  const { data } = useQuery([QUERIES.getNftRequests, authToken], ({ queryKey }) =>
+    getNftRequests(queryKey[1]),
+  );
 
   return (
     <div className={styles.container}>
@@ -20,13 +24,16 @@ export const NftListPage: FC = () => {
         <div style={{ backgroundColor: authToken ? 'lightgreen' : 'red' }}>auth</div>
         <br />
         <br />
-        <div style={{ backgroundColor: data?.nftMintRequests ? 'lightgreen' : 'red' }}>getNftRequests</div>
-        {data?.nftMintRequests && data.nftMintRequests.map((nftRequest: any, index: number) => (
-          // change key
-          <Fragment key={index}>
-            <NftPreview />
-          </Fragment>
-        ))}
+        <div style={{ backgroundColor: data?.nftMintRequests ? 'lightgreen' : 'red' }}>
+          getNftRequests
+        </div>
+        {data?.nftMintRequests &&
+          data.nftMintRequests.map((nftRequest: any, index: number) => (
+            // change key
+            <Fragment key={index}>
+              <NftPreview />
+            </Fragment>
+          ))}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ interface IState {
 }
 type ActionsType = 'setAuthToken' | 'resetAuthToken';
 
-const reducer = (state: IState, action: { type: ActionsType, payload: string }) => {
+const reducer = (state: IState, action: { type: ActionsType; payload: string }) => {
   switch (action.type) {
     case 'setAuthToken':
       return { ...state, authToken: action.payload };
@@ -22,7 +22,7 @@ const reducer = (state: IState, action: { type: ActionsType, payload: string }) 
 
 interface IContextValue {
   state: IState;
-  dispatch: Dispatch<{ type: ActionsType, payload: string }>;
+  dispatch: Dispatch<{ type: ActionsType; payload: string }>;
 }
 export const Context = createContext<IContextValue>({
   state: initialContexValue,
@@ -32,9 +32,5 @@ export const Context = createContext<IContextValue>({
 export const ContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialContexValue);
 
-  return (
-    <Context.Provider value={{ state, dispatch }}>
-      {children}
-    </Context.Provider>
-  );
+  return <Context.Provider value={{ state, dispatch }}>{children}</Context.Provider>;
 };

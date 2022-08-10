@@ -158,181 +158,191 @@ type RequestType = {
 
 type RequestHandler = (request: RequestType) => Promise<unknown>;
 
-export function createNftClient(
-  handler: RequestHandler
-): Nft {
+export function createNftClient(handler: RequestHandler): Nft {
   return {
-    UpsertNFTMintRequest(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    UpsertNFTMintRequest(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/requests`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<NFTMintRequestWithStatus>;
     },
-    ListNFTMintRequests(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    ListNFTMintRequests(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/requests`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "GET",
+        method: 'GET',
         body,
       }) as Promise<NFTMintRequestListArray>;
     },
-    DeleteNFTMintRequestById(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    DeleteNFTMintRequestById(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       if (!request.id) {
-        throw new Error("missing required field request.id");
+        throw new Error('missing required field request.id');
       }
       const path = `api/nft/requests/${request.id}`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "DELETE",
+        method: 'DELETE',
         body,
       }) as Promise<DeleteStatus>;
     },
-    UpdateNFTOffchainUrl(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    UpdateNFTOffchainUrl(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<NFTMintRequestWithStatus>;
     },
-    DeleteNFTOffchainUrl(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    DeleteNFTOffchainUrl(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       if (!request.id) {
-        throw new Error("missing required field request.id");
+        throw new Error('missing required field request.id');
       }
       const path = `api/nft/${request.id}`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "DELETE",
+        method: 'DELETE',
         body,
       }) as Promise<NFTMintRequestWithStatus>;
     },
-    UploadOffchainMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    UploadOffchainMetadata(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/offchain`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<MetadataOffchainUrl>;
     },
-    Burn(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    Burn(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/burn`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<wellKnownEmpty>;
     },
-    GetAllBurned(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    GetAllBurned(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/burn`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "GET",
+        method: 'GET',
         body,
       }) as Promise<BurnList>;
     },
-    GetAllBurnedPending(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    GetAllBurnedPending(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/burn/pending`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "GET",
+        method: 'GET',
         body,
       }) as Promise<BurnList>;
     },
-    GetAllBurnedError(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    GetAllBurnedError(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/burn/error`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "GET",
+        method: 'GET',
         body,
       }) as Promise<BurnList>;
     },
-    UpdateBurnShippingStatus(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    UpdateBurnShippingStatus(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/shipping/status`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<wellKnownEmpty>;
     },
-    UploadIPFSMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    UploadIPFSMetadata(request) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/ipfs`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
       if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
+        uri += `?${queryParams.join('&')}`;
       }
       return handler({
         path: uri,
-        method: "POST",
+        method: 'POST',
         body,
       }) as Promise<wellKnownEmpty>;
     },
@@ -340,6 +350,5 @@ export function createNftClient(
 }
 // An empty JSON object
 type wellKnownEmpty = Record<never, never>;
-
 
 // @@protoc_insertion_point(typescript-http-eof)

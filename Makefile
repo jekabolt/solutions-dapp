@@ -21,7 +21,9 @@ generate:
 	buf generate --path ./proto/nft/nft.proto \
 	--path ./proto/auth/auth.proto
 
-statics:
+statics: clean generate 
+	@echo "Create temp dir for static files"
+	@mkdir -p art-admin/app/static/swagger/temp
 	@echo "Generating combined Swagger JSON"
 	@find art-admin/app/static/swagger -type f -name "*.json" -exec cp {} art-admin/app/static/swagger/temp \;
 	@GOOS="" GOARCH="" go run art-admin/app/static/swagger/main.go art-admin/app/static/swagger/temp > art-admin/app/static/swagger/api.swagger.json

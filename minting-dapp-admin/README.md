@@ -16,30 +16,23 @@ yarn install #to install
 
 yarn dev #to run
 
-yarn build:dev #to build dev
+yarn build #to build
 
-yarn build:dist #to build dist
+yarn build-proto #to generate proto-http
 ```
 
 ### run locally without Makefile
 ```
 make install #to install
 
-make run-local #to run
+make dev #to run
 
-make build-local #to build dev
+make build #to build
 
-make build-dist #to build dist
-
-make generate-proto #to generate proto-http
+make build-proto #to generate proto-http
 ```
 
 to use `make generate-proto` make sure you have GO `.bin`, `protoc` compiler and `proto->http` ([protoc-gen-typescript-http](https://github.com/einride/protoc-gen-typescript-http)) generator  available in working dir 
-
-### run in docker
-```
-  TODO
-```
 
 todo:
 - [x] setup react app (typescript + react + webpack + scss)

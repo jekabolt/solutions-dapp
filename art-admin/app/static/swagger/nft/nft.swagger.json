@@ -1,0 +1,637 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "nft/nft.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Nft"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/nft": {
+      "post": {
+        "summary": "Upload resulted nft offchain from b64",
+        "operationId": "UpdateNFTOffchainUrl",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftUpdateNFTOffchainUrlRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/burn": {
+      "get": {
+        "operationId": "GetAllBurned",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftBurnList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      },
+      "post": {
+        "operationId": "Burn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftBurnRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/burn/error": {
+      "get": {
+        "operationId": "GetAllBurnedError",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftBurnList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/burn/pending": {
+      "get": {
+        "operationId": "GetAllBurnedPending",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftBurnList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/ipfs": {
+      "post": {
+        "summary": "TODO: add rpc for getting metadata offchain url",
+        "operationId": "UploadIPFSMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/offchain": {
+      "post": {
+        "summary": "Get all metadata with status StatusUploadedOffchain \u0026 StatusUploaded and create _metadata.json",
+        "operationId": "UploadOffchainMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftMetadataOffchainUrl"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/requests": {
+      "get": {
+        "summary": "List all mint requests",
+        "operationId": "ListNFTMintRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestListArray"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      },
+      "post": {
+        "summary": "Method used in ui for submitting drawing nft reference",
+        "operationId": "UpsertNFTMintRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestToUpload"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/requests/{id}": {
+      "delete": {
+        "summary": "Delete mint requests by internal id",
+        "operationId": "DeleteNFTMintRequestById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftDeleteStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "internal id in db",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/shipping/status": {
+      "post": {
+        "operationId": "UpdateBurnShippingStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/nftShippingStatusUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
+    "/api/nft/{id}": {
+      "delete": {
+        "summary": "Remove nft offchain url from mint request",
+        "operationId": "DeleteNFTOffchainUrl",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "internal id in db",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Nft"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "nftBurnList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftBurnShippingInfo"
+          }
+        }
+      }
+    },
+    "nftBurnRequest": {
+      "type": "object",
+      "properties": {
+        "txid": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "mintSequenceNumber": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "shipping": {
+          "$ref": "#/definitions/nftShippingTo"
+        }
+      },
+      "title": "Burn"
+    },
+    "nftBurnShippingInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "burn": {
+          "$ref": "#/definitions/nftBurnRequest"
+        },
+        "status": {
+          "$ref": "#/definitions/nftShippingStatus"
+        }
+      }
+    },
+    "nftDeleteStatus": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "title": "error message"
+        }
+      },
+      "title": "response for deleteing status"
+    },
+    "nftImageList": {
+      "type": "object",
+      "properties": {
+        "fullSize": {
+          "type": "string",
+          "title": "link to fullsized image"
+        },
+        "compressed": {
+          "type": "string",
+          "title": "link to compressed image"
+        }
+      },
+      "title": "Links to images"
+    },
+    "nftImageToUpload": {
+      "type": "object",
+      "properties": {
+        "raw": {
+          "type": "string",
+          "title": "base64 encoded image if it starts from \"http://\" or  \"https://\" will be stored as link if not will be uploaded to s3"
+        }
+      },
+      "title": "B64 raw image or link"
+    },
+    "nftMetadataOffchainUrl": {
+      "type": "object",
+      "properties": {
+        "Url": {
+          "type": "string",
+          "title": "all metadata json url uploaded to s3 will be used to upload to ipfs"
+        }
+      },
+      "title": "Upload offchain metadata _metadata.json"
+    },
+    "nftNFTMintRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "internal id in db"
+        },
+        "ethAddress": {
+          "type": "string",
+          "title": "eth address of minter account"
+        },
+        "TxHash": {
+          "type": "string",
+          "title": "hash of mint transaction"
+        },
+        "mintSequenceNumber": {
+          "type": "integer",
+          "format": "int32",
+          "title": "sequence number of minted nft"
+        },
+        "description": {
+          "type": "string",
+          "title": "user defined description of drawing"
+        }
+      },
+      "title": "Mint request info"
+    },
+    "nftNFTMintRequestListArray": {
+      "type": "object",
+      "properties": {
+        "nftMintRequests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftNFTMintRequestWithStatus"
+          },
+          "title": "uploaded mint request with status"
+        }
+      },
+      "title": "List of all submitted mint requests"
+    },
+    "nftNFTMintRequestToUpload": {
+      "type": "object",
+      "properties": {
+        "sampleImages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftImageToUpload"
+          },
+          "title": "array of images from which nft should be referenced"
+        },
+        "nftMintRequest": {
+          "$ref": "#/definitions/nftNFTMintRequest",
+          "title": "mint request info"
+        }
+      },
+      "title": "Images and request info for submitting nft"
+    },
+    "nftNFTMintRequestWithStatus": {
+      "type": "object",
+      "properties": {
+        "sampleImages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftImageList"
+          },
+          "title": "array of images from which nft should be referenced"
+        },
+        "nftMintRequest": {
+          "$ref": "#/definitions/nftNFTMintRequest",
+          "title": "mint request info"
+        },
+        "status": {
+          "type": "string",
+          "title": "status"
+        },
+        "nftOffchainUrl": {
+          "type": "string",
+          "title": "resulted nft url uploaded offchain i.e to s3 can be empty"
+        }
+      },
+      "title": "NFT request as is with status \nlist of statuses \nStatusUnknown          NFTStatus = \"unknown\"\nStatusPending          NFTStatus = \"pending\"\nStatusCompleted        NFTStatus = \"completed\"\nStatusFailed           NFTStatus = \"failed\"\nStatusBad              NFTStatus = \"bad\"\nStatusUploadedOffchain NFTStatus = \"uploadedOffchain\"\nStatusUploaded         NFTStatus = \"uploaded”"
+    },
+    "nftShippingStatus": {
+      "type": "object",
+      "properties": {
+        "trackNumber": {
+          "type": "string"
+        },
+        "timeSent": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "error": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "nftShippingStatusUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/nftShippingStatus"
+        }
+      }
+    },
+    "nftShippingTo": {
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "zipCode": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "nftUpdateNFTOffchainUrlRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "internai id"
+        },
+        "nftOffchainUrl": {
+          "$ref": "#/definitions/nftImageToUpload",
+          "title": "resulted nft raw image b64 encoded"
+        }
+      },
+      "title": "Update NFT offchain url"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

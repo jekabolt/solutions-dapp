@@ -28,14 +28,13 @@ statics: clean generate
 	@find art-admin/app/static/swagger -type f -name "*.json" -exec cp {} art-admin/app/static/swagger/temp \;
 	@GOOS="" GOARCH="" go run art-admin/app/static/swagger/main.go art-admin/app/static/swagger/temp > art-admin/app/static/swagger/api.swagger.json
 	@rm -rf art-admin/app/static/swagger/temp
-	@rm -rf art-admin/app/static/swagger/auth
-	@rm -rf art-admin/app/static/swagger/nft
 	@echo "Generating combined Swagger JSON - Done"
 
 
 clean:
 	rm -rf art-admin/bin
-	rm -f art-admin/app/static/swagger/*.json
+	rm -f art-admin/app/static/swagger/auth/*.json
+	rm -f art-admin/app/static/swagger/nft/*.json
 	rm -f proto/swagger/*.json
 	
 install:

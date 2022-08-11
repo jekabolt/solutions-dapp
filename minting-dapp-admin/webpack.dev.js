@@ -12,6 +12,8 @@ module.exports = {
 		port: 4040,
 		proxy: {
 			'/api': {
+				secure: false,
+				changeOrigin: true,
 				target: 'http://localhost:4040',
 				router: () => process.env.API_URL || 'http://localhost:3999',
 			}

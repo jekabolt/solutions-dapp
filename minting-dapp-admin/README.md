@@ -10,6 +10,8 @@ git checkout dev-admin
 cd ./solutions-dapp/minting-dapp-admin
 ```
 
+for more backend api options check `.env.example` file
+
 ### run locally without Makefile
 ```
 yarn install #to install

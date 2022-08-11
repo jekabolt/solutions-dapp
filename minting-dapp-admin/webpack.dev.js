@@ -1,4 +1,5 @@
 const path = require('path');
+require('dotenv').config()
 
 module.exports = {
 	mode: 'development',
@@ -12,7 +13,7 @@ module.exports = {
 		proxy: {
 			'/api': {
 				target: 'http://localhost:4040',
-				router: () => 'http://localhost:3999',
+				router: () => process.env.API_URL || 'http://localhost:3999',
 			}
 		},
 	},

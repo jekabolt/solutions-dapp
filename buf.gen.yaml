@@ -1,0 +1,31 @@
+version: v1beta1
+plugins:
+  - name: go
+    out: art-admin/proto
+    opt:
+      - paths=source_relative
+  - name: go-grpc
+    out: art-admin/proto
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  - name: grpc-gateway
+    out: art-admin/proto
+    opt:
+      - paths=source_relative
+      - logtostderr=true
+  - name: openapiv2
+    out: art-admin/app/static/swagger
+    opt:
+      - json_names_for_fields=true
+      - simple_operation_ids=true
+  - name: typescript-http
+    out: minting-dapp-admin/src/api/proto-http
+    opt:
+      - paths=source_relative
+
+# build-proto: ## Generate proto-http files from nft.proto and auth.proto
+# 	protoc \
+# 		--typescript-http_out=./src/api/proto-http \
+# 		--proto_path=../art-admin/proto \
+# 		../art-admin/proto/nft/nft.proto ../art-admin/proto/auth/auth.proto 

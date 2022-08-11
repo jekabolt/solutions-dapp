@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package auth;
-option go_package = "go.mxc.org/airdrops/api/auth";
+option go_package = "github.com/jekabolt/solutions-dapp/art-admin/auth";
 
 
 import "google/api/annotations.proto";

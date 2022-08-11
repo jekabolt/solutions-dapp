@@ -2,18 +2,20 @@ REGISTRY=jekabolt
 VERSION=master
 
 build: statics
-	go build -a $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o ./bin/$(IMAGE_NAME) ./cmd/	
+	cd art-admin && go build -a $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o ./bin/$(IMAGE_NAME) ./cmd/	
 
 run: build
-	./bin/$(IMAGE_NAME)
+	cd art-admin && ./bin/$(IMAGE_NAME)
 
-coverage:
-	go test ./... -coverprofile=coverage.out
-	go tool cover -func=coverage.out
-	rm coverage.out
-
+test: generate
+	# we only have non-generated code in ./internal, so we only count coverage for it
+	cd art-admin && go test -cover -coverprofile coverage.out -coverpkg ./app/...,./internal/... ./...
+	# IMPORTANT: required coverage can only be increased
+	cd art-admin && go tool cover -func coverage.out | \
+		awk 'END { print "Coverage: " $$3; if ($$3+0 < 40.0) { print "Insufficient coverage"; exit 1; } }'
+		
 local: build
-	source .env && ./bin/$(IMAGE_NAME)
+	cd art-admin && source .env && ./bin/$(IMAGE_NAME)
 
 generate:
 	buf generate --path ./proto/nft/nft.proto \
@@ -21,15 +23,17 @@ generate:
 
 statics:
 	@echo "Generating combined Swagger JSON"
-	@find proto/swagger -type f -name "*.json" -exec cp {} proto/swagger \;
-	@GOOS="" GOARCH="" go run proto/swagger/main.go proto/swagger > app/static/swagger/api.swagger.json
-	@find proto/swagger -type f -name "*.json" -exec cp {} app/static/swagger \;
+	@find art-admin/app/static/swagger -type f -name "*.json" -exec cp {} art-admin/app/static/swagger/temp \;
+	@GOOS="" GOARCH="" go run art-admin/app/static/swagger/main.go art-admin/app/static/swagger/temp > art-admin/app/static/swagger/api.swagger.json
+	@rm -rf art-admin/app/static/swagger/temp
+	@rm -rf art-admin/app/static/swagger/auth
+	@rm -rf art-admin/app/static/swagger/nft
+	@echo "Generating combined Swagger JSON - Done"
 
 
 clean:
-	rm -rf bin
-	rm -f internal/static/static_gen.go
-	rm -f static/swagger/*.json
+	rm -rf art-admin/bin
+	rm -f art-admin/app/static/swagger/*.json
 	rm -f proto/swagger/*.json
 	
 install:
@@ -39,6 +43,19 @@ install:
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger@latest
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 	go install golang.org/x/text/cmd/gotext@latest
+	go install go.einride.tech/protoc-gen-typescript-http@latest
+
+
+# admin panel 
+
+install-admin-panel: ## Install the web dependencies
+	yarn install --ignore-engines
+
+dev-admin-panel: ## Run the local dev server
+	yarn dev
+
+build-dist-admin-panel: ## Build dist version
+	yarn build
 
 
 # configuration for image names
@@ -80,10 +97,4 @@ image-run:
               --mount src=/root/bunt,target=/root/bunt,type=bind \
               $(DOCKER_IMAGE)
 
-test: generate
-	# we only have non-generated code in ./internal, so we only count coverage for it
-	go test -cover -coverprofile coverage.out -coverpkg ./app/...,./internal/... ./...
-	# IMPORTANT: required coverage can only be increased
-	go tool cover -func coverage.out | \
-		awk 'END { print "Coverage: " $$3; if ($$3+0 < 40.0) { print "Insufficient coverage"; exit 1; } }'
 

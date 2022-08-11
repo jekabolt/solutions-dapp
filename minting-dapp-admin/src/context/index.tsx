@@ -1,20 +1,15 @@
 import { FC, createContext, useReducer, ReactNode, Dispatch } from 'react';
 
 const initialContexValue = {
-  authToken: '',
 };
 
 interface IState {
-  authToken: string;
 }
-type ActionsType = 'setAuthToken' | 'resetAuthToken';
+type ActionsType = '';
 
 const reducer = (state: IState, action: { type: ActionsType; payload: string }) => {
   switch (action.type) {
-    case 'setAuthToken':
-      return { ...state, authToken: action.payload };
-    case 'resetAuthToken':
-      return { ...state, authToken: '' };
+    case '':
     default:
       return state;
   }

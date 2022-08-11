@@ -1,18 +1,14 @@
-import { FC, Fragment, useContext } from 'react';
+import { FC, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { getNftRequests, QUERIES } from 'api';
 import { NftPreview } from 'components/NftPreview';
-import { Context } from 'context';
 
 import styles from 'styles/nft-list-page.module.scss';
 
 export const NftListPage: FC = () => {
-  const {
-    state: { authToken },
-  } = useContext(Context);
-  const { data } = useQuery([QUERIES.getNftRequests, authToken], ({ queryKey }) =>
-    getNftRequests(queryKey[1]),
+  const { data } = useQuery([QUERIES.getNftRequests], () =>
+    getNftRequests(localStorage.getItem('authToken') || '')
   );
 
   return (
@@ -21,7 +17,7 @@ export const NftListPage: FC = () => {
         <h3>some sort of data</h3>
       </div>
       <div className={styles.nftList}>
-        <div style={{ backgroundColor: authToken ? 'lightgreen' : 'red' }}>auth</div>
+        <div style={{ backgroundColor: localStorage.getItem('authToken') ? 'lightgreen' : 'red' }}>auth</div>
         <br />
         <br />
         <div style={{ backgroundColor: data?.nftMintRequests ? 'lightgreen' : 'red' }}>

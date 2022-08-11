@@ -1,19 +1,17 @@
-import { FC, useState, ChangeEvent, FormEvent, useEffect, useContext } from 'react';
+import { FC, useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import { login } from 'api';
-import { Context } from 'context';
 import styles from 'styles/login-block.module.scss';
 
 export const LoginBlock: FC = () => {
-  const { dispatch } = useContext(Context);
   const [isModalOpen, setModalVisability] = useState(false);
   const [password, setPassword] = useState('');
   const { mutate, data } = useMutation(login);
 
   useEffect(() => {
     if (data?.authToken) {
-      dispatch({ type: 'setAuthToken', payload: data.authToken });
+      localStorage.setItem('authToken', data.authToken);
     }
   }, [data?.authToken]);
 

@@ -18,10 +18,10 @@ local: build
 	cd art-admin && source .env && ./bin/$(IMAGE_NAME)
 
 generate:
-	buf generate --path ./proto/nft/nft.proto \
-	--path ./proto/auth/auth.proto
+	buf generate --path proto/nft/nft.proto \
+	--path proto/auth/auth.proto
 
-statics: clean generate 
+statics: generate 
 	@echo "Create temp dir for static files"
 	@mkdir -p art-admin/app/static/swagger/temp
 	@echo "Generating combined Swagger JSON"
@@ -35,7 +35,6 @@ clean:
 	rm -rf art-admin/bin
 	rm -f art-admin/app/static/swagger/auth/*.json
 	rm -f art-admin/app/static/swagger/nft/*.json
-	rm -f proto/swagger/*.json
 	
 install:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -46,6 +45,19 @@ install:
 	go install golang.org/x/text/cmd/gotext@latest
 	go install go.einride.tech/protoc-gen-typescript-http@latest
 
+
+BUF_VERSION 		:= 1.7.0
+BIN 				:= $(shell echo $(PATH))
+OS 					:= $(shell uname -s)
+ARCH 				:= $(shell uname -m)
+buf-install:
+	echo "Installing buf version $(BUF_VERSION)"
+	BIN="/usr/local/bin" && \
+	VERSION="1.7.0" && \
+	curl -sSL \
+		"https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$(OS)-$(ARCH)" \
+		-o "./bin/buf" && \
+	chmod +x "bin/buf" 
 
 # admin panel 
 

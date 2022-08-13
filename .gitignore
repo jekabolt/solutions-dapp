@@ -8,6 +8,7 @@ minting-dapp-admin/dist
 */artifacts/*
 */build/*
 */cache/*
+bin
 
 # Editor
 .vscode

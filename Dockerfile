@@ -5,6 +5,10 @@ ENV PATH=$PATH:$PROJECT_PATH/art-admin/bin
 
 RUN apk add --no-cache make git bash alpine-sdk protobuf
 
+COPY --from=bufbuild/buf:latest /usr/local/bin/buf /usr/local/go/bin/
+ 
+ENV PATH="/usr/local/go/bin:${PATH}"
+
 RUN mkdir -p $PROJECT_PATH
 COPY . $PROJECT_PATH
 WORKDIR $PROJECT_PATH

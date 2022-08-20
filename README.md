@@ -56,15 +56,68 @@ the http api specification can be found [here](https://api.sys.solutions/nft/api
 
 ### run locally 
 
-```bash
+```sh
 make install
 make run
 ```
 
 ### run in docker  
 
-```bash
+```sh
 make image-build
 make image-run
 ```
 
+### dependencies 
+Need to `solc` & `abigen` be installed to envoke read methods from contract in go to make sure that payment went through.
+
+#### install on mac:
+
+```sh 
+brew update
+brew upgrade
+brew tap ethereum/ethereum
+brew install solidity
+brew install ethereum
+```
+
+#### install ubuntu:
+
+```sh 
+add-apt-repository ppa:ethereum/ethereum
+add-apt-repository ppa:ethereum/ethereum-dev
+apt-get update
+apt-get install solc
+apt-get install ethereum
+```
+# <minting-dapp> admin panel
+
+for more backend api options check `.env.example` file
+
+### Run locally
+``` bash
+make install-admin-panel
+
+make dev-admin-panel
+```
+
+### Build dist version 
+``` bash
+make build-dist-admin-panel
+```
+
+to use `make generate-proto` make sure you have GO `.bin`, `protoc` compiler and `proto->http` ([protoc-gen-typescript-http](https://github.com/einride/protoc-gen-typescript-http)) generator  available in working dir 
+
+todo:
+- [x] setup react app (typescript + react + webpack + scss)
+- [ ] generate types from backend (protobuff,rpc) (similar to [tRPC](https://trpc.io/docs/) types generation ?))
+- [ ] use [useQuery](https://tanstack.com/query/v4/docs/reference/useQuery?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useQuery) for fetching data (if is has okay bundle size...didnt check yet)
+- [ ] change build dir to art-admin/..../static
+- [ ] add docker + make files, add run commands to readme
+- [ ] color mode (theme)
+- [ ] check bundle routing
+- [ ] prior todos
+- [ ] add protected wrapper to routes with auth
+- [ ] move proto files to upper scope (both client and server generates it)
+- [ ] think of todos
+- [ ] think of authToken lifetime  (locastorage/sessionstorage/best way ?)

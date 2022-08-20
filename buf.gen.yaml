@@ -20,7 +20,7 @@ plugins:
       - json_names_for_fields=true
       - simple_operation_ids=true
   - name: typescript-http
-    out: minting-dapp-admin/src/api/proto-http
+    out: admin-panel/src/api/proto-http
     opt:
       - paths=source_relative
 

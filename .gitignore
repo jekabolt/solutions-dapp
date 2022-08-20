@@ -1,9 +1,14 @@
-smart-contract/artifacts/*
-smart-contract/build/*
-smart-contract/cache/*
+**/dist
 
-minting-dapp-admin/node_modules
-minting-dapp-admin/dist
+*vscode
+.env
+*.db
+.env-local
+
+*coverage*
+internal/static/static_gen.go
+*/swagger/*.json
+
 
 */artifacts/*
 */build/*
@@ -46,6 +51,7 @@ dep-graph.pdf
 
 # typescript
 **/next-env.d.ts
-.DS_Store
 
-.env
+# System Files
+.DS_Store
+Thumbs.db

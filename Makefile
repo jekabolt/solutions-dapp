@@ -21,6 +21,10 @@ generate:
 	buf generate --path proto/nft/nft.proto \
 	--path proto/auth/auth.proto
 
+abi:
+	solcjs --optimize --bin --abi --include-path contract/truffle/node_modules/ --base-path ./contract/truffle/contracts --output-dir ./art-admin/bin  contract/truffle/contracts/SYSToken.sol
+	abigen --bin=./art-admin/bin/SYSToken_sol_SYSToken.bin --abi=./art-admin/bin/SYSToken_sol_SYSToken.abi --pkg=systoken --out=art-admin/contract/systoken.go
+
 statics: generate 
 	@echo "Create temp dir for static files"
 	@mkdir -p art-admin/app/static/swagger/temp
@@ -62,13 +66,13 @@ buf-install:
 # admin panel 
 
 install-admin-panel: ## Install the web dependencies
-	yarn install --ignore-engines
+	cd admin-panel && yarn install --ignore-engines
 
 dev-admin-panel: ## Run the local dev server
-	yarn dev
+	cd admin-panel && yarn dev
 
 build-dist-admin-panel: ## Build dist version
-	yarn build
+	cd admin-panel && yarn build
 
 
 # configuration for image names

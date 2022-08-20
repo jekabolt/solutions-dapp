@@ -1,12 +1,6 @@
-smart-contract/artifacts/*
-smart-contract/build/*
-smart-contract/cache/*
-
-admin-panel/node_modules
-admin-panel/dist
+**/dist
 
 *vscode
-art-admin
 .env
 *.db
 .env-local

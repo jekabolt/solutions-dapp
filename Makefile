@@ -22,8 +22,8 @@ generate:
 	--path proto/auth/auth.proto
 
 abi:
-	solcjs --optimize --bin --abi --include-path contract/truffle/node_modules/ --base-path ./contract/truffle/contracts --output-dir ./bin  contract/truffle/contracts/SYSToken.sol
-	solcjs --optimize --bin --abi --include-path contract/truffle/node_modules/ --base-path ./contract/truffle/contracts --output-dir ./bin  contract/truffle/contracts/SYSToken.sol
+	solcjs --optimize --bin --abi --include-path contract/truffle/node_modules/ --base-path ./contract/truffle/contracts --output-dir ./art-admin/bin  contract/truffle/contracts/SYSToken.sol
+	abigen --bin=./art-admin/bin/SYSToken_sol_SYSToken.bin --abi=./art-admin/bin/SYSToken_sol_SYSToken.abi --pkg=systoken --out=art-admin/contract/systoken.go
 
 statics: generate 
 	@echo "Create temp dir for static files"

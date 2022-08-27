@@ -56,8 +56,6 @@ OS 					:= $(shell uname -s)
 ARCH 				:= $(shell uname -m)
 buf-install:
 	echo "Installing buf version $(BUF_VERSION)"
-	BIN="/usr/local/bin" && \
-	VERSION="1.7.0" && \
 	curl -sSL \
 		"https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$(OS)-$(ARCH)" \
 		-o "./bin/buf" && \

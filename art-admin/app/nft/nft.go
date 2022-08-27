@@ -50,7 +50,7 @@ func (s *Server) UploadRawImage(ito *pb_nft.ImageToUpload, pe *bucket.PathExtra)
 	case ito.Raw == "":
 		log.Error().Msgf("UploadRawImage empty raw image")
 		return nil, fmt.Errorf("cannot upload raw image: raw is empty")
-	case !strings.Contains(ito.Raw, "https://"), !strings.Contains(ito.Raw, "https://"):
+	case strings.Contains(ito.Raw, "https://"), strings.Contains(ito.Raw, "https://"):
 		return &pb_nft.ImageList{
 			FullSize:   ito.Raw,
 			Compressed: ito.Raw,

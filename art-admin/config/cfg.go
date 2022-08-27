@@ -17,7 +17,7 @@ import (
 type Config struct {
 	Bunt         *bunt.Config
 	Bucket       *bucket.Config
-	Etherscan    *eth.Config
+	ETHWatcher   *eth.Config
 	IPFS         *ipfs.Config
 	Descriptions *descriptions.Config
 	Server       *app.Config
@@ -31,10 +31,9 @@ func GetConfig() (*Config, error) {
 	var err error
 
 	cfg := &Config{
-		// Auth:         &auth.Config{},
 		Bunt:         &bunt.Config{},
 		Bucket:       &bucket.Config{},
-		Etherscan:    &eth.Config{},
+		ETHWatcher:   &eth.Config{},
 		IPFS:         &ipfs.Config{},
 		Descriptions: &descriptions.Config{},
 		Server:       &app.Config{},

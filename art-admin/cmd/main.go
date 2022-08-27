@@ -37,17 +37,16 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init s3 bucket err:[%s]", err.Error()))
 	}
 
-	eth, err := cfg.Etherscan.InitEtherscan(context.Background(), db.MintRequestStore())
+	eth, err := cfg.ETHWatcher.New(context.Background(), db.MintRequestStore())
 	if err != nil {
-		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
+		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init ETHWatcher err:[%s]", err.Error()))
 	}
-
-	// TODO:
-	eth.StartTxStatusUpdate(context.TODO())
+	eth.Run(context.TODO())
+	defer eth.Stop()
 
 	ipfs, err := cfg.IPFS.Init(desc)
 	if err != nil {
-		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init etherscan err:[%s]", err.Error()))
+		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init ipfs uploader err:[%s]", err.Error()))
 	}
 
 	nftS, err := cfg.Nft.New(db, b, ipfs, desc)

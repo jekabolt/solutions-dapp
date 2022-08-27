@@ -16,6 +16,7 @@ type MintRequestStore interface {
 	GetNFTMintRequestById(id string) (*pb_nft.NFTMintRequestWithStatus, error)
 	UpdateStatusNFTMintRequest(id string, status NFTStatus) (*pb_nft.NFTMintRequestWithStatus, error)
 	GetAllNFTMintRequests() ([]*pb_nft.NFTMintRequestWithStatus, error)
+	GetUnknownNFTMintRequests() ([]*pb_nft.NFTMintRequestWithStatus, error) // TODO: make index
 	DeleteNFTMintRequestById(id string) error
 
 	GetAllToUpload() ([]*pb_nft.NFTMintRequestWithStatus, error)
@@ -108,6 +109,22 @@ func (bunt *BuntDB) GetAllNFTMintRequests() ([]*pb_nft.NFTMintRequestWithStatus,
 		return nil, fmt.Errorf("GetAllNFTMintRequests:GetAllJSON [%v]", err.Error())
 	}
 	return nftMRs, err
+}
+
+func (bunt *BuntDB) GetUnknownNFTMintRequests() ([]*pb_nft.NFTMintRequestWithStatus, error) {
+	nftMRs := []*pb_nft.NFTMintRequestWithStatus{}
+	err := bunt.GetAllJSON(allNFTMintRequests, &nftMRs)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllNFTMintRequests:GetAllJSON [%v]", err.Error())
+	}
+	pending := []*pb_nft.NFTMintRequestWithStatus{}
+	// TODO: make index
+	for _, mr := range nftMRs {
+		if mr.Status == StatusUnknown.String() {
+			pending = append(pending, mr)
+		}
+	}
+	return pending, err
 }
 
 func (bunt *BuntDB) DeleteNFTMintRequestById(id string) error {

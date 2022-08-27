@@ -14,7 +14,6 @@
     "format": "prettier --write './src/**/*.{js,ts,tsx,scss,md,json}' --config ./.prettierrc"
   },
   "devDependencies": {
-    "@tanstack/react-location-devtools": "^3.4.4",
     "@types/axios": "^0.14.0",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",

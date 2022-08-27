@@ -1,10 +1,8 @@
 import { FC, createContext, useReducer, ReactNode, Dispatch } from 'react';
 
-const initialContexValue = {
-};
+const initialContexValue = {};
 
-interface IState {
-}
+interface IState {}
 type ActionsType = '';
 
 const reducer = (state: IState, action: { type: ActionsType; payload: string }) => {

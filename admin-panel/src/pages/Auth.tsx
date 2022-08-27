@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useEffect } from 'react';
+import { useState, ChangeEvent, useEffect, MouseEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-location';
 
@@ -13,7 +13,7 @@ export const Auth = () => {
   const { mutate, data, error } = useMutation(login);
   const navigate = useNavigate();
 
-  const handlePasswordSubmit = (e: any) => {
+  const handlePasswordSubmit = (e: MouseEvent) => {
     e.preventDefault();
     mutate(password);
   };

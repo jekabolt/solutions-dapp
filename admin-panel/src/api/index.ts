@@ -41,24 +41,35 @@ export function login(password: string): Promise<LoginResponse> {
 // +GET /api/nft/burn/pending
 
 // +POST /api/auth/login
-// POST /api/nft/ipfs
-// POST /api/nft/burn
-// POST /api/nft
-// POST /api/nft/requests
-// POST /api/nft/offchain
-// POST /api/nft/shipping/status
+// -POST /api/nft/ipfs
+// +POST /api/nft/burn
+// +POST /api/nft
+// +POST /api/nft/requests
+// +POST /api/nft/offchain
+// +POST /api/nft/shipping/status
 
-// DELETE /api/nft/requests/{id}
+// +DELETE /api/nft/requests/{id}
+// +DELETE /api/nft/{id}
 
 const createAuthorizedNftClient = (authToken: string) => {
   return nftProto.createNftClient(
     // todo: fix types
-    ({ path, method }: RequestType): Promise<any> => {
+    ({ path, method, body }: RequestType): Promise<any> => {
       switch (method.toLowerCase()) {
+        // todo: test
+        case 'post':
+          return axios
+            .post(path, body, { headers: getAuthHeaders(authToken) })
+            .then((response) => response.data);
+        // todo: test ?? where is the body pf request
+        case 'delete':
+          return axios
+            .delete(path, { headers: getAuthHeaders(authToken) })
+            .then((response) => response.data);
         case 'get':
         default:
           return axios
-            .get<any>(path, { headers: getAuthHeaders(authToken) })
+            .get(path, { headers: getAuthHeaders(authToken) })
             .then((response) => response.data);
       }
     },
@@ -86,4 +97,63 @@ export function getNftAllBurnedPending(authToken: string): Promise<nftProto.Burn
   const nftClient = createAuthorizedNftClient(authToken);
   
   return nftClient.GetAllBurnedPending(authToken);
+}
+
+// todo: handle empty responses
+
+export function burnNft(authToken: string, requestBody: nftProto.BurnRequest): Promise<{}> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.Burn(requestBody);
+}
+
+export function updateNftOffchainUrl(
+  authToken: string,
+  requestBody: nftProto.UpdateNFTOffchainUrlRequest,
+): Promise<nftProto.NFTMintRequestWithStatus> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.UpdateNFTOffchainUrl(requestBody);
+}
+
+export function upsertNftMintRequest(
+  authToken: string,
+  requestBody: nftProto.NFTMintRequestToUpload,
+): Promise<nftProto.NFTMintRequestWithStatus> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.UpsertNFTMintRequest(requestBody);
+}
+
+export function uploadOffchainMetadata(authToken: string): Promise<nftProto.MetadataOffchainUrl> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.UploadOffchainMetadata({});
+}
+
+export function updateBurnShippingStatus(
+  authToken: string,
+  requestBody: nftProto.ShippingStatusUpdateRequest,
+): Promise<{}> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.UpdateBurnShippingStatus(requestBody);
+}
+
+export function deleteNftMintRequestById(
+  authToken: string,
+  id: nftProto.DeleteId,
+): Promise<nftProto.DeleteStatus> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.DeleteNFTMintRequestById(id);
+}
+
+export function deleteNftOffchainUrl(
+  authToken: string,
+  id: nftProto.DeleteId,
+): Promise<nftProto.NFTMintRequestWithStatus> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.DeleteNFTOffchainUrl(id);
 }

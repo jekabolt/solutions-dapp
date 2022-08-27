@@ -17,8 +17,8 @@ import { Auth } from 'pages/Auth';
 import 'styles/global.scss';
 import styles from 'styles/index.module.scss';
 
-const container = document.getElementById('root');
-const root = createRoot(container!);
+const container = document.getElementById('root') as HTMLElement;
+const root = createRoot(container);
 
 const queryClient = new QueryClient();
 const location = new ReactLocation();

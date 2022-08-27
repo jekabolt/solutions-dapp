@@ -1,0 +1,27 @@
+.authPage {
+  text-align: center;
+  padding-top: 150px;
+
+  .passwordInput {
+    margin: 10px;
+    width: 150px;
+    height: 30px;
+    font-size: 15px;
+    outline: none;
+    border: 0;
+    padding: 5px;
+  }
+  
+  .errorMessage {
+    font-size: 15px;
+    color: red;
+  }
+  
+  .passwordSubmit {
+    background-color: #757575;
+    color: white;
+    padding: 5px;
+    width: 75px;
+    border: 0;
+  }
+}

@@ -14,7 +14,7 @@ export const Sidebar: FC = () => {
           </Link>
         </li>
         <li>
-          <Link to={ROUTES.nftRequests} activeOptions={{ exact: true }}>
+          <Link to={ROUTES.auth} activeOptions={{ exact: true }}>
             /nft-requests
           </Link>
         </li>

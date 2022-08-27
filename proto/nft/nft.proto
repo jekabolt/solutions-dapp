@@ -9,7 +9,7 @@ import "google/protobuf/empty.proto";
 
 
 service Nft {
-  //  Method used in ui for submitting drawing nft reference 
+  //  Method used in ui for submitting drawing nft reference use id 0 for new nft and current nft id for update
   rpc UpsertNFTMintRequest (NFTMintRequestToUpload) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft/requests"

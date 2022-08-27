@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-location';
 import { login } from 'api';
 import { ROUTES } from 'constants/routes';
 import { AUTH_LOCAL_STORAGE_KEY } from 'constants/values';
+
 import styles from 'styles/AuthPage.module.scss';
 
 export const Auth = () => {
@@ -24,7 +25,6 @@ export const Auth = () => {
   useEffect(() => {
     if (data?.authToken) {
       localStorage.setItem(AUTH_LOCAL_STORAGE_KEY, data.authToken);
-      // should we replace history or just push to it
       navigate({ to: ROUTES.home, replace: true });
     }
   }, [data?.authToken]);

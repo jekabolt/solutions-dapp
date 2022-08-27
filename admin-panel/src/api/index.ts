@@ -1,8 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 
 import { createAuthClient, LoginRequest, LoginResponse } from './proto-http/auth';
-// NFTMintRequestListArray -> NFTMintResponseListArray should rename in GO part ?
 import { createNftClient, NFTMintRequestListArray } from './proto-http/nft';
+
+export * from './proto-http/auth';
+export * from './proto-http/nft';
 
 export enum QUERIES {
   getNftRequests = 'getNftRequests',
@@ -12,7 +14,7 @@ export enum MUTATIONS {
   login = 'login',
 }
 
-// copy of type inside generated file (no export, need to define explicitly)
+// proto files doesnt export this type
 type RequestType = {
   path: string;
   method: string;
@@ -35,7 +37,7 @@ export function login(password: string): Promise<LoginResponse> {
 
 const createAuthorizedNftClient = (authToken: string) => {
   return createNftClient(
-    ({ path, method, body }: RequestType): Promise<NFTMintRequestListArray> => {
+    ({ path, method }: RequestType): Promise<NFTMintRequestListArray> => {
       switch (method.toLowerCase()) {
         case 'get':
         default:
@@ -49,5 +51,6 @@ const createAuthorizedNftClient = (authToken: string) => {
 
 export function getNftRequests(authToken: string): Promise<NFTMintRequestListArray> {
   const nftClient = createAuthorizedNftClient(authToken);
+  
   return nftClient.ListNFTMintRequests(authToken);
 }

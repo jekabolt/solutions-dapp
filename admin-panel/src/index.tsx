@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ReactLocationDevtools } from '@tanstack/react-location-devtools';
 import { Outlet, ReactLocation, Router, Route, DefaultGenerics } from '@tanstack/react-location';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ContextProvider } from 'context';
@@ -45,11 +44,6 @@ root.render(
           <footer className={styles.footer}>
             Copyright © 2022 - {new Date().getFullYear()}. All Rights Reserved
           </footer>
-          {process.env.NODE_ENV === 'development' ? (
-            <div style={{ padding: 0 }}>
-              <ReactLocationDevtools />
-            </div>
-          ) : null}
         </Router>
       </QueryClientProvider>
     </ContextProvider>

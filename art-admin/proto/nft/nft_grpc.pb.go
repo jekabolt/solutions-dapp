@@ -23,11 +23,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NftClient interface {
-	//  Method used in ui for submitting drawing nft reference
+	// Method used in ui for submitting drawing nft reference
 	UpsertNFTMintRequest(ctx context.Context, in *NFTMintRequestToUpload, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
-	//  List all mint requests
+	// List all mint requests
 	ListNFTMintRequests(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NFTMintRequestListArray, error)
-	//  Delete mint requests by internal id
+	// Delete mint requests by internal id
 	DeleteNFTMintRequestById(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*DeleteStatus, error)
 	// Upload resulted nft offchain from b64
 	UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffchainUrlRequest, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
@@ -164,11 +164,11 @@ func (c *nftClient) UploadIPFSMetadata(ctx context.Context, in *emptypb.Empty, o
 // All implementations should embed UnimplementedNftServer
 // for forward compatibility
 type NftServer interface {
-	//  Method used in ui for submitting drawing nft reference
+	// Method used in ui for submitting drawing nft reference
 	UpsertNFTMintRequest(context.Context, *NFTMintRequestToUpload) (*NFTMintRequestWithStatus, error)
-	//  List all mint requests
+	// List all mint requests
 	ListNFTMintRequests(context.Context, *emptypb.Empty) (*NFTMintRequestListArray, error)
-	//  Delete mint requests by internal id
+	// Delete mint requests by internal id
 	DeleteNFTMintRequestById(context.Context, *DeleteId) (*DeleteStatus, error)
 	// Upload resulted nft offchain from b64
 	UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error)

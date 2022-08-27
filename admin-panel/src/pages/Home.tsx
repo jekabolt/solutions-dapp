@@ -1,19 +1,29 @@
 import { FC, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-location';
 
 import { getNftRequests, QUERIES } from 'api';
 import { NftPreview } from 'components/NftPreview';
+import { ROUTES } from 'constants/routes';
 
 import styles from 'styles/nft-list-page.module.scss';
 
-export const NftListPage: FC = () => {
+export const Home: FC = () => {
   const { data } = useQuery([QUERIES.getNftRequests], () =>
     getNftRequests(localStorage.getItem('authToken') || '')
   );
 
   return (
     <div className={styles.container}>
-      <div className={styles.pageHeader}>
+      home page
+      <br />
+      <br />
+      <br />
+      <br />
+      <Link to={ROUTES.auth} activeOptions={{ exact: true }}>
+        /auth
+      </Link>
+      {/* <div className={styles.pageHeader}>
         <h3>some sort of data</h3>
       </div>
       <div className={styles.nftList}>
@@ -30,7 +40,7 @@ export const NftListPage: FC = () => {
               <NftPreview />
             </Fragment>
           ))}
-      </div>
+      </div> */}
     </div>
   );
 };

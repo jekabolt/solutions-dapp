@@ -94,7 +94,7 @@ func (b *Bucket) uploadSingleImage(img image.Image, quality int, prefix string, 
 	}
 
 	imgReader := bufio.NewReader(&buf)
-	url, err := b.uploadImageToBucket(imgReader, contentTypeJSON, prefix, pe)
+	url, err := b.uploadImageToBucket(imgReader, contentTypeJPEG, prefix, pe)
 	if err != nil {
 		return "", fmt.Errorf("Upload:uploadImageToBucket: [%v]", err.Error())
 	}

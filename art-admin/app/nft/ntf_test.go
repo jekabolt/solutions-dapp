@@ -102,7 +102,7 @@ func TestNft(t *testing.T) {
 		},
 		SampleImages: []*pb_nft.ImageToUpload{
 			{
-				Raw: "some b64 image",
+				Raw: "https://grbpwr.com/img/small-logo.png",
 			},
 		},
 	})
@@ -119,7 +119,7 @@ func TestNft(t *testing.T) {
 		},
 		SampleImages: []*pb_nft.ImageToUpload{
 			{
-				Raw: "some b64 image",
+				Raw: "https://grbpwr.com/img/small-logo.png",
 			},
 		},
 	})
@@ -154,7 +154,7 @@ func TestNft(t *testing.T) {
 	list, err = s.ListNFTMintRequests(ctx, nil)
 	is.NoErr(err)
 	is.Equal(len(list.NftMintRequests), 2)
-	is.Equal(list.NftMintRequests[0].NftOffchainUrl, "https://example.com/full.jpg")
+	is.Equal(list.NftMintRequests[0].NftOffchainUrl, "https://example.com/offchain.jpg")
 	is.Equal(list.NftMintRequests[0].Status, bunt.StatusUploadedOffchain.String())
 
 	// delete offchain url

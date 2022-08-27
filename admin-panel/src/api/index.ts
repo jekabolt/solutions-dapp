@@ -33,12 +33,9 @@ export function login(password: string): Promise<LoginResponse> {
   return authClient.Login({ password });
 }
 
-// TODO: investigate
-// not sure we have to create new client on each request
 const createAuthorizedNftClient = (authToken: string) => {
   return createNftClient(
     ({ path, method, body }: RequestType): Promise<NFTMintRequestListArray> => {
-      console.log(body);
       switch (method.toLowerCase()) {
         case 'get':
         default:

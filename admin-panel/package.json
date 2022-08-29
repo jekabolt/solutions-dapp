@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --hot",
-    "build": "NODE_ENV=production webpack",
+    "build": "NODE_ENV=production STATIC_FOLDER=../art-admin/app/static webpack",
     "fix": "yarn lint && yarn format",
     "lint": "eslint --fix './src/**/*.{js,ts,tsx,json}'",
     "format": "prettier --write './src/**/*.{js,ts,tsx,scss,md,json}' --config ./.prettierrc"

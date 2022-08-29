@@ -31,16 +31,13 @@ export const Auth = () => {
 
   return (
     <div className={styles.authPage}>
-      <h1>auth page</h1>
       <input
         onChange={handlePasswordChange}
         type="password"
         className={styles.passwordInput}
-        placeholder="enter pass"
       />
       {!!error && <p className={styles.errorMessage}>enter correct password</p>}
-      <br />
-      <button className={styles.passwordSubmit} type="submit" onClick={handlePasswordSubmit}>Sign in</button>
+      <button className={styles.passwordSubmit} type="submit" onClick={handlePasswordSubmit}>LOG IN</button>
     </div>
   );
 };

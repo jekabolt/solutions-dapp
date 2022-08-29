@@ -1,27 +1,38 @@
+@import './variables.scss';
+
 .authPage {
-  text-align: center;
   padding-top: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .passwordInput,
+  .passwordSubmit {
+    display: block;
+    width: 200px;
+    text-align: center;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 10px;
+    outline: none;
+  }
 
   .passwordInput {
-    margin: 10px;
-    width: 150px;
-    height: 30px;
-    font-size: 15px;
-    outline: none;
-    border: 0;
+    margin-bottom: 20px;
+    border: 2px solid $black;
     padding: 5px;
   }
   
   .errorMessage {
-    font-size: 15px;
-    color: red;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: $error;
   }
   
   .passwordSubmit {
-    background-color: #757575;
-    color: white;
-    padding: 5px;
-    width: 75px;
+    background-color: $black;
+    color: $white;
     border: 0;
+    cursor: pointer;
   }
 }

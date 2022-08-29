@@ -15,7 +15,7 @@ import { Home } from 'pages/Home';
 import { Auth } from 'pages/Auth';
 
 import 'styles/global.scss';
-import styles from 'styles/index.module.scss';
+import styles from 'styles/PageWrapper.module.scss';
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
@@ -32,12 +32,9 @@ root.render(
     <ContextProvider>
       <QueryClientProvider client={queryClient}>
         <Router location={location} routes={routes}>
-          <section className={styles.mainView}>
+          <section className={styles.pageWrapper}>
             <Outlet />
           </section>
-          <footer className={styles.footer}>
-            Copyright © 2022 - {new Date().getFullYear()}. All Rights Reserved
-          </footer>
         </Router>
       </QueryClientProvider>
     </ContextProvider>

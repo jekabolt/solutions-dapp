@@ -7,7 +7,23 @@ import { getNftRequests, QUERIES, NFTMintRequestListArray } from 'api';
 import { ROUTES } from 'constants/routes';
 import { AUTH_LOCAL_STORAGE_KEY } from 'constants/values';
 
-import styles from 'styles/nft-list-page.module.scss';
+import styles from 'styles/HomePage.module.scss';
+
+// +GET /api/nft/requests
+// +GET /api/nft/burn
+// +GET /api/nft/burn/error
+// +GET /api/nft/burn/pending
+
+// +POST /api/auth/login
+// -POST /api/nft/ipfs
+// +POST /api/nft/burn
+// +POST /api/nft
+// +POST /api/nft/requests
+// +POST /api/nft/offchain
+// +POST /api/nft/shipping/status
+
+// +DELETE /api/nft/requests/{id}
+// +DELETE /api/nft/{id}
 
 export const Home: FC = () => {
   const token = localStorage.getItem(AUTH_LOCAL_STORAGE_KEY);
@@ -18,6 +34,7 @@ export const Home: FC = () => {
     { enabled: false, retry: false },
   );
 
+
   useEffect(() => {
     if (!token || error?.response?.status === 401) {
       navigate({ to: ROUTES.auth });
@@ -27,7 +44,7 @@ export const Home: FC = () => {
   }, [token, error?.response?.status]);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.homePage}>
       home page
       <br />
       {data?.nftMintRequests?.map(() => (

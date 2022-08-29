@@ -155,7 +155,8 @@ export const Home: FC = () => {
     if (!token || error?.response?.status === 401) {
       navigate({ to: ROUTES.auth });
     } else {
-      refetch();
+      // if server stops infinity call occur
+      // refetch();
     }
   }, [token, error?.response?.status]);
 

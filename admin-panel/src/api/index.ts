@@ -8,6 +8,9 @@ export * from './proto-http/nft';
 
 export enum QUERIES {
   getNftRequests = 'getNftRequests',
+  getNftAllBurned = 'getNftAllBurned',
+  getNftAllBurnedError = 'getNftAllBurnedError',
+  getNftAllBurnedPending = 'getNftAllBurnedPending',
 }
 
 export enum MUTATIONS {
@@ -100,6 +103,12 @@ export function getNftAllBurnedPending(authToken: string): Promise<nftProto.Burn
 }
 
 // todo: handle empty responses
+
+export function uploadIpfsMetadata(authToken: string): Promise<{}> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.UploadIPFSMetadata({});
+}
 
 export function burnNft(authToken: string, requestBody: nftProto.BurnRequest): Promise<{}> {
   const nftClient = createAuthorizedNftClient(authToken);

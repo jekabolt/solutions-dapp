@@ -13,6 +13,7 @@ import { ContextProvider } from 'context';
 import { ROUTES } from 'constants/routes';
 import { Home } from 'pages/Home';
 import { Auth } from 'pages/Auth';
+import { Nft } from 'pages/Nft';
 
 import 'styles/global.scss';
 import styles from 'styles/PageWrapper.module.scss';
@@ -25,6 +26,7 @@ const location = new ReactLocation();
 const routes: Route<DefaultGenerics>[] = [
   { path: ROUTES.home, element: <Home /> },
   { path: ROUTES.auth, element: <Auth /> },
+  { path: ROUTES.nft, element: <Nft /> },
 ];
 
 root.render(

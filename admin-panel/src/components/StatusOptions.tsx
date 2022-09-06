@@ -3,7 +3,7 @@ import cl from 'classnames';
 
 import { Status, STATUS_COLORS } from 'constants/values';
 
-import styles from './StatusOptions.module.scss';
+import styles from 'styles/StatusOptions.module.scss';
 
 const OptionName = ({ optionKey }: { optionKey: any }) => (
   <div className={styles.optionName}>

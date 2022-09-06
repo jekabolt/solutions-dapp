@@ -1,8 +1,11 @@
-@import '../styles/variables.scss';
+@import './variables.scss';
 
 .statusOptions {
   font-size: 18px;
   width: 220px;
+  position: relative;
+  margin-bottom: 40px;
+  cursor: default;
 
   .dropdownTitle {
     position: relative;
@@ -22,10 +25,14 @@
   }
 
   .dropdownBody {
+    z-index: 10000;
     background-color: $black;
     color: $white;
     border-radius: 0 0 5px 5px;
     padding-bottom: 10px;
+    position: absolute;
+    top: 35px;
+    width: 100%;
   }
 
   .option {

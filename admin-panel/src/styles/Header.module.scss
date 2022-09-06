@@ -1,7 +1,8 @@
-@import '../styles/variables.scss';
+@import './variables.scss';
 
 .header {
   display: flex;
+  margin-bottom: 40px;
 
   .left,
   .right {
@@ -26,15 +27,15 @@
   }
 
   .logOut {
-      background-color: $black;
-      color: $white;
-      border: 0;
-      cursor: pointer;
-      width: 220px;
-      text-align: center;
-      height: 40px;
-      font-size: 20px;
-      border-radius: 5px;
-      outline: none;
+    background-color: $black;
+    color: $white;
+    border: 0;
+    cursor: pointer;
+    width: 220px;
+    text-align: center;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 5px;
+    outline: none;
   }
 }

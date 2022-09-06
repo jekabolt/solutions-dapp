@@ -24,15 +24,6 @@ export const StatusOptions = () => {
   const [isOpen, setOpenStatus] = useState(false);
   const [activeStatus, setActiveStatus] = useState(Status.Unknown);
 
-  // useEffect(() => {
-  //   const closeOnAnyClick = () => setOpenStatus(false);
-  //   window.addEventListener('click', closeOnAnyClick);
-
-  //   return () => {
-  //     window.removeEventListener('click', closeOnAnyClick)
-  //   }
-  // }, []);
-
   const toggleDropdown = () => setOpenStatus(v => !v);
   const handleRadioCLick = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
     setActiveStatus(value as Status);
@@ -40,7 +31,15 @@ export const StatusOptions = () => {
 
   return (
     <div className={styles.statusOptions}>
-      <div className={cl(styles.dropdownTitle, isOpen ? styles.dropdownTitleOpen : '')} onClick={toggleDropdown}>
+      <div 
+        className={cl(
+          styles.dropdownTitle,
+          isOpen
+            ? styles.dropdownTitleOpen
+            : ''
+          )}
+        onClick={toggleDropdown}
+      >
         <OptionName optionKey={activeStatus} />
       </div>
       {isOpen &&
@@ -53,6 +52,14 @@ export const StatusOptions = () => {
                 value={key}
                 checked={activeStatus === key}
                 onChange={handleRadioCLick}
+                style={activeStatus === key ? {
+                  // @ts-ignore
+                  backgroundColor: STATUS_COLORS[key] || '#000',
+                  // @ts-ignore
+                  ...(!STATUS_COLORS[key] && {
+                    border: "2px solid #fff",
+                  }),
+                } : {}}
               />
             </div>
           ))}

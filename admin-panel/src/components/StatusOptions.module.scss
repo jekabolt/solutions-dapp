@@ -33,6 +33,17 @@
     position: relative;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+
+    input[type="radio"] {
+      cursor: pointer;
+      appearance: none;
+      background-color: #fff;
+      margin: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
   }
 
   .optionName .color {

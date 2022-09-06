@@ -1,0 +1,46 @@
+@import '../styles/variables.scss';
+
+.statusOptions {
+  font-size: 18px;
+  width: 220px;
+
+  .dropdownTitle {
+    position: relative;
+    background-color: $black;
+    color: $white;
+    border: 2px solid $black;
+    border-radius: 5px;
+    padding: 5px 30px;
+
+    &.dropdownTitleOpen {
+      border-radius: 5px 5px 0 0;
+    }
+
+    .optionName .color {
+      top: 12px;
+    }
+  }
+
+  .dropdownBody {
+    background-color: $black;
+    color: $white;
+    border-radius: 0 0 5px 5px;
+    padding-bottom: 10px;
+  }
+
+  .option {
+    padding: 10px 10px 0 30px;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .optionName .color {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 15px;
+    left: 10px;
+  }
+}

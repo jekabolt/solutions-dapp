@@ -1,0 +1,40 @@
+@import '../styles/variables.scss';
+
+.header {
+  display: flex;
+
+  .left,
+  .right {
+    display: flex;
+    align-items: center;
+    width: 50%;
+  }
+
+  .left {
+    justify-content: left;
+  }
+
+  .right {
+    justify-content: right;
+  }
+
+  .circle {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background: yellow;
+  }
+
+  .logOut {
+      background-color: $black;
+      color: $white;
+      border: 0;
+      cursor: pointer;
+      width: 220px;
+      text-align: center;
+      height: 40px;
+      font-size: 20px;
+      border-radius: 5px;
+      outline: none;
+  }
+}

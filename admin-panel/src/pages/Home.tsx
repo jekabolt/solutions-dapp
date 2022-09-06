@@ -21,6 +21,9 @@ import {
 } from 'api';
 import { ROUTES } from 'constants/routes';
 import { AUTH_LOCAL_STORAGE_KEY } from 'constants/values';
+import { Header } from 'components/Header';
+import { Separator } from 'components/Separator';
+import { StatusOptions } from 'components/StatusOptions';
 
 import styles from 'styles/HomePage.module.scss';
 
@@ -162,8 +165,9 @@ export const Home: FC = () => {
 
   return (
     <div className={styles.homePage}>
-      home page
-      <br />
+      <Header />
+      <Separator />
+      <StatusOptions />
       {data?.nftMintRequests?.map(() => (
         'single nft mint request'
       ))}

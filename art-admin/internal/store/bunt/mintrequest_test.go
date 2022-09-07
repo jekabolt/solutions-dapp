@@ -6,6 +6,7 @@ import (
 
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/matryer/is"
+	"github.com/tidwall/buntdb"
 )
 
 func getTestNFTMintRequest() (*pb_nft.NFTMintRequestToUpload, []*pb_nft.ImageList) {
@@ -100,5 +101,59 @@ func TestNFT(t *testing.T) {
 	// 	_, err := ms.UpsertNFTMintRequest(nftMR)
 	// 	is.NoErr(err)
 	// }
+
+}
+
+func TestNFTPages(t *testing.T) {
+	is := is.New(t)
+
+	c := Config{
+		DBPath: ":memory:",
+	}
+
+	bdb, err := c.InitDB()
+	is.NoErr(err)
+
+	ms := bdb.MintRequestStore()
+
+	for i := 0; i < 100; i++ {
+		nftMR, images := getTestNFTMintRequest()
+		fmt.Println(bdb.GetNextKey(allNFTMintRequests))
+		ms.UpsertNFTMintRequest(nftMR, images)
+	}
+
+	mrs, err := ms.GetAllNFTMintRequests()
+	is.NoErr(err)
+
+	fmt.Println("len: ", len(mrs))
+	ok := true
+	for _, mr := range mrs {
+		if ok {
+			_, err := ms.UpdateStatusNFTMintRequest(fmt.Sprint(mr.NftMintRequest.Id), StatusPending)
+			is.NoErr(err)
+			ok = false
+			continue
+		}
+		ok = true
+	}
+
+	pgRange, err := bdb.getPagesRange(statusNFTMintRequests, "unknown", 1)
+	is.NoErr(err)
+
+	fmt.Println("pgRange: ", pgRange)
+
+	mrJsonSS := make([]string, 0)
+	err = bdb.db.View(func(tx *buntdb.Tx) error {
+		tx.AscendEqual(statusNFTMintRequests, statusJSON("unknown"), func(_, mrJsonStr string) bool {
+			if len(mrJsonSS) < pgRange.From {
+
+			}
+			mrJsonSS = append(mrJsonSS, mrJsonStr)
+			return true
+		})
+		return err
+	})
+
+	fmt.Println("---- ", len(mrJsonSS))
 
 }

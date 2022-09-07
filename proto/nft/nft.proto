@@ -61,30 +61,14 @@ service Nft {
     };
   }
 
-  rpc GetAllBurned (google.protobuf.Empty) returns (BurnList) {
+  rpc SetTrackNumber (SetTrackingNumberRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      get : "/api/nft/burn"
-    };
-  }
-
-  rpc GetAllBurnedPending (google.protobuf.Empty) returns (BurnList) {
-    option (google.api.http) = {
-      get : "/api/nft/burn/pending"
-    };
-  }
-
-  rpc GetAllBurnedError (google.protobuf.Empty) returns (BurnList) {
-    option (google.api.http) = {
-      get : "/api/nft/burn/error"
-    };
-  }
-
-  rpc UpdateBurnShippingStatus (ShippingStatusUpdateRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/api/nft/shipping/status"
+      post : "/api/nft/burn/track"
       body : "*"
     };
   }
+
+ 
 
   // TODO: add rpc for getting metadata offchain url
   rpc UploadIPFSMetadata (google.protobuf.Empty) returns (google.protobuf.Empty) {
@@ -115,7 +99,7 @@ message ImageToUpload {
 // Mint request info 
 message NFTMintRequest {
   // internal id in db 
-  int32 id = 1;
+  string id = 1;
   // eth address of minter account 
   string ethAddress = 2;
   // hash of mint transaction 
@@ -138,11 +122,11 @@ message NFTMintRequestToUpload {
 // list of statuses 
 // StatusUnknown          NFTStatus = "unknown"
 // StatusPending          NFTStatus = "pending"
-// StatusCompleted        NFTStatus = "completed"
 // StatusFailed           NFTStatus = "failed"
-// StatusBad              NFTStatus = "bad"
-// StatusUploadedOffchain NFTStatus = "uploadedOffchain"
-// StatusUploaded         NFTStatus = "uploaded”
+// StatusUploadedOffchain NFTStatus = "offchain"
+// StatusUploaded         NFTStatus = "uploaded"
+// StatusBurned           NFTStatus = "burned"
+// StatusShipped          NFTStatus = "shipped"
 message NFTMintRequestWithStatus {
   // array of images from which nft should be referenced
   repeated ImageList sampleImages = 1;
@@ -152,7 +136,18 @@ message NFTMintRequestWithStatus {
   string status = 3;
   // resulted nft url uploaded offchain i.e to s3 can be empty 
   string nftOffchainUrl = 4;
+  // related only if status is burned or shipped
+  Shipping shipping = 5;
 }
+
+// NFT request as is with status pages
+message NFTMintRequestWithStatusPaged {
+  // array of images from which nft should be referenced
+  repeated NFTMintRequestWithStatus MintRequests = 1;
+  // amount of pages available
+  int32  totalPages = 3;
+}
+
 
 // List of all submitted mint requests 
 message NFTMintRequestListArray {
@@ -196,6 +191,7 @@ message BurnRequest {
   ShippingTo shipping = 4;
 }
 
+// ShippingTo shipping info
 message ShippingTo {
   string fullName = 1; 
   string address = 2; 
@@ -205,25 +201,16 @@ message ShippingTo {
   string email = 6; 
 }
 
-message ShippingStatus {
-  string trackNumber = 1; 
-  int32 timeSent = 2; // unix time
-  string error = 3;
-  bool success = 4;
+// Shipping info
+message Shipping {
+  ShippingTo shipping = 1;
+  string trackingNumber = 2; 
 }
 
-message ShippingStatusUpdateRequest {
+// SetTrackingNumberRequest update tracking number for shipping
+message SetTrackingNumberRequest {
+  // internai id 
   string id = 1;
-  ShippingStatus status = 2;
+  // resulted nft raw image b64 encoded
+  string trackingNumber = 2;
 }
-
-message BurnShippingInfo {
-  int32 id = 1;
-  BurnRequest burn = 2;
-  ShippingStatus status = 3;
-}
-
-message BurnList {
-  repeated BurnShippingInfo data = 1;
-}
-

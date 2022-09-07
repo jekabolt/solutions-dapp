@@ -18,7 +18,7 @@ export type ImageToUpload = {
 // Mint request info
 export type NFTMintRequest = {
   // internal id in db
-  id: number | undefined;
+  id: string | undefined;
   // eth address of minter account
   ethAddress: string | undefined;
   // hash of mint transaction
@@ -41,11 +41,11 @@ export type NFTMintRequestToUpload = {
 // list of statuses
 // StatusUnknown          NFTStatus = "unknown"
 // StatusPending          NFTStatus = "pending"
-// StatusCompleted        NFTStatus = "completed"
 // StatusFailed           NFTStatus = "failed"
-// StatusBad              NFTStatus = "bad"
-// StatusUploadedOffchain NFTStatus = "uploadedOffchain"
-// StatusUploaded         NFTStatus = "uploaded”
+// StatusUploadedOffchain NFTStatus = "offchain"
+// StatusUploaded         NFTStatus = "uploaded"
+// StatusBurned           NFTStatus = "burned"
+// StatusShipped          NFTStatus = "shipped"
 export type NFTMintRequestWithStatus = {
   // array of images from which nft should be referenced
   sampleImages: ImageList[] | undefined;
@@ -55,6 +55,32 @@ export type NFTMintRequestWithStatus = {
   status: string | undefined;
   // resulted nft url uploaded offchain i.e to s3 can be empty
   nftOffchainUrl: string | undefined;
+  // related only if status is burned or shipped
+  shipping: Shipping | undefined;
+};
+
+// Shipping info
+export type Shipping = {
+  shipping: ShippingTo | undefined;
+  trackingNumber: string | undefined;
+};
+
+// ShippingTo shipping info
+export type ShippingTo = {
+  fullName: string | undefined;
+  address: string | undefined;
+  zipCode: string | undefined;
+  city: string | undefined;
+  country: string | undefined;
+  email: string | undefined;
+};
+
+// NFT request as is with status pages
+export type NFTMintRequestWithStatusPaged = {
+  // array of images from which nft should be referenced
+  MintRequests: NFTMintRequestWithStatus[] | undefined;
+  // amount of pages available
+  totalPages: number | undefined;
 };
 
 // List of all submitted mint requests
@@ -97,39 +123,16 @@ export type BurnRequest = {
   shipping: ShippingTo | undefined;
 };
 
-export type ShippingTo = {
-  fullName: string | undefined;
-  address: string | undefined;
-  zipCode: string | undefined;
-  city: string | undefined;
-  country: string | undefined;
-  email: string | undefined;
-};
-
-export type ShippingStatus = {
-  trackNumber: string | undefined;
-  timeSent: number | undefined;
-  error: string | undefined;
-  success: boolean | undefined;
-};
-
-export type ShippingStatusUpdateRequest = {
+// SetTrackingNumberRequest update tracking number for shipping
+export type SetTrackingNumberRequest = {
+  // internai id
   id: string | undefined;
-  status: ShippingStatus | undefined;
-};
-
-export type BurnShippingInfo = {
-  id: number | undefined;
-  burn: BurnRequest | undefined;
-  status: ShippingStatus | undefined;
-};
-
-export type BurnList = {
-  data: BurnShippingInfo[] | undefined;
+  // resulted nft raw image b64 encoded
+  trackingNumber: string | undefined;
 };
 
 export interface Nft {
-  // Method used in ui for submitting drawing nft reference
+  // Method used in ui for submitting drawing nft reference use id 0 for new nft and current nft id for update
   UpsertNFTMintRequest(request: NFTMintRequestToUpload): Promise<NFTMintRequestWithStatus>;
   // List all mint requests
   ListNFTMintRequests(request: wellKnownEmpty): Promise<NFTMintRequestListArray>;
@@ -142,10 +145,7 @@ export interface Nft {
   // Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
   UploadOffchainMetadata(request: wellKnownEmpty): Promise<MetadataOffchainUrl>;
   Burn(request: BurnRequest): Promise<wellKnownEmpty>;
-  GetAllBurned(request: wellKnownEmpty): Promise<BurnList>;
-  GetAllBurnedPending(request: wellKnownEmpty): Promise<BurnList>;
-  GetAllBurnedError(request: wellKnownEmpty): Promise<BurnList>;
-  UpdateBurnShippingStatus(request: ShippingStatusUpdateRequest): Promise<wellKnownEmpty>;
+  SetTrackNumber(request: SetTrackingNumberRequest): Promise<wellKnownEmpty>;
   // TODO: add rpc for getting metadata offchain url
   UploadIPFSMetadata(request: wellKnownEmpty): Promise<wellKnownEmpty>;
 }
@@ -266,50 +266,8 @@ export function createNftClient(
         body,
       }) as Promise<wellKnownEmpty>;
     },
-    GetAllBurned(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/burn`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }) as Promise<BurnList>;
-    },
-    GetAllBurnedPending(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/burn/pending`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }) as Promise<BurnList>;
-    },
-    GetAllBurnedError(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/burn/error`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }) as Promise<BurnList>;
-    },
-    UpdateBurnShippingStatus(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/shipping/status`; // eslint-disable-line quotes
+    SetTrackNumber(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `api/nft/burn/track`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;

@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	allNFTMintRequests = "mintrequests"
+	allNFTMintRequests    = "mintrequests"
+	statusNFTMintRequests = "mintrequestsstatus"
 )
 
 type MintRequestStore interface {
@@ -33,11 +34,11 @@ func (ns NFTStatus) String() string {
 const (
 	StatusUnknown          NFTStatus = "unknown"
 	StatusPending          NFTStatus = "pending"
-	StatusCompleted        NFTStatus = "completed"
 	StatusFailed           NFTStatus = "failed"
-	StatusBad              NFTStatus = "bad"
-	StatusUploadedOffchain NFTStatus = "uploadedOffchain"
+	StatusUploadedOffchain NFTStatus = "offchain"
 	StatusUploaded         NFTStatus = "uploaded"
+	StatusBurned           NFTStatus = "burned"
+	StatusShipped          NFTStatus = "shipped"
 )
 
 type mintRequestStore struct {

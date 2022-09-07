@@ -23,7 +23,7 @@ export const Home: FC = () => {
 
   useEffect(() => {
     if (!token || error?.response?.status === 401) {
-      navigate({ to: ROUTES.auth });
+      navigate({ to: ROUTES.auth, replace: true });
     } else {
       // if server stops infinity call occur
       // refetch();

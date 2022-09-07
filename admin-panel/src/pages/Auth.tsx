@@ -25,7 +25,7 @@ export const Auth = () => {
   useEffect(() => {
     if (data?.authToken) {
       localStorage.setItem(AUTH_LOCAL_STORAGE_KEY, data.authToken);
-      navigate({ to: ROUTES.home, replace: true });
+      navigate({ to: ROUTES.home });
     }
   }, [data?.authToken]);
 

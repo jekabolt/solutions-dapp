@@ -9,6 +9,10 @@ import (
 	"github.com/rueian/rueidis/om"
 )
 
+const (
+	errIndexExists = "Index already exists"
+)
+
 type Store interface {
 	MintRequestStore
 	MetadataStore
@@ -19,7 +23,7 @@ type RDB struct {
 	ttl          time.Duration
 	mintRequests om.Repository[MintRequestWithStatus]
 	metadata     om.Repository[Metadata]
-	pageSize     int
+	pageSize     int32
 }
 
 func (c *Config) InitDB(ctx context.Context) (rdb *RDB, err error) {

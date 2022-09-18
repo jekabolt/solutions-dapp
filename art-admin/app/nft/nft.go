@@ -10,7 +10,7 @@ import (
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
 	"github.com/rs/zerolog/log"
@@ -19,7 +19,7 @@ import (
 
 type Server struct {
 	nft    *pb_nft.UnimplementedNftServer
-	db     bunt.Store
+	db     redis.Store
 	bucket bucket.FileStore
 	ipfs   ipfs.IPFS
 	descs  *descriptions.Store
@@ -30,7 +30,7 @@ type Config struct {
 }
 
 func (c *Config) New(
-	db bunt.Store,
+	db redis.Store,
 	bucket bucket.FileStore,
 	ipfs ipfs.IPFS,
 	descs *descriptions.Store,
@@ -65,7 +65,7 @@ func (s *Server) UploadRawImage(ito *pb_nft.ImageToUpload, pe *bucket.PathExtra)
 	}
 }
 
-func (s *Server) UpsertNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRequestToUpload) (*pb_nft.NFTMintRequestWithStatus, error) {
+func (s *Server) NewNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRequestToUpload) (*pb_nft.NFTMintRequestWithStatus, error) {
 	sampleImages := []*pb_nft.ImageList{}
 	pe := &bucket.PathExtra{
 		TxHash:  req.NftMintRequest.TxHash,
@@ -80,7 +80,7 @@ func (s *Server) UpsertNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRe
 		sampleImages = append(sampleImages, img)
 	}
 
-	mr, err := s.db.UpsertNFTMintRequest(req, sampleImages)
+	mr, err := s.db.NewNFTMintRequest(ctx, req, sampleImages)
 	if err != nil {
 		log.Error().Err(err).Msgf("upsertNFTMintRequest:s.DB.UpsertNFTMintRequest [%v]", err.Error())
 		return nil, fmt.Errorf("cannot upsert mint request: %s", err.Error())
@@ -88,8 +88,8 @@ func (s *Server) UpsertNFTMintRequest(ctx context.Context, req *pb_nft.NFTMintRe
 	return mr, nil
 }
 
-func (s *Server) ListNFTMintRequests(ctx context.Context, _ *emptypb.Empty) (*pb_nft.NFTMintRequestListArray, error) {
-	nftMRs, err := s.db.GetAllNFTMintRequests()
+func (s *Server) ListNFTMintRequestsPaged(ctx context.Context, req *pb_nft.ListPagedRequest) (*pb_nft.NFTMintRequestListArray, error) {
+	nftMRs, err := s.db.GetNFTMintRequestsPaged(ctx, req)
 	if err != nil {
 		log.Error().Err(err).Msgf("ListNFTMintRequests:s.DB.GetAllNFTMintRequests [%v]", err.Error())
 		return nil, fmt.Errorf("cannot upsert list mint request: %s", err.Error())
@@ -100,7 +100,7 @@ func (s *Server) ListNFTMintRequests(ctx context.Context, _ *emptypb.Empty) (*pb
 }
 
 func (s *Server) DeleteNFTMintRequestById(ctx context.Context, req *pb_nft.DeleteId) (*pb_nft.DeleteStatus, error) {
-	if err := s.db.DeleteNFTMintRequestById(req.Id); err != nil {
+	if err := s.db.DeleteNFTMintRequestById(ctx, req.Id); err != nil {
 		log.Error().Err(err).Msgf("DeleteNFTMintRequestById:s.db.DeleteNFTMintRequestById [%v]", err.Error())
 		return nil, fmt.Errorf("cannot upsert delete mint request: %s", err.Error())
 	}
@@ -114,7 +114,7 @@ func (s *Server) UpdateNFTOffchainUrl(ctx context.Context, req *pb_nft.UpdateNFT
 	if err != nil {
 		return nil, err
 	}
-	nftMR, err := s.db.UpdateNFTOffchainUrl(req.Id, img.FullSize)
+	nftMR, err := s.db.UpdateNFTOffchainUrl(ctx, req.Id, img.FullSize)
 	if err != nil {
 		log.Error().Err(err).Msgf("UpdateNFTOffchainUrl:s.db.UpdateNFTOffchainUrl [%v]", err.Error())
 		return nil, fmt.Errorf("cannot update nft offchain url request: %s", err.Error())
@@ -123,7 +123,7 @@ func (s *Server) UpdateNFTOffchainUrl(ctx context.Context, req *pb_nft.UpdateNFT
 }
 
 func (s *Server) DeleteNFTOffchainUrl(ctx context.Context, req *pb_nft.DeleteId) (*pb_nft.NFTMintRequestWithStatus, error) {
-	nftMR, err := s.db.DeleteNFTOffchainUrl(req.Id)
+	nftMR, err := s.db.DeleteNFTOffchainUrl(ctx, req.Id)
 	if err != nil {
 		log.Error().Err(err).Msgf("DeleteNFOffchainUrl:s.db.DeleteNFTMintRequestById [%v]", err.Error())
 		return nil, fmt.Errorf("cannot update nft offchain url request: %s", err.Error())
@@ -132,7 +132,7 @@ func (s *Server) DeleteNFTOffchainUrl(ctx context.Context, req *pb_nft.DeleteId)
 }
 
 func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (*pb_nft.MetadataOffchainUrl, error) {
-	mrs, err := s.db.GetAllToUpload()
+	mrs, err := s.db.GetAllToUpload(ctx)
 	if err != nil {
 		log.Error().Err(err).Msgf("UploadOffchainMetadata:s.db.GetAllToUpload [%v]", err.Error())
 		return nil, fmt.Errorf("cannot update get all to upload: %s", err.Error())
@@ -170,7 +170,7 @@ func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (
 		return nil, fmt.Errorf("can't upload metadata to bucket")
 	}
 
-	err = s.db.AddOffchainMetadata(url)
+	err = s.db.AddOffchainMetadata(ctx, url)
 	if err != nil {
 		log.Error().Err(err).Msgf("UploadOffchainMetadata:AddOffchainMetadata [%v]", err.Error())
 		return nil, fmt.Errorf("can't save metadata to db")
@@ -182,7 +182,7 @@ func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (
 }
 
 func (s *Server) Burn(ctx context.Context, req *pb_nft.BurnRequest) (*emptypb.Empty, error) {
-	err := s.db.BurnNft(req)
+	_, err := s.db.UpdateShippingInfo(ctx, req)
 	if err != nil {
 		log.Error().Err(err).Msgf("Burn:s.db.BurnNft [%v]", err.Error())
 		return nil, fmt.Errorf("cannot submit burn data: %s", err.Error())
@@ -190,44 +190,11 @@ func (s *Server) Burn(ctx context.Context, req *pb_nft.BurnRequest) (*emptypb.Em
 	return nil, err
 }
 
-func (s *Server) GetAllBurned(ctx context.Context, _ *emptypb.Empty) (*pb_nft.BurnList, error) {
-	all, err := s.db.GetBurned()
+func (s *Server) SetTrackingNumber(ctx context.Context, req *pb_nft.SetTrackingNumberRequest) (*emptypb.Empty, error) {
+	_, err := s.db.UpdateTrackingNumber(ctx, req)
 	if err != nil {
 		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
 		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
-	}
-	return &pb_nft.BurnList{
-		Data: all,
-	}, nil
-}
-
-func (s *Server) GetAllBurnedPending(ctx context.Context, _ *emptypb.Empty) (*pb_nft.BurnList, error) {
-	pending, err := s.db.GetBurnedPending()
-	if err != nil {
-		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
-		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
-	}
-	return &pb_nft.BurnList{
-		Data: pending,
-	}, nil
-}
-
-func (s *Server) GetAllBurnedError(ctx context.Context, _ *emptypb.Empty) (*pb_nft.BurnList, error) {
-	errors, err := s.db.GetBurnedErrors()
-	if err != nil {
-		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
-		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
-	}
-	return &pb_nft.BurnList{
-		Data: errors,
-	}, nil
-}
-
-func (s *Server) UpdateBurnShippingStatus(ctx context.Context, req *pb_nft.ShippingStatusUpdateRequest) (*emptypb.Empty, error) {
-	err := s.db.UpdateShippingStatus(req)
-	if err != nil {
-		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
-		return nil, fmt.Errorf("cannot update shipping status: %s", err.Error())
 	}
 	return nil, err
 }

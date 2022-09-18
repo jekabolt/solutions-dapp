@@ -9,23 +9,30 @@ import (
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
 	"github.com/matryer/is"
 )
 
-// db
-func newDB(is *is.I) bunt.Store {
-	c := bunt.Config{
-		DBPath: ":memory:",
+// db mock
+func Store() (redis.Store, error) {
+	c := redis.Config{
+		Address:  "localhost:6379",
+		CacheTTL: "1s",
+		PageSize: 30,
 	}
-	bdb, err := c.InitDB()
-	is.NoErr(err)
-	return bdb
+	ctx := context.Background()
+
+	rdb, err := c.InitDB(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return rdb, nil
 }
 
-// file store
+// file store mock
 type fs struct{}
 
 func (_ fs) UploadContentImage(rawB64Image string, pe *bucket.PathExtra) (*pb_nft.ImageList, error) {
@@ -42,7 +49,7 @@ func newFileStore() bucket.FileStore {
 	return fs{}
 }
 
-// ipfs
+// ipfs mock
 type ipfsStore struct {
 	NFTTotalSupply int
 }
@@ -87,31 +94,15 @@ func TestNft(t *testing.T) {
 		NFTTotalSupply: 100,
 	}
 
-	db := newDB(is)
+	db, err := Store()
+	is.NoErr(err)
 	// upload mint request
 	s, err := c.New(db, newFileStore(), newIpfs(c.NFTTotalSupply), newDescriptions(is))
 	is.NoErr(err)
 	ctx := context.Background()
-	resp, err := s.UpsertNFTMintRequest(ctx, &pb_nft.NFTMintRequestToUpload{
+	resp, err := s.NewNFTMintRequest(ctx, &pb_nft.NFTMintRequestToUpload{
 		NftMintRequest: &pb_nft.NFTMintRequest{
-			Id:                 0,
-			EthAddress:         "0x0",
-			TxHash:             "0x0",
-			MintSequenceNumber: 1,
-			Description:        "test",
-		},
-		SampleImages: []*pb_nft.ImageToUpload{
-			{
-				Raw: "https://grbpwr.com/img/small-logo.png",
-			},
-		},
-	})
-	is.NoErr(err)
-	is.Equal(resp.Status, bunt.StatusUnknown.String())
-
-	resp, err = s.UpsertNFTMintRequest(ctx, &pb_nft.NFTMintRequestToUpload{
-		NftMintRequest: &pb_nft.NFTMintRequest{
-			Id:                 0,
+			Id:                 "",
 			EthAddress:         "0x0",
 			TxHash:             "0x0",
 			MintSequenceNumber: 1,
@@ -124,64 +115,92 @@ func TestNft(t *testing.T) {
 		},
 	})
 
+	defer func() {
+		err = db.DeleteNFTMintRequestById(ctx, resp.GetNftMintRequest().GetId())
+		is.NoErr(err)
+	}()
 	is.NoErr(err)
-	is.Equal(resp.Status, bunt.StatusUnknown.String())
-
+	is.Equal(resp.Status, pb_nft.Status_Unknown)
+	time.Sleep(time.Second)
 	// list mint requests
-	list, err := s.ListNFTMintRequests(ctx, nil)
+	list, err := s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: resp.Status,
+		Page:   1,
+	})
 	is.NoErr(err)
-	is.Equal(len(list.NftMintRequests), 2)
+	is.Equal(len(list.NftMintRequests), 1)
+
+	_, err = s.db.UpdateStatusNFTMintRequest(
+		ctx,
+		list.NftMintRequests[0].NftMintRequest.Id,
+		pb_nft.Status_Pending)
+	is.NoErr(err)
+
+	list, err = s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Pending,
+		Page:   1,
+	})
+	is.NoErr(err)
+	is.Equal(len(list.NftMintRequests), 1)
 
 	// update mint offchain url
 	resp, err = s.UpdateNFTOffchainUrl(ctx, &pb_nft.UpdateNFTOffchainUrlRequest{
-		Id: fmt.Sprint(list.NftMintRequests[0].NftMintRequest.Id),
+		Id: list.NftMintRequests[0].NftMintRequest.Id,
 		NftOffchainUrl: &pb_nft.ImageToUpload{
 			Raw: "https://example.com/offchain.jpg",
 		},
 	})
 	is.NoErr(err)
-	is.Equal(resp.Status, bunt.StatusUploadedOffchain.String())
+	is.Equal(resp.Status, pb_nft.Status_UploadedOffchain)
 
-	// upload offchain metadata
-	_, err = s.UploadOffchainMetadata(ctx, nil)
-	is.NoErr(err)
-
-	all, err := db.GetAllToUpload()
-	is.NoErr(err)
-	is.Equal(len(all), 1)
-
-	// list mint requests check offchain url
-	list, err = s.ListNFTMintRequests(ctx, nil)
-	is.NoErr(err)
-	is.Equal(len(list.NftMintRequests), 2)
-	is.Equal(list.NftMintRequests[0].NftOffchainUrl, "https://example.com/offchain.jpg")
-	is.Equal(list.NftMintRequests[0].Status, bunt.StatusUploadedOffchain.String())
-
-	// delete offchain url
-	resp, err = s.DeleteNFTOffchainUrl(ctx, &pb_nft.DeleteId{
-		Id: fmt.Sprint(list.NftMintRequests[0].NftMintRequest.Id),
+	list, err = s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_UploadedOffchain,
+		Page:   1,
 	})
 	is.NoErr(err)
-	is.Equal(resp.Status, bunt.StatusUnknown.String())
-	is.Equal(resp.NftOffchainUrl, "")
+	is.Equal(len(list.NftMintRequests), 1)
 
-	// list mint requests check offchain url
-	list, err = s.ListNFTMintRequests(ctx, nil)
+	_, err = s.db.UpdateStatusNFTMintRequest(
+		ctx,
+		list.NftMintRequests[0].NftMintRequest.Id,
+		pb_nft.Status_Uploaded)
 	is.NoErr(err)
-	is.Equal(len(list.NftMintRequests), 2)
-	is.Equal(list.NftMintRequests[0].NftOffchainUrl, "")
-	is.Equal(list.NftMintRequests[0].Status, bunt.StatusUnknown.String())
 
-	// delete mint request
-	for _, mr := range list.NftMintRequests {
-		s.DeleteNFTMintRequestById(ctx, &pb_nft.DeleteId{
-			Id: fmt.Sprint(mr.NftMintRequest.Id),
-		})
-	}
-
-	// check if deleted
-	list, err = s.ListNFTMintRequests(ctx, nil)
+	list, err = s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Uploaded,
+		Page:   1,
+	})
 	is.NoErr(err)
-	is.Equal(len(list.NftMintRequests), 0)
+	is.Equal(len(list.NftMintRequests), 1)
+
+	_, err = s.Burn(ctx, &pb_nft.BurnRequest{
+		Id: list.NftMintRequests[0].NftMintRequest.Id,
+		Shipping: &pb_nft.ShippingTo{
+			FullName: "test",
+		},
+	})
+	is.NoErr(err)
+
+	list, err = s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Burned,
+		Page:   1,
+	})
+	is.NoErr(err)
+	is.Equal(len(list.NftMintRequests), 1)
+	is.True(list.NftMintRequests[0].Shipping.Shipping.FullName == "test")
+
+	_, err = s.SetTrackingNumber(ctx, &pb_nft.SetTrackingNumberRequest{
+		Id:             list.NftMintRequests[0].NftMintRequest.Id,
+		TrackingNumber: "test",
+	})
+	is.NoErr(err)
+
+	list, err = s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Shipped,
+		Page:   1,
+	})
+	is.NoErr(err)
+	is.Equal(len(list.NftMintRequests), 1)
+	is.True(list.NftMintRequests[0].Shipping.TrackingNumber == "test")
 
 }

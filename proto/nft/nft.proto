@@ -9,18 +9,18 @@ import "google/protobuf/empty.proto";
 
 
 service Nft {
-  //  Method used in ui for submitting drawing nft reference use id 0 for new nft and current nft id for update
-  rpc UpsertNFTMintRequest (NFTMintRequestToUpload) returns (NFTMintRequestWithStatus){
+  //  Method used in ui for submitting drawing nft reference 
+  rpc NewNFTMintRequest (NFTMintRequestToUpload) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft/requests"
       body : "*"
     };
   }
 
-  //  List all mint requests  
-  rpc ListNFTMintRequests (google.protobuf.Empty) returns (NFTMintRequestListArray){
+  //  List paged mint requests by status
+  rpc ListNFTMintRequestsPaged (ListPagedRequest) returns (NFTMintRequestListArray){
     option (google.api.http) = {
-      get : "/api/nft/requests"
+      get : "/api/nft/requests/{status}/{page}"
     };
   }
 
@@ -61,7 +61,7 @@ service Nft {
     };
   }
 
-  rpc SetTrackNumber (SetTrackingNumberRequest) returns (google.protobuf.Empty) {
+  rpc SetTrackingNumber (SetTrackingNumberRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/api/nft/burn/track"
       body : "*"
@@ -69,7 +69,6 @@ service Nft {
   }
 
  
-
   // TODO: add rpc for getting metadata offchain url
   rpc UploadIPFSMetadata (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -118,34 +117,48 @@ message NFTMintRequestToUpload {
   NFTMintRequest nftMintRequest = 2;
 }
 
+// Status enum for mint request
+enum Status {
+  // Anu used for query all mint requests aka "*"
+  Any = 0;
+  // Unknown — status after user upload refs to ddapp tx is unconfirmed; 
+  Unknown = 1;
+  // Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded 
+  Pending = 2;
+  // Failed — status after user upload refs to ddapp tx is failed for some reason;  
+  Failed = 3;
+  // UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain;  
+  UploadedOffchain = 4;
+  // Uploaded — art image is done and uploaded to the blockchain; 
+  Uploaded = 5;
+  // Burned — art image is  burned from blockchain and it ready to ship; 
+  Burned = 6;
+  // Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.
+  Shipped = 7;
+}
+
+
 // NFT request as is with status 
 // list of statuses 
-// StatusUnknown          NFTStatus = "unknown"
-// StatusPending          NFTStatus = "pending"
-// StatusFailed           NFTStatus = "failed"
-// StatusUploadedOffchain NFTStatus = "offchain"
-// StatusUploaded         NFTStatus = "uploaded"
-// StatusBurned           NFTStatus = "burned"
-// StatusShipped          NFTStatus = "shipped"
+// Any = 0;
+// Unknown = 1;
+// Pending = 2;
+// Failed = 3;
+// UploadedOffchain = 4;
+// Uploaded = 5;
+// Burned = 6;
+// Shipped = 7;
 message NFTMintRequestWithStatus {
   // array of images from which nft should be referenced
   repeated ImageList sampleImages = 1;
   // mint request info 
   NFTMintRequest nftMintRequest = 2;
   // status
-  string status = 3;
+  Status status = 3;
   // resulted nft url uploaded offchain i.e to s3 can be empty 
   string nftOffchainUrl = 4;
   // related only if status is burned or shipped
   Shipping shipping = 5;
-}
-
-// NFT request as is with status pages
-message NFTMintRequestWithStatusPaged {
-  // array of images from which nft should be referenced
-  repeated NFTMintRequestWithStatus MintRequests = 1;
-  // amount of pages available
-  int32  totalPages = 3;
 }
 
 
@@ -153,6 +166,24 @@ message NFTMintRequestWithStatusPaged {
 message NFTMintRequestListArray {
   // uploaded mint request with status
   repeated NFTMintRequestWithStatus nftMintRequests = 1;
+}
+
+
+// ListPagedRequest
+// list of statuses 
+// Any = 0;
+// Unknown = 1;
+// Pending = 2;
+// Failed = 3;
+// UploadedOffchain = 4;
+// Uploaded = 5;
+// Burned = 6;
+// Shipped = 7;
+message ListPagedRequest {
+  // Mint request status
+  Status status = 1;
+  // page number
+  int32 page = 2;
 }
 
 // Delete mint request offchain url 
@@ -186,9 +217,10 @@ message MetadataOffchainUrl {
 // Burn
 message BurnRequest {
   string txid = 1; // burn transaction
-  string address = 2; // burner address 
-  int32  mintSequenceNumber = 3;
-  ShippingTo shipping = 4;
+  string id = 2; // internal id
+  string address = 3; // burner address 
+  int32  mintSequenceNumber = 4;
+  ShippingTo shipping = 5;
 }
 
 // ShippingTo shipping info

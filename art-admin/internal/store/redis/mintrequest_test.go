@@ -9,7 +9,7 @@ import (
 	"github.com/matryer/is"
 )
 
-func getTestNFTMintRequest() (*pb_nft.NFTMintRequestToUpload, []*pb_nft.ImageList) {
+func getTestNFTMintRequest(msn int32) (*pb_nft.NFTMintRequestToUpload, []*pb_nft.ImageList) {
 	return &pb_nft.NFTMintRequestToUpload{
 			SampleImages: []*pb_nft.ImageToUpload{
 				{
@@ -23,7 +23,7 @@ func getTestNFTMintRequest() (*pb_nft.NFTMintRequestToUpload, []*pb_nft.ImageLis
 				Id:                 "0x1",
 				EthAddress:         "0x0",
 				TxHash:             "0x0",
-				MintSequenceNumber: 3,
+				MintSequenceNumber: msn,
 				Description:        "test",
 			},
 		}, []*pb_nft.ImageList{
@@ -51,38 +51,49 @@ func TestNFT(t *testing.T) {
 	ms, err := rdb.MintRequestStore(ctx)
 	is.NoErr(err)
 
-	nftMR, images := getTestNFTMintRequest()
+	nftMR, images := getTestNFTMintRequest(1)
 
-	_, err = ms.NewNFTMintRequest(ctx, nftMR, images)
+	mrCreated, err := ms.NewNFTMintRequest(ctx, nftMR, images)
 	is.NoErr(err)
 
-	nftMRs, err := ms.GetAllNFTMintRequests(ctx)
+	ok := false
+	defer func() {
+		if !ok {
+			err = ms.DeleteNFTMintRequestById(
+				ctx,
+				fmt.Sprint(mrCreated.NftMintRequest.GetId()),
+			)
+			is.NoErr(err)
+		}
+	}()
+
+	nftMRs, err := ms.GetAllNFTMintRequests(ctx, pb_nft.Status_Unknown)
 	is.NoErr(err)
 	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, StatusUnknown.String())
+	is.Equal(nftMRs[0].Status, pb_nft.Status_Unknown)
 
 	_, err = ms.UpdateStatusNFTMintRequest(
 		ctx,
 		fmt.Sprint(nftMRs[0].NftMintRequest.Id),
-		StatusPending)
+		pb_nft.Status_Pending)
 	is.NoErr(err)
 
-	nftMRs, err = ms.GetAllNFTMintRequests(ctx)
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_Pending)
 	is.NoErr(err)
 	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, StatusPending.String())
+	is.Equal(nftMRs[0].Status, pb_nft.Status_Pending)
 
 	url := "offchain url"
-	upd, err := ms.UpdateNFTOffchainUrl(
+	_, err = ms.UpdateNFTOffchainUrl(
 		ctx,
 		fmt.Sprint(nftMRs[0].NftMintRequest.Id),
 		url)
 	is.NoErr(err)
 
-	nftMRs, err = ms.GetAllNFTMintRequests(ctx)
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_UploadedOffchain)
 	is.NoErr(err)
 	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, upd.Status)
+	is.Equal(nftMRs[0].GetStatus(), pb_nft.Status_UploadedOffchain)
 	is.Equal(nftMRs[0].NftOffchainUrl, url)
 
 	_, err = ms.DeleteNFTOffchainUrl(
@@ -90,21 +101,72 @@ func TestNFT(t *testing.T) {
 		fmt.Sprint(nftMRs[0].NftMintRequest.GetId()))
 	is.NoErr(err)
 
-	nftMRs, err = ms.GetAllNFTMintRequests(ctx)
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_Pending)
 	is.NoErr(err)
 	is.Equal(len(nftMRs), 1)
-	is.Equal(nftMRs[0].Status, StatusPending.String())
+	is.Equal(nftMRs[0].Status, pb_nft.Status_Pending)
 	is.Equal(nftMRs[0].NftOffchainUrl, "")
+
+	_, err = ms.UpdateNFTOffchainUrl(
+		ctx,
+		fmt.Sprint(nftMRs[0].NftMintRequest.Id),
+		url)
+	is.NoErr(err)
+
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_UploadedOffchain)
+	is.NoErr(err)
+	is.Equal(len(nftMRs), 1)
+	is.Equal(nftMRs[0].GetStatus(), pb_nft.Status_UploadedOffchain)
+	is.Equal(nftMRs[0].NftOffchainUrl, url)
+
+	uploadedMr, err := ms.UpdateStatusNFTMintRequest(ctx, nftMRs[0].NftMintRequest.GetId(), pb_nft.Status_Uploaded)
+	is.NoErr(err)
+	is.Equal(uploadedMr.Status, pb_nft.Status_Uploaded)
+
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_Uploaded)
+	is.NoErr(err)
+	is.Equal(len(nftMRs), 1)
+	is.Equal(nftMRs[0].GetStatus(), pb_nft.Status_Uploaded)
+
+	burnedMr, err := ms.UpdateShippingInfo(ctx, &pb_nft.BurnRequest{
+		Id: nftMRs[0].NftMintRequest.GetId(),
+		Shipping: &pb_nft.ShippingTo{
+			FullName: "test",
+			Address:  "addr",
+			ZipCode:  "00001",
+			City:     "testCity",
+			Country:  "testCountry",
+			Email:    "test@grbpwr.com",
+		},
+	})
+	is.NoErr(err)
+	is.True(burnedMr.Shipping != nil)
+
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_Burned)
+	is.NoErr(err)
+	is.Equal(len(nftMRs), 1)
+	is.Equal(nftMRs[0].Status, pb_nft.Status_Burned)
+	is.Equal(nftMRs[0].Shipping.Shipping.FullName, "test")
+
+	burnedWTrackMr, err := ms.UpdateTrackingNumber(ctx, &pb_nft.SetTrackingNumberRequest{
+		Id:             nftMRs[0].NftMintRequest.GetId(),
+		TrackingNumber: "testTrack",
+	})
+	is.NoErr(err)
+	is.Equal(burnedWTrackMr.Status, pb_nft.Status_Shipped)
+	is.Equal(burnedWTrackMr.Shipping.TrackingNumber, "testTrack")
 
 	err = ms.DeleteNFTMintRequestById(
 		ctx,
-		fmt.Sprint(nftMRs[0].NftMintRequest.GetId()),
+		fmt.Sprint(mrCreated.NftMintRequest.GetId()),
 	)
 	is.NoErr(err)
 
-	nftMRs, err = ms.GetAllNFTMintRequests(ctx)
+	nftMRs, err = ms.GetAllNFTMintRequests(ctx, pb_nft.Status_Any)
 	is.NoErr(err)
 	is.Equal(len(nftMRs), 0)
+
+	ok = true
 
 }
 
@@ -114,6 +176,7 @@ func TestPagination(t *testing.T) {
 	c := Config{
 		Address:  "localhost:6379",
 		CacheTTL: "1s",
+		PageSize: 30,
 	}
 	ctx := context.Background()
 
@@ -123,16 +186,65 @@ func TestPagination(t *testing.T) {
 	ms, err := rdb.MintRequestStore(ctx)
 	is.NoErr(err)
 
-	nftMR, images := getTestNFTMintRequest()
-
+	mrsCreated := make([]*pb_nft.NFTMintRequestWithStatus, 0)
 	for i := 0; i < 100; i++ {
-		_, err = ms.NewNFTMintRequest(ctx, nftMR, images)
+		nftMR, images := getTestNFTMintRequest(int32(i))
+		mr, err := ms.NewNFTMintRequest(ctx, nftMR, images)
+		mrsCreated = append(mrsCreated, mr)
 		is.NoErr(err)
 	}
-	// time.Sleep(1 * time.Second)
 
-	mrs, err := ms.GetNFTMintRequestsPaged(ctx, StatusPending, 1)
+	defer func() {
+		for _, mr := range mrsCreated {
+			err = ms.DeleteNFTMintRequestById(ctx, mr.GetNftMintRequest().GetId())
+			is.NoErr(err)
+		}
+		rdb.Close()
+	}()
+
+	mrsPg1, err := ms.GetNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Unknown,
+		Page:   1,
+	})
 	is.NoErr(err)
-	fmt.Println("--- ", len(mrs))
+	is.Equal(len(mrsPg1), int(c.PageSize))
+
+	mrsPg2, err := ms.GetNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Unknown,
+		Page:   2,
+	})
+	is.NoErr(err)
+	is.Equal(len(mrsPg2), int(c.PageSize))
+
+	mrsPg3, err := ms.GetNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Unknown,
+		Page:   3,
+	})
+	is.NoErr(err)
+	is.Equal(len(mrsPg3), int(c.PageSize))
+
+	mrsPg4, err := ms.GetNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Unknown,
+		Page:   4,
+	})
+	is.NoErr(err)
+	is.Equal(len(mrsPg4), 10)
+
+	mrsPg5, err := ms.GetNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
+		Status: pb_nft.Status_Unknown,
+		Page:   5,
+	})
+	is.NoErr(err)
+	is.Equal(len(mrsPg5), 0)
+
+	mrs := append(mrsPg1, mrsPg2...)
+	mrs = append(mrs, mrsPg3...)
+	mrs = append(mrs, mrsPg4...)
+
+	prev := int32(0)
+	for _, mr := range mrs {
+		is.True(mr.NftMintRequest.MintSequenceNumber == prev)
+		prev++
+	}
 
 }

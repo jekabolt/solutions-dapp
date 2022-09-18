@@ -22,8 +22,9 @@ import (
 )
 
 type Server struct {
-	gs *grpc.Server
-	c  *Config
+	gs   *grpc.Server
+	c    *Config
+	done chan struct{}
 }
 
 var (
@@ -41,9 +42,21 @@ type Config struct {
 
 func (c *Config) Init() *Server {
 	return &Server{
-		gs: grpc.NewServer(),
-		c:  c,
+		gs:   grpc.NewServer(),
+		c:    c,
+		done: make(chan struct{}),
 	}
+}
+
+// Stop stops the application and waits for all services to exit
+func (s *Server) Stop(ctx context.Context) {
+	s.gs.GracefulStop()
+	close(s.done)
+}
+
+// Done returns a channel that is closed after the application has exited
+func (s *Server) Done() chan struct{} {
+	return s.done
 }
 
 // Start starts the server

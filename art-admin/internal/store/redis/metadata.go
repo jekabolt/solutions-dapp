@@ -15,8 +15,8 @@ const (
 type Metadata struct {
 	Key string `redis:",key"`
 	Ver int64  `redis:",ver"`
-	Ts  int64  `redis:",ts"`
-	Url string `redis:",url"`
+	Ts  int64  `redis:",ts" json:"ts"`
+	Url string `redis:",url" json:"url"`
 }
 
 type MetadataStore interface {
@@ -30,11 +30,10 @@ type metadataStore struct {
 
 // MetadataStore returns a metadata store
 func (rdb *RDB) MetadataStore(ctx context.Context) (MetadataStore, error) {
-	fmt.Println("--- rdb.metadata.IndexName() ", rdb.metadata.IndexName())
 	rdb.metadata.DropIndex(ctx)
 	err := rdb.metadata.CreateIndex(ctx, func(schema om.FtCreateSchema) om.Completed {
 		return om.Completed(schema.
-			FieldName("$.ts").As("ts").Text().Build())
+			FieldName("ts").Text().Build())
 	})
 	if err != nil {
 		return nil, fmt.Errorf("MetadataStore:CreateIndex [%v]", err.Error())
@@ -58,7 +57,7 @@ func (rdb *RDB) AddOffchainMetadata(ctx context.Context, url string) error {
 
 func (rdb *RDB) GetAllOffchainMetadata(ctx context.Context) ([]*Metadata, error) {
 	_, records, err := rdb.metadata.Search(ctx, func(search om.FtSearchIndex) om.Completed {
-		return search.Query("*").Build()
+		return search.Query("*").Limit().OffsetNum(0, 1000000).Build()
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetAllNFTMintRequests:Search [%v]", err.Error())

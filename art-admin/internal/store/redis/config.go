@@ -8,5 +8,5 @@ type Config struct {
 	CacheTTL   string `env:"REDIS_DB_CACHE_TTL" envDefault:"1m"`
 	DB         int    `env:"REDIS_DB_NUMBER" envDefault:"0"`
 	PoolSize   int    `env:"REDIS_DB_POOL_SIZE" envDefault:"10"`
-	PageSize   int    `env:"REDIS_DB_PAGE_SIZE" envDefault:"30"`
+	PageSize   int32  `env:"REDIS_DB_PAGE_SIZE" envDefault:"30"`
 }

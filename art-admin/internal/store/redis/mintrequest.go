@@ -101,7 +101,7 @@ func (rdb *RDB) UpdateStatusNFTMintRequest(ctx context.Context, id string, statu
 // GetAllNFTMintRequests get all mints
 func (rdb *RDB) GetAllNFTMintRequests(ctx context.Context, status pb_nft.Status) ([]*pb_nft.NFTMintRequestWithStatus, error) {
 	_, records, err := rdb.mintRequests.Search(ctx, func(search om.FtSearchIndex) om.Completed {
-		return search.Query(getQueryStatus(status)).Limit().OffsetNum(0, 1000000).Build()
+		return search.Query(getQueryStatus(status)).Limit().OffsetNum(0, 10000).Build()
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetAllNFTMintRequests:Search [%v]", err.Error())

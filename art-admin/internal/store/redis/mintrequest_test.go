@@ -40,7 +40,7 @@ func TestNFT(t *testing.T) {
 	is := is.New(t)
 
 	c := Config{
-		Address:  "localhost:6379",
+		Address:  getRedisAddress(),
 		CacheTTL: "1s",
 	}
 	ctx := context.Background()
@@ -174,7 +174,7 @@ func TestPagination(t *testing.T) {
 	is := is.New(t)
 
 	c := Config{
-		Address:  "localhost:6379",
+		Address:  getRedisAddress(),
 		CacheTTL: "1s",
 		PageSize: 30,
 	}

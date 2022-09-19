@@ -2,14 +2,22 @@ package redis
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/matryer/is"
 )
 
+func getRedisAddress() string {
+	if os.Getenv("REDIS_HOST") == "" {
+		return "localhost:6379"
+	}
+	return os.Getenv("REDIS_HOST")
+}
+
 func TestCreateD(t *testing.T) {
 	c := Config{
-		Address: "localhost:6379",
+		Address: getRedisAddress(),
 	}
 
 	is := is.New(t)

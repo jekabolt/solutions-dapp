@@ -3,6 +3,7 @@ package nft
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -15,10 +16,17 @@ import (
 	"github.com/matryer/is"
 )
 
+func getRedisAddress() string {
+	if os.Getenv("REDIS_HOST") == "" {
+		return "localhost:6379"
+	}
+	return os.Getenv("REDIS_HOST")
+}
+
 // db mock
 func Store() (redis.Store, error) {
 	c := redis.Config{
-		Address:  "localhost:6379",
+		Address:  getRedisAddress(),
 		CacheTTL: "1s",
 		PageSize: 30,
 	}

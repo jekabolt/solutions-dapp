@@ -16,6 +16,9 @@ services:
     image: redis/redis-stack
     volumes:
       - redis_data:/data:rw
+      - ./redis.conf:/redis-stack.conf
+    environment:
+      - REDISTIMESERIES_ARGS=DUPLICATE_POLICY LAST RETENTION_POLICY 604800000
     ports:
       - 6379:6379
     restart: unless-stopped

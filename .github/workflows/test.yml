@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  REDIS_HOST: api.sys.solutions:6379
+
 jobs:
   test:
     name: Run tests and check coverage
@@ -20,11 +23,6 @@ jobs:
 
       - name: Set up buf 
         uses: bufbuild/buf-setup-action@v1.6.0
-
-      - name: Start Redis
-        uses: addnab/docker-run-action@v3
-        with:
-          image: redislabs/redisearch:latest
 
       - name: Install and test 
         run: |

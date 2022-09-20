@@ -16,8 +16,10 @@ func getRedisAddress() string {
 }
 
 func TestCreateD(t *testing.T) {
+	t.Logf("redis address: %s", getRedisAddress())
 	c := Config{
-		Address: getRedisAddress(),
+		Address:  getRedisAddress(),
+		CacheTTL: "1s",
 	}
 
 	is := is.New(t)

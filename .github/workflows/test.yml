@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 env:
-  REDIS_HOST: api.sys.solutions:6379
+  REDIS_HOST: redis.sys.solutions:6379
 
 jobs:
   test:

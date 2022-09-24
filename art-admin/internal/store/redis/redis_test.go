@@ -11,6 +11,7 @@ import (
 func getRedisAddress() string {
 	if os.Getenv("REDIS_HOST") == "" {
 		return "localhost:6379"
+		// return "redis.sys.solutions:6379"
 	}
 	return os.Getenv("REDIS_HOST")
 }

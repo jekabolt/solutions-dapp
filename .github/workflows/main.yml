@@ -34,7 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/solutions-dapp:${{ steps.commit.outputs.short }} , ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+          tags: ${{ steps.commit.outputs.short }} , latest
           labels: ${{ steps.meta.outputs.labels }}
   deploy:
     runs-on: ubuntu-latest

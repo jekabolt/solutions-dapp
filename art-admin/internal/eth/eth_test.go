@@ -2,6 +2,7 @@ package eth
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"os"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	systoken "github.com/jekabolt/solutions-dapp/art-admin/contract"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/matryer/is"
 )
@@ -58,6 +58,23 @@ func (c *testObserver) IsPaid(mr *pb_nft.NFTMintRequestWithStatus) (bool, error)
 	return false, nil
 }
 
+type testStore struct {
+	mrs map[string]*pb_nft.NFTMintRequestWithStatus
+}
+
+func (ts *testStore) GetAllNFTMintRequests(ctx context.Context, status pb_nft.Status) ([]*pb_nft.NFTMintRequestWithStatus, error) {
+	var res []*pb_nft.NFTMintRequestWithStatus
+	for _, v := range ts.mrs {
+		res = append(res, v)
+	}
+	return res, nil
+}
+
+func (ts *testStore) UpdateStatusNFTMintRequest(ctx context.Context, id string, status pb_nft.Status) (*pb_nft.NFTMintRequestWithStatus, error) {
+	ts.mrs[id].Status = status
+	return ts.mrs[id], nil
+}
+
 func getTestNFTMintRequest(mintSequenceNumber int32) (*pb_nft.NFTMintRequestToUpload, []*pb_nft.ImageList) {
 	return &pb_nft.NFTMintRequestToUpload{
 			SampleImages: []*pb_nft.ImageToUpload{
@@ -69,7 +86,7 @@ func getTestNFTMintRequest(mintSequenceNumber int32) (*pb_nft.NFTMintRequestToUp
 				},
 			},
 			NftMintRequest: &pb_nft.NFTMintRequest{
-				Id:                 0,
+				Id:                 fmt.Sprint(mintSequenceNumber),
 				EthAddress:         "0x0",
 				TxHash:             "0x0",
 				MintSequenceNumber: mintSequenceNumber,
@@ -91,34 +108,35 @@ func TestWatcher(t *testing.T) {
 	interval, err := time.ParseDuration("100ms")
 	is.NoErr(err)
 
-	bc := bunt.Config{
-		DBPath: ":memory:",
+	mr1Up, imgs1 := getTestNFTMintRequest(1)
+	mr2Up, imgs2 := getTestNFTMintRequest(2)
+	ts := &testStore{
+		mrs: map[string]*pb_nft.NFTMintRequestWithStatus{
+			"1": {
+				NftMintRequest: mr1Up.NftMintRequest,
+				Status:         pb_nft.Status_Pending,
+				SampleImages:   imgs1,
+			},
+			"2": {
+				NftMintRequest: mr2Up.NftMintRequest,
+				Status:         pb_nft.Status_Pending,
+				SampleImages:   imgs2,
+			},
+		},
 	}
-
-	bdb, err := bc.InitDB()
-	is.NoErr(err)
-
-	mrStore := bdb.MintRequestStore()
-
-	_, err = mrStore.UpsertNFTMintRequest(getTestNFTMintRequest(1))
-	is.NoErr(err)
-
-	_, err = mrStore.UpsertNFTMintRequest(getTestNFTMintRequest(2))
-	is.NoErr(err)
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*2))
 
 	cli := &Client{
 		c: &Config{
 			Retries: 3,
 		},
 		tokenObserver: &testObserver{},
-		mintStore:     mrStore,
+		mintStore:     ts,
 		checkInterval: interval,
-		ttlMap:        make(map[int]int),
+		ttlMap:        make(map[string]int),
 	}
 
 	cli.Run(context.Background())
-
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*2))
 
 	tick := time.NewTicker(time.Millisecond * 1000)
 
@@ -126,25 +144,24 @@ loop:
 	for {
 		select {
 		case <-tick.C:
-			nftMRs, err := mrStore.GetAllNFTMintRequests()
+			nftMRs, err := ts.GetAllNFTMintRequests(ctx, pb_nft.Status_Any)
 			is.NoErr(err)
 			is.True(len(nftMRs) == 2)
-			if nftMRs[0].Status == bunt.StatusPending.String() &&
-				nftMRs[1].Status == bunt.StatusFailed.String() {
+			if nftMRs[0].Status == pb_nft.Status_Pending &&
+				nftMRs[1].Status == pb_nft.Status_Failed {
 				cli.Stop()
-				cancel()
 				tick.Stop()
 				break loop
 			}
 		case <-ctx.Done():
-			cancel()
 			break loop
 		}
 	}
 
-	nftMRs, err := mrStore.GetAllNFTMintRequests()
+	nftMRs, err := ts.GetAllNFTMintRequests(ctx, pb_nft.Status_Any)
 	is.NoErr(err)
-	is.Equal(nftMRs[0].Status, bunt.StatusPending.String())
-	is.Equal(nftMRs[1].Status, bunt.StatusFailed.String())
+	is.Equal(nftMRs[0].Status, pb_nft.Status_Pending)
+	is.Equal(nftMRs[1].Status, pb_nft.Status_Failed)
 	t.Logf("---- nftMRs %+v", nftMRs)
+	cancel()
 }

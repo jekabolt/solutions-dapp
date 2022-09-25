@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/config"
 	"github.com/rs/zerolog"
@@ -25,7 +28,10 @@ func main() {
 	confBytes, _ := json.Marshal(cfg)
 	log.Info().Str("config:", "").Msg(string(confBytes))
 
-	db, err := cfg.Bunt.InitDB()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	db, err := cfg.Redis.InitDB(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init db err:[%s]", err.Error()))
 	}
@@ -37,12 +43,15 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init s3 bucket err:[%s]", err.Error()))
 	}
 
-	eth, err := cfg.ETHWatcher.New(context.Background(), db.MintRequestStore())
+	mrStore, err := db.MintRequestStore(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init ETHWatcher err:[%s]", err.Error()))
 	}
-	eth.Run(context.TODO())
-	defer eth.Stop()
+	eth, err := cfg.ETHWatcher.New(ctx, mrStore)
+	if err != nil {
+		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to start ETHWatcher err:[%s]", err.Error()))
+	}
+	eth.Run(ctx)
 
 	ipfs, err := cfg.IPFS.Init(desc)
 	if err != nil {
@@ -57,9 +66,23 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to create new auth server:[%s]", err.Error()))
 	}
-	s := cfg.Server.Init()
-	s.Start(context.TODO(), authS, nftS)
 
-	c := make(chan struct{})
-	<-c
+	app := cfg.Server.Init()
+	err = app.Start(ctx, authS, nftS)
+	if err != nil {
+		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to start server:[%s]", err.Error()))
+	}
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	select {
+	case s := <-sigChan:
+		log.Warn().Msgf("signal received, exiting [%s]", s.String())
+		app.Stop(ctx)
+		eth.Stop()
+		db.Close()
+		log.Warn().Msg("application exited")
+	case <-app.Done():
+		log.Error().Msg("application exited")
+	}
 }

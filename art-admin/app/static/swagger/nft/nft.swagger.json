@@ -30,7 +30,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -50,26 +50,6 @@
       }
     },
     "/api/nft/burn": {
-      "get": {
-        "operationId": "GetAllBurned",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/nftBurnList"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Nft"
-        ]
-      },
       "post": {
         "operationId": "Burn",
         "responses": {
@@ -83,7 +63,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -102,45 +82,34 @@
         ]
       }
     },
-    "/api/nft/burn/error": {
-      "get": {
-        "operationId": "GetAllBurnedError",
+    "/api/nft/burn/track": {
+      "post": {
+        "operationId": "SetTrackingNumber",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/nftBurnList"
+              "type": "object",
+              "properties": {}
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
-        "tags": [
-          "Nft"
-        ]
-      }
-    },
-    "/api/nft/burn/pending": {
-      "get": {
-        "operationId": "GetAllBurnedPending",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/nftBurnList"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/nftSetTrackingNumberRequest"
             }
           }
-        },
+        ],
         "tags": [
           "Nft"
         ]
@@ -161,7 +130,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -195,7 +164,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -216,30 +185,9 @@
       }
     },
     "/api/nft/requests": {
-      "get": {
-        "summary": "List all mint requests",
-        "operationId": "ListNFTMintRequests",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/nftNFTMintRequestListArray"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Nft"
-        ]
-      },
       "post": {
         "summary": "Method used in ui for submitting drawing nft reference",
-        "operationId": "UpsertNFTMintRequest",
+        "operationId": "NewNFTMintRequest",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -250,7 +198,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -283,7 +231,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -301,32 +249,49 @@
         ]
       }
     },
-    "/api/nft/shipping/status": {
-      "post": {
-        "operationId": "UpdateBurnShippingStatus",
+    "/api/nft/requests/{status}/{page}": {
+      "get": {
+        "summary": "List paged mint requests by status",
+        "operationId": "ListNFTMintRequestsPaged",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/nftNFTMintRequestListArray"
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
+            "name": "status",
+            "description": "Mint request status",
+            "in": "path",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/nftShippingStatusUpdateRequest"
-            }
+            "type": "string",
+            "enum": [
+              "Any",
+              "Unknown",
+              "Pending",
+              "Failed",
+              "UploadedOffchain",
+              "Uploaded",
+              "Burned",
+              "Shipped"
+            ]
+          },
+          {
+            "name": "page",
+            "description": "page number",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -348,7 +313,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -368,13 +333,20 @@
     }
   },
   "definitions": {
-    "nftBurnList": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
-        "data": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/nftBurnShippingInfo"
+            "$ref": "#/definitions/protobufAny"
           }
         }
       }
@@ -383,6 +355,9 @@
       "type": "object",
       "properties": {
         "txid": {
+          "type": "string"
+        },
+        "id": {
           "type": "string"
         },
         "address": {
@@ -397,21 +372,6 @@
         }
       },
       "title": "Burn"
-    },
-    "nftBurnShippingInfo": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "burn": {
-          "$ref": "#/definitions/nftBurnRequest"
-        },
-        "status": {
-          "$ref": "#/definitions/nftShippingStatus"
-        }
-      }
     },
     "nftDeleteStatus": {
       "type": "object",
@@ -461,8 +421,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "integer",
-          "format": "int32",
+          "type": "string",
           "title": "internal id in db"
         },
         "ethAddress": {
@@ -530,44 +489,45 @@
           "title": "mint request info"
         },
         "status": {
-          "type": "string",
+          "$ref": "#/definitions/nftStatus",
           "title": "status"
         },
         "nftOffchainUrl": {
           "type": "string",
           "title": "resulted nft url uploaded offchain i.e to s3 can be empty"
+        },
+        "shipping": {
+          "$ref": "#/definitions/nftShipping",
+          "title": "related only if status is burned or shipped"
         }
       },
-      "title": "NFT request as is with status \nlist of statuses \nStatusUnknown          NFTStatus = \"unknown\"\nStatusPending          NFTStatus = \"pending\"\nStatusCompleted        NFTStatus = \"completed\"\nStatusFailed           NFTStatus = \"failed\"\nStatusBad              NFTStatus = \"bad\"\nStatusUploadedOffchain NFTStatus = \"uploadedOffchain\"\nStatusUploaded         NFTStatus = \"uploaded”"
+      "title": "NFT request as is with status \nlist of statuses \nAny = 0;\nUnknown = 1;\nPending = 2;\nFailed = 3;\nUploadedOffchain = 4;\nUploaded = 5;\nBurned = 6;\nShipped = 7;"
     },
-    "nftShippingStatus": {
-      "type": "object",
-      "properties": {
-        "trackNumber": {
-          "type": "string"
-        },
-        "timeSent": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "error": {
-          "type": "string"
-        },
-        "success": {
-          "type": "boolean"
-        }
-      }
-    },
-    "nftShippingStatusUpdateRequest": {
+    "nftSetTrackingNumberRequest": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "title": "internai id"
         },
-        "status": {
-          "$ref": "#/definitions/nftShippingStatus"
+        "trackingNumber": {
+          "type": "string",
+          "title": "resulted nft raw image b64 encoded"
         }
-      }
+      },
+      "title": "SetTrackingNumberRequest update tracking number for shipping"
+    },
+    "nftShipping": {
+      "type": "object",
+      "properties": {
+        "shipping": {
+          "$ref": "#/definitions/nftShippingTo"
+        },
+        "trackingNumber": {
+          "type": "string"
+        }
+      },
+      "title": "Shipping info"
     },
     "nftShippingTo": {
       "type": "object",
@@ -590,7 +550,24 @@
         "email": {
           "type": "string"
         }
-      }
+      },
+      "title": "ShippingTo shipping info"
+    },
+    "nftStatus": {
+      "type": "string",
+      "enum": [
+        "Any",
+        "Unknown",
+        "Pending",
+        "Failed",
+        "UploadedOffchain",
+        "Uploaded",
+        "Burned",
+        "Shipped"
+      ],
+      "default": "Any",
+      "description": "- Any: Anu used for query all mint requests aka \"*\"\n - Unknown: Unknown — status after user upload refs to ddapp tx is unconfirmed;\n - Pending: Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded\n - Failed: Failed — status after user upload refs to ddapp tx is failed for some reason;\n - UploadedOffchain: UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain;\n - Uploaded: Uploaded — art image is done and uploaded to the blockchain;\n - Burned: Burned — art image is  burned from blockchain and it ready to ship;\n - Shipped: Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.",
+      "title": "Status enum for mint request"
     },
     "nftUpdateNFTOffchainUrlRequest": {
       "type": "object",
@@ -614,24 +591,6 @@
         }
       },
       "additionalProperties": {}
-    },
-    "rpcStatus": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
     }
   }
 }

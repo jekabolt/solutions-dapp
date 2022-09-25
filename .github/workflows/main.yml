@@ -1,9 +1,8 @@
 name: Build and run docker image on remote
-
-on: 
-  pull_request:
-    branches: [master]
-    types: [closed]
+on:
+  create:
+    tags:
+      - v*
 
 jobs:
   push:
@@ -34,7 +33,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.commit.outputs.short }} , latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
   deploy:
     runs-on: ubuntu-latest

@@ -1,5 +1,7 @@
 **/dist
 
+redis_data
+
 *vscode
 .env
 *.db

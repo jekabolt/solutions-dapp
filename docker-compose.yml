@@ -1,0 +1,28 @@
+
+version: "3"
+services:
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:9999
+    ports:
+      - "8081:8081"
+  
+  redis:
+    image: redis/redis-stack
+    hostname: redis
+    volumes:
+      - redis_data:/data:rw
+      - ./redis.conf:/redis-stack.conf
+    environment:
+      - REDISTIMESERIES_ARGS=DUPLICATE_POLICY LAST RETENTION_POLICY 604800000
+    ports:
+      - 9999:9999
+    restart: unless-stopped
+
+volumes:
+  redis_data:

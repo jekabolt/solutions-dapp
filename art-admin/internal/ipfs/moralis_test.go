@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
 	"github.com/matryer/is"
@@ -22,13 +21,6 @@ func skipCI(t *testing.T) {
 	if os.Getenv("CI") != "" {
 		t.Skip("Skipping testing in CI environment")
 	}
-}
-
-func buntFromConst() (*bunt.BuntDB, error) {
-	c := &bunt.Config{
-		DBPath: ":memory:",
-	}
-	return c.InitDB()
 }
 
 const (

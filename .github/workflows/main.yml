@@ -1,8 +1,9 @@
 name: Build and run docker image on remote
-on:
-  create:
-    tags:
-      - v*
+
+on: 
+  pull_request:
+    branches: [master]
+    types: [closed]
 
 jobs:
   push:

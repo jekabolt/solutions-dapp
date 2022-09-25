@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	systoken "github.com/jekabolt/solutions-dapp/art-admin/contract"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/bunt"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/rs/zerolog/log"
 )
@@ -31,8 +30,9 @@ type Watcher interface {
 
 // UnknownUpdate db interface for getting all unknown mint requests and update status on em
 type UnknownUpdate interface {
-	GetUnknownNFTMintRequests() ([]*pb_nft.NFTMintRequestWithStatus, error)
-	UpdateStatusNFTMintRequest(id string, status bunt.NFTStatus) (*pb_nft.NFTMintRequestWithStatus, error)
+	// used fro getting all unknown mint requests
+	GetAllNFTMintRequests(ctx context.Context, status pb_nft.Status) ([]*pb_nft.NFTMintRequestWithStatus, error)
+	UpdateStatusNFTMintRequest(ctx context.Context, id string, status pb_nft.Status) (*pb_nft.NFTMintRequestWithStatus, error)
 }
 
 // TokenObserver interface for interacting with the token contract
@@ -46,7 +46,7 @@ type Client struct {
 	mintStore     UnknownUpdate
 	tokenObserver TokenObserver
 	checkInterval time.Duration
-	ttlMap        map[int]int // map[buntId]count
+	ttlMap        map[string]int // map[redisId]count
 	cancel        context.CancelFunc
 }
 
@@ -76,14 +76,14 @@ func (c *Config) New(ctx context.Context, mintRequestStore UnknownUpdate) (cli *
 	if err != nil {
 		return nil, fmt.Errorf("invalid check interval: %v", err)
 	}
-	cli.ttlMap = make(map[int]int)
+	cli.ttlMap = make(map[string]int)
 
 	return cli, nil
 }
 
 // Run starts the transaction status update loop
 // it will run until the context is cancelled
-// once tx is paid, it will update the status to bunt.StatusPending
+// once tx is paid, it will update the status to pb_nft.Status_Pending
 func (cli *Client) Run(ctx context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 	cli.cancel = cancel
@@ -96,7 +96,7 @@ func (cli *Client) Run(ctx context.Context) {
 			select {
 			case <-t.C:
 				log.Debug().Msg("Run: processing")
-				err := cli.MintStatusUpdate()
+				err := cli.MintStatusUpdate(ctx)
 				if err != nil {
 					log.Error().Msgf("Run:MintStatusUpdate [%s]", err.Error())
 				}
@@ -115,30 +115,30 @@ func (cli *Client) Stop() {
 	}
 }
 
-// MintStatusUpdate get all bunt.StatusUnknown mint requests and check if mint is paid
-// if paid, update the status to bunt.StatusPending
-// if not paid, update the status to bunt.StatusFailed
-func (cli *Client) MintStatusUpdate() error {
-	mrs, err := cli.mintStore.GetUnknownNFTMintRequests()
+// MintStatusUpdate get all pb_nft.Status_Unknown mint requests and check if mint is paid
+// if paid, update the status to pb_nft.Status_Pending
+// if not paid, update the status to pb_nft.Status_Failed
+func (cli *Client) MintStatusUpdate(ctx context.Context) error {
+	mrs, err := cli.mintStore.GetAllNFTMintRequests(ctx, pb_nft.Status_Unknown)
 	if err != nil {
 		return err
 	}
 
 	for _, mr := range mrs {
-		if mr.Status == bunt.StatusUnknown.String() ||
-			mr.Status == bunt.StatusPending.String() {
+		if mr.Status == pb_nft.Status_Unknown ||
+			mr.Status == pb_nft.Status_Pending {
 
-			cli.ttlMap[int(mr.NftMintRequest.Id)]++
+			cli.ttlMap[mr.NftMintRequest.Id]++
 
 			// check if the transaction passed the max count of retries
-			if cli.ttlMap[int(mr.NftMintRequest.Id)] >= cli.c.Retries {
+			if cli.ttlMap[mr.NftMintRequest.Id] >= cli.c.Retries {
 				// update the status to failed
-				_, err := cli.mintStore.UpdateStatusNFTMintRequest(fmt.Sprint(mr.NftMintRequest.Id), bunt.StatusFailed)
+				_, err := cli.mintStore.UpdateStatusNFTMintRequest(ctx, fmt.Sprint(mr.NftMintRequest.Id), pb_nft.Status_Failed)
 				if err != nil {
 					log.Error().Msgf("MintStatusUpdate:UpdateStatusNFTMintRequest [%s]", err.Error())
 				}
 				// delete the mint request from the map on status update
-				delete(cli.ttlMap, int(mr.NftMintRequest.Id))
+				delete(cli.ttlMap, mr.NftMintRequest.Id)
 				continue
 			}
 
@@ -151,12 +151,12 @@ func (cli *Client) MintStatusUpdate() error {
 
 			if ok {
 				// update the status to pending
-				_, err := cli.mintStore.UpdateStatusNFTMintRequest(fmt.Sprint(mr.NftMintRequest.Id), bunt.StatusPending)
+				_, err := cli.mintStore.UpdateStatusNFTMintRequest(ctx, fmt.Sprint(mr.NftMintRequest.Id), pb_nft.Status_Pending)
 				if err != nil {
 					log.Error().Msgf("MintStatusUpdate:UpdateStatusNFTMintRequest [%s]", err.Error())
 				}
 				// delete the mint request from the map on status update
-				delete(cli.ttlMap, int(mr.NftMintRequest.Id))
+				delete(cli.ttlMap, mr.NftMintRequest.Id)
 			}
 
 		}

@@ -30,13 +30,11 @@ jobs:
             jekabolt/solutions-dapp
 
       - name: Build and push Docker images
-        - id: commit
-        uses: pr-mpt/actions-commit-hash@v1
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
           push: true
-          tags: ${{ steps.commit.outputs.short }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/solutions-dapp:${{ steps.commit.outputs.short }} , ${{ secrets.DOCKER_USERNAME }}/myapp:latest
           labels: ${{ steps.meta.outputs.labels }}
   deploy:
     runs-on: ubuntu-latest

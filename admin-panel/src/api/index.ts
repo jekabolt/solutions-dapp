@@ -28,6 +28,7 @@ const getAuthHeaders = (authToken: string) => ({
   'Grpc-Metadata-Authorization': `Bearer ${authToken}`,
 });
 
+// used in code
 export function login(password: string): Promise<LoginResponse> {
   const authClient = createAuthClient(({ path, body }: RequestType): Promise<LoginResponse> => {
     return axios
@@ -37,22 +38,6 @@ export function login(password: string): Promise<LoginResponse> {
 
   return authClient.Login({ password });
 }
-
-// +GET /api/nft/requests
-// +GET /api/nft/burn
-// +GET /api/nft/burn/error
-// +GET /api/nft/burn/pending
-
-// +POST /api/auth/login
-// -POST /api/nft/ipfs
-// +POST /api/nft/burn
-// +POST /api/nft
-// +POST /api/nft/requests
-// +POST /api/nft/offchain
-// +POST /api/nft/shipping/status
-
-// +DELETE /api/nft/requests/{id}
-// +DELETE /api/nft/{id}
 
 const createAuthorizedNftClient = (authToken: string) => {
   return nftProto.createNftClient(
@@ -79,31 +64,25 @@ const createAuthorizedNftClient = (authToken: string) => {
   );
 };
 
-export function getNftRequests(authToken: string): Promise<nftProto.NFTMintRequestListArray> {
+export function getMintRequestsPagedList(
+  authToken: string,
+  requestBody: nftProto.ListPagedRequest
+): Promise<nftProto.NFTMintRequestListArray> {
   const nftClient = createAuthorizedNftClient(authToken);
-  
-  return nftClient.ListNFTMintRequests(authToken);
+
+  return nftClient.ListNFTMintRequestsPaged(requestBody);
 }
 
-export function getNftAllBurned(authToken: string): Promise<nftProto.BurnList> {
+export function submitNewNftMintRequest(
+  authToken: string,
+  requestBody: nftProto.NFTMintRequestToUpload,
+): Promise<nftProto.NFTMintRequestWithStatus> {
   const nftClient = createAuthorizedNftClient(authToken);
-  
-  return nftClient.GetAllBurned(authToken);
-}
 
-export function getNftAllBurnedError(authToken: string): Promise<nftProto.BurnList> {
-  const nftClient = createAuthorizedNftClient(authToken);
-  
-  return nftClient.GetAllBurnedError(authToken);
-}
-export function getNftAllBurnedPending(authToken: string): Promise<nftProto.BurnList> {
-  const nftClient = createAuthorizedNftClient(authToken);
-  
-  return nftClient.GetAllBurnedPending(authToken);
+  return nftClient.NewNFTMintRequest(requestBody);
 }
 
 // todo: handle empty responses
-
 export function uploadIpfsMetadata(authToken: string): Promise<{}> {
   const nftClient = createAuthorizedNftClient(authToken);
 
@@ -125,28 +104,10 @@ export function updateNftOffchainUrl(
   return nftClient.UpdateNFTOffchainUrl(requestBody);
 }
 
-export function upsertNftMintRequest(
-  authToken: string,
-  requestBody: nftProto.NFTMintRequestToUpload,
-): Promise<nftProto.NFTMintRequestWithStatus> {
-  const nftClient = createAuthorizedNftClient(authToken);
-
-  return nftClient.UpsertNFTMintRequest(requestBody);
-}
-
 export function uploadOffchainMetadata(authToken: string): Promise<nftProto.MetadataOffchainUrl> {
   const nftClient = createAuthorizedNftClient(authToken);
 
   return nftClient.UploadOffchainMetadata({});
-}
-
-export function updateBurnShippingStatus(
-  authToken: string,
-  requestBody: nftProto.ShippingStatusUpdateRequest,
-): Promise<{}> {
-  const nftClient = createAuthorizedNftClient(authToken);
-
-  return nftClient.UpdateBurnShippingStatus(requestBody);
 }
 
 export function deleteNftMintRequestById(
@@ -165,4 +126,13 @@ export function deleteNftOffchainUrl(
   const nftClient = createAuthorizedNftClient(authToken);
 
   return nftClient.DeleteNFTOffchainUrl(id);
+}
+
+export function SetTrackingNumber(
+  authToken: string,
+  requestBody: nftProto.SetTrackingNumberRequest,
+): Promise<{}> {
+  const nftClient = createAuthorizedNftClient(authToken);
+
+  return nftClient.SetTrackingNumber(requestBody);
 }

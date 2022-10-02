@@ -73,6 +73,8 @@ export function getMintRequestsPagedList(
   return nftClient.ListNFTMintRequestsPaged(requestBody);
 }
 
+// +
+// upload images
 export function submitNewNftMintRequest(
   authToken: string,
   requestBody: nftProto.NFTMintRequestToUpload,
@@ -89,6 +91,7 @@ export function uploadIpfsMetadata(authToken: string): Promise<{}> {
   return nftClient.UploadIPFSMetadata({});
 }
 
+// +
 export function burnNft(authToken: string, requestBody: nftProto.BurnRequest): Promise<{}> {
   const nftClient = createAuthorizedNftClient(authToken);
 
@@ -128,6 +131,7 @@ export function deleteNftOffchainUrl(
   return nftClient.DeleteNFTOffchainUrl(id);
 }
 
+// +
 export function submitTrackingNumber(
   authToken: string,
   requestBody: nftProto.SetTrackingNumberRequest,

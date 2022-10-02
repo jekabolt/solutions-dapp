@@ -13,11 +13,6 @@ export enum QUERIES {
   getNftAllBurnedPending = 'getNftAllBurnedPending',
 }
 
-export enum MUTATIONS {
-  login = 'login',
-}
-
-// proto files doesnt export this type
 type RequestType = {
   path: string;
   method: string;
@@ -41,15 +36,12 @@ export function login(password: string): Promise<LoginResponse> {
 
 const createAuthorizedNftClient = (authToken: string) => {
   return nftProto.createNftClient(
-    // todo: fix types
     ({ path, method, body }: RequestType): Promise<any> => {
       switch (method.toLowerCase()) {
-        // todo: test
         case 'post':
           return axios
             .post(path, body, { headers: getAuthHeaders(authToken) })
             .then((response) => response.data);
-        // todo: test ?? where is the body pf request
         case 'delete':
           return axios
             .delete(path, { headers: getAuthHeaders(authToken) })

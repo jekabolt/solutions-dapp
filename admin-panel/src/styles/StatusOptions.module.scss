@@ -2,7 +2,7 @@
 
 .statusOptions {
   font-size: 18px;
-  width: 220px;
+  width: 300px;
   position: relative;
   margin-bottom: 40px;
   cursor: default;
@@ -13,14 +13,32 @@
     color: $white;
     border: 2px solid $black;
     border-radius: 5px;
-    padding: 5px 30px;
+    padding: 10px 30px;
 
     &.dropdownTitleOpen {
+      color: $black;
+      background-color: $white;
       border-radius: 5px 5px 0 0;
+
+      .titleOption span:last-child {
+        transition: 0.3s;
+        rotate: -90deg;
+      }
     }
 
-    .optionName .color {
-      top: 12px;
+    .titleOption {
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+
+      span:last-child {
+        rotate: 90deg;
+        transition: 0.3s;
+      }
+
+      .color {
+        top: 12px;
+      }
     }
   }
 
@@ -31,17 +49,30 @@
     border-radius: 0 0 5px 5px;
     padding-bottom: 10px;
     position: absolute;
-    top: 35px;
     width: 100%;
+
+    .dropdownBodyFooter {
+      display: flex;
+      justify-content: right;
+      padding: 0px 30px;
+      margin-top: 10px;
+
+      .applyButton {
+        background-color: $white;
+        color: $black;
+        border: 0;
+        cursor: pointer;
+        width: 120px;
+        text-align: center;
+        height: 30px;
+        font-size: 18px;
+        border-radius: 5px;
+        outline: none;
+      }
+    }
   }
 
   .option {
-    padding: 10px 10px 0 30px;
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
     input[type="radio"] {
       cursor: pointer;
       appearance: none;
@@ -51,14 +82,20 @@
       height: 16px;
       border-radius: 50%;
     }
+
+    .color {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 15px;
+      border-radius: 50%;
+    }
   }
 
-  .optionName .color {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    top: 15px;
-    left: 10px;
-  }
+  .optionWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+  } 
 }

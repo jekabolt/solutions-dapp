@@ -1,4 +1,4 @@
-import { Fragment, FC } from 'react';
+import { Fragment } from 'react';
 import { useNavigate } from '@tanstack/react-location';
 
 import { ROUTES } from 'constants/routes';

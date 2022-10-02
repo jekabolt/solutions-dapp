@@ -15,7 +15,7 @@ import styles from 'styles/HomePage.module.scss';
 
 export const Home: FC = () => {
   const token = localStorage.getItem(AUTH_LOCAL_STORAGE_KEY) || '';
-  const [activeStatus, setActiveStatus] = useState(Status.Any as StatusType);
+  const [activeStatus, setActiveStatus] = useState<StatusType>();
   const page = 2;
   const navigate = useNavigate();
   // const { data } = useQuery<NFTMintRequestListArray, AxiosError>(

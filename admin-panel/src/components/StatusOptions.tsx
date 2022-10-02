@@ -1,7 +1,8 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, ChangeEvent, SetStateAction, Dispatch } from 'react';
 import cl from 'classnames';
 
 import { Status, STATUS_COLORS } from 'constants/values';
+import { Status as StatusType } from 'api/proto-http/nft';
 
 import styles from 'styles/StatusOptions.module.scss';
 
@@ -20,14 +21,18 @@ const OptionName = ({ optionKey }: { optionKey: any }) => (
   </div>
 );
 
-export const StatusOptions = () => {
+interface IStatusOptionsProps {
+  activeStatus: StatusType;
+  setActiveStatus: Dispatch<SetStateAction<StatusType>>;
+}
+
+export const StatusOptions = ({ activeStatus, setActiveStatus }: IStatusOptionsProps) => {
   const [isOpen, setOpenStatus] = useState(false);
-  const [activeStatus, setActiveStatus] = useState(Status.Unknown);
 
   const toggleDropdown = () => setOpenStatus(v => !v);
   const handleRadioCLick = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
-    setActiveStatus(value as Status);
-  }
+    setActiveStatus(value as StatusType);
+  };
 
   return (
     <div className={styles.statusOptions}>

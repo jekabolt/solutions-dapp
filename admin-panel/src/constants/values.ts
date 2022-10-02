@@ -1,20 +1,23 @@
 export const AUTH_LOCAL_STORAGE_KEY = 'solutions-dapp-auth-token';
 
 export enum Status {
+  Any = 'Any',
   Unknown = 'Unknown',
   Pending = 'Pending',
-  Done = 'Done',
   Failed = 'Failed',
-  Finalised = 'Finalised',
+  UploadedOffchain = 'UploadedOffchain',
+  Uploaded = 'Uploaded',
   Burned = 'Burned',
-  Shiped = 'Shiped',
+  Shipped = 'Shipped',
 }
 
 export const STATUS_COLORS = {
-  [Status.Unknown]: '#BFBFBF',
-  [Status.Pending]: '#FFFA7A',
-  [Status.Done]: '#B5FF57',
+  [Status.Any]: '#BFBFBF',
+  [Status.Unknown]: '#FFFA7A',
+  [Status.Pending]: '#B5FF57',
   [Status.Failed]: '#FF7557',
-  [Status.Finalised]: '#00FF19',
+  [Status.UploadedOffchain]: '#00FF19',
+  [Status.Uploaded]: '#0038FF',
   [Status.Burned]: '#0038FF',
+  [Status.Shipped]: '#015211',
 };

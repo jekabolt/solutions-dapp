@@ -1,11 +1,13 @@
 import { Fragment, useState } from 'react';
 import { useNavigate } from '@tanstack/react-location';
+import { useMutation } from '@tanstack/react-query';
 import cl from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy, faCaretLeft, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 
 import { Header } from 'components/Header';
-import { STATUS_COLORS } from 'constants/values';
+import { submitTrackingNumber } from 'api';
+import { AUTH_LOCAL_STORAGE_KEY } from 'constants/values';
 import { ROUTES } from 'constants/routes';
 import styles from 'styles/Nft.module.scss';
 
@@ -29,7 +31,6 @@ const ShippingInfo = ({
   city,
   country,
   email,
-  setTrackingNumber,
 }: {
   fullName: string;
   address: string;
@@ -37,53 +38,80 @@ const ShippingInfo = ({
   city: string;
   country: string;
   email: string;
-  setTrackingNumber: (v: string) => void;
-}) => (
-  <div className={styles.shippingInfo}>
-    // todo: parse object with fieldnames
-    <div className={styles.shippingLine}>
-      <span>FullName</span>
-      <span>{fullName}</span>
-    </div>
-    <div className={styles.shippingLine}>
-      <span>Address</span>
-      <span>{address}</span>
-    </div>
-    <div className={styles.shippingLine}>
-      <span>ZipCode</span>
-      <span>{zipCode}</span>
-    </div>
-    <div className={styles.shippingLine}>
-      <span>City</span>
-      <span>{city}</span>
-    </div>
-    <div className={styles.shippingLine}>
-      <span>country</span>
-      <span>{country}</span>
-    </div>
-    <div className={styles.shippingLine}>
-      <span>email</span>
-      <span>{email}
-        <FontAwesomeIcon onClick={() => copyToClickboard(email)} icon={faCopy} />
-      </span>
-    </div>
-    <div className={styles.shippingLine}>
-      <span>tracking number</span>
-      <input
-        type="text"
-        onChange={({ target: { value } }) => setTrackingNumber(value)}
-      />
-    </div>
-    <button>
-      SUBMIT
-    </button>
-  </div>
-);
+  }) => {
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const token = localStorage.getItem(AUTH_LOCAL_STORAGE_KEY) || '';
 
+  // add disable on loading state
+  const { mutate } = useMutation(() => submitTrackingNumber(
+    token,
+    {
+      id: 'test-id',
+      trackingNumber,
+    }
+  ));
+
+  const handleTrackSubmit = () => {
+    // add some sort of validation
+    if (trackingNumber !== '' && trackingNumber.length > 1) {
+      mutate();
+    }
+  };
+
+  return (
+    <div className={styles.shippingInfo}>
+      <div className={styles.shippingLine}>
+        <span>FullName</span>
+        <span>{fullName}</span>
+      </div>
+      <div className={styles.shippingLine}>
+        <span>Address</span>
+        <span>{address}</span>
+      </div>
+      <div className={styles.shippingLine}>
+        <span>ZipCode</span>
+        <span>{zipCode}</span>
+      </div>
+      <div className={styles.shippingLine}>
+        <span>City</span>
+        <span>{city}</span>
+      </div>
+      <div className={styles.shippingLine}>
+        <span>country</span>
+        <span>{country}</span>
+      </div>
+      <div className={styles.shippingLine}>
+        <span>email</span>
+        <span>{email}
+          <FontAwesomeIcon onClick={() => copyToClickboard(email)} icon={faCopy} />
+        </span>
+      </div>
+      <div className={styles.shippingLine}>
+        <span>tracking number</span>
+        <input
+          type="text"
+          onChange={({ target: { value } }) => setTrackingNumber(value)}
+        />
+      </div>
+      <button onClick={handleTrackSubmit}>
+        SUBMIT
+      </button>
+      {/* <div className={styles.infoLine}>
+        <span>tracking number</span>
+        <span className={cl(
+          styles.description,
+          styles.withCopy
+        )}>
+          {trackingNumber}
+          <FontAwesomeIcon onClick={() => copyToClickboard(trackingNumber)} icon={faCopy} />
+        </span>
+      </div> */}
+    </div>
+  );
+};
 export const Nft = () => {
   const navigate = useNavigate();
   const [isShippingOpen, setShippingOpenStatus] = useState(false);
-  const [trackingNumber, setTrackingNumber] = useState('');
   const images = [1, 2, 3, 4, 5];
 
   const info = [
@@ -146,7 +174,6 @@ export const Nft = () => {
             </div>
             {isShippingOpen &&
               <ShippingInfo
-                setTrackingNumber={setTrackingNumber}
                 fullName="Barak Obama"
                 address="address"
                 zipCode="01101"
@@ -156,18 +183,6 @@ export const Nft = () => {
               />
             }
           </div>
-          {trackingNumber && (
-            <div className={styles.infoLine}>
-              <span>tracking number</span>
-              <span className={cl(
-                styles.description,
-                styles.withCopy
-              )}>
-                {trackingNumber}
-                <FontAwesomeIcon onClick={() => copyToClickboard(trackingNumber)} icon={faCopy} />
-              </span>
-            </div>
-          )}
         </div>
         <div className={styles.imageBlock}>
           upload image

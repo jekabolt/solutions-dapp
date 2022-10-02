@@ -128,7 +128,7 @@ export function deleteNftOffchainUrl(
   return nftClient.DeleteNFTOffchainUrl(id);
 }
 
-export function SetTrackingNumber(
+export function submitTrackingNumber(
   authToken: string,
   requestBody: nftProto.SetTrackingNumberRequest,
 ): Promise<{}> {

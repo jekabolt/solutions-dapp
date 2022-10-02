@@ -11,9 +11,12 @@ import (
 func TestMetadata(t *testing.T) {
 	is := is.New(t)
 
+	rc := getRedisAddress()
 	c := Config{
-		Address:  getRedisAddress(),
+		Address:  rc.Host,
+		Password: rc.Password,
 		CacheTTL: "1s",
+		PageSize: 30,
 	}
 	ctx := context.Background()
 

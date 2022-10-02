@@ -6,6 +6,7 @@ on:
 
 env:
   REDIS_HOST: redis.sys.solutions:6379
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
 
 jobs:
   test:

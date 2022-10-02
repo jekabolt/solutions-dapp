@@ -8,19 +8,25 @@ import (
 	"github.com/matryer/is"
 )
 
-func getRedisAddress() string {
+func getRedisAddress() RedisConf {
 	if os.Getenv("REDIS_HOST") == "" {
-		return "localhost:6379"
-		// return "redis.sys.solutions:6379"
+		return RedisConf{
+			Host: "localhost:6379",
+		}
 	}
-	return os.Getenv("REDIS_HOST")
+	return RedisConf{
+		Host:     os.Getenv("REDIS_HOST"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+	}
 }
-
 func TestCreateD(t *testing.T) {
 	t.Logf("redis address: %s", getRedisAddress())
+	rc := getRedisAddress()
 	c := Config{
-		Address:  getRedisAddress(),
+		Address:  rc.Host,
+		Password: rc.Password,
 		CacheTTL: "1s",
+		PageSize: 30,
 	}
 
 	is := is.New(t)

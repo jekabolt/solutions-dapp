@@ -9,6 +9,11 @@ import (
 	"github.com/rueian/rueidis/om"
 )
 
+type RedisConf struct {
+	Host     string
+	Password string
+}
+
 const (
 	errIndexExists = "Index already exists"
 )

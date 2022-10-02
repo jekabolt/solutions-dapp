@@ -16,17 +16,24 @@ import (
 	"github.com/matryer/is"
 )
 
-func getRedisAddress() string {
+func getRedisAddress() redis.RedisConf {
 	if os.Getenv("REDIS_HOST") == "" {
-		return "localhost:6379"
+		return redis.RedisConf{
+			Host: "localhost:6379",
+		}
 	}
-	return os.Getenv("REDIS_HOST")
+	return redis.RedisConf{
+		Host:     os.Getenv("REDIS_HOST"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+	}
 }
 
 // db mock
 func Store() (redis.Store, error) {
+	rc := getRedisAddress()
 	c := redis.Config{
-		Address:  getRedisAddress(),
+		Address:  rc.Host,
+		Password: rc.Password,
 		CacheTTL: "1s",
 		PageSize: 30,
 	}

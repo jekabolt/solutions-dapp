@@ -1,0 +1,38 @@
+@import './variables.scss';
+
+.authPage {
+  padding-top: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .passwordInput,
+  .passwordSubmit {
+    display: block;
+    width: 340px;
+    text-align: center;
+    height: 60px;
+    font-size: 30px;
+    border-radius: 5px;
+    outline: none;
+  }
+
+  .passwordInput {
+    margin-bottom: 20px;
+    border: 2px solid $black;
+    padding: 5px;
+  }
+  
+  .errorMessage {
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: $error;
+  }
+  
+  .passwordSubmit {
+    background-color: $black;
+    color: $white;
+    border: 0;
+    cursor: pointer;
+  }
+}

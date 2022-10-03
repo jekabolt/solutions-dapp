@@ -1,0 +1,152 @@
+@import './variables.scss';
+
+.button {
+  display: block;
+  padding: 5px 40px;  
+  background-color: $black;
+  color: $white;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  height: 40px;
+  font-size: 16px;
+  border-radius: 5px;
+  outline: none;
+  margin-bottom: 40px;
+
+  svg {
+    padding-right: 12px;
+  }
+}
+
+.statusLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+
+  .status {
+    border-bottom: 2px solid black;
+
+    .statusLabel,
+    .statusName {
+      display: inline-block;
+    }
+
+    .statusLabel {
+      margin-right: 100px;
+    }
+
+    .statusName {
+      padding: 10px 0 10px 30px;
+      position: relative;
+
+      .color {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: yellowgreen;
+        top: 15px;
+        left: 10px;
+      }
+    }
+  }
+}
+
+.imagesList {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+
+  .imageBlock {
+    background-color: $white;
+    width: 200px;
+    height: 150px;
+    margin-right: 20px;
+    background-color: green;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+.mainInfo {
+  display: flex;
+  justify-content: space-between;
+
+  .info {
+    width: 70%;
+    margin-bottom: 40px;
+
+    .infoLine {
+      padding: 8px;
+      border-bottom: 1px solid #d1d1d1;
+      display: flex;
+      justify-content: space-between;
+
+      span {
+        font-size: 18px;
+        display: block;
+        width: 170px;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &:first-child {
+          text-transform: capitalize;
+        }
+
+        &.withCopy {
+          padding-right: 40px;
+          position: relative;
+
+          svg {
+            cursor: pointer;
+            position: absolute;
+            top: 0px;
+            right: 5px;
+          }
+        }
+      }
+    }
+  }
+
+  .imageBlock {
+    width: 25%;
+    height: 200px;
+    padding: 0 20px;
+    background-color: $white;
+  }
+}
+
+.shippingInfoContainer {
+  border: 0;
+  cursor: pointer;
+
+  .arrow {
+    text-align: right !important;
+    margin-right: 5px;
+
+    &.arrowActive svg {
+      transform: rotate(180deg);
+    }
+  }
+
+  .shippingInfo {
+    .shippingLine span {
+      padding: 4px 8px;
+      display: inline-block;
+      font-size: 15px;
+
+      &:first-child {
+        width: 170px;
+      }
+
+      &:last-child {
+        font-weight: bold;
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 @import './variables.scss';
+
 * {
   box-sizing: border-box;
   // reset native padding and margins
@@ -7,6 +8,6 @@
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
-// body {
-//   background-color: $grey;
-// }
+body {
+  background-color: $grey;
+}

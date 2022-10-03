@@ -1,0 +1,42 @@
+@import './variables.scss';
+
+.header {
+  display: flex;
+  margin-bottom: 40px;
+
+  .left,
+  .right {
+    display: flex;
+    align-items: center;
+    width: 50%;
+  }
+
+  .left {
+    justify-content: left;
+  }
+
+  .right {
+    justify-content: right;
+  }
+
+  .circle {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background-color: black;
+    border: 2px solid greenyellow;
+  }
+
+  .logOut {
+    background-color: $black;
+    color: $white;
+    border: 0;
+    cursor: pointer;
+    width: 220px;
+    text-align: center;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 5px;
+    outline: none;
+  }
+}

@@ -14,7 +14,7 @@ module.exports = merge([
     entry: './src/index.tsx',
     output: {
       filename: '[name].[contenthash].js',
-      path: path.resolve(__dirname, 'dist/'),
+      path: path.resolve(process.env.STATIC_FOLDER || __dirname, 'admin-panel-dist/'),
       clean: true,
     },
     module: {

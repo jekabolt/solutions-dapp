@@ -46,12 +46,10 @@ export const NftList = ({ nftMintRequests }: { nftMintRequests: NFTMintRequestWi
     dispatch({ type: 'setPage', payload: state.page + 1 });
   };
 
-  const arr = Array(15).fill(nftMintRequests[0])
-
   return (
     <div className={styles.nftListContainer}>
       <div className={styles.nftList}>
-        {arr.map((nftMintRequest) => (
+        {nftMintRequests.map((nftMintRequest) => (
           <NtfListItem
             nftRequestWithStatus={nftMintRequest}
             handleClick={() => handleNftClick(nftMintRequest)}

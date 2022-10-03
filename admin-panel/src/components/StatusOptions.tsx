@@ -1,13 +1,12 @@
-import { useState, ChangeEvent, SetStateAction, Dispatch } from 'react';
+import { useState, ChangeEvent, useContext } from 'react';
 import cl from 'classnames';
 import OutsideClickHandler from 'react-outside-click-handler';
 
 import { Status, STATUS_COLORS } from 'constants/values';
-import { Status as StatusType } from 'api/proto-http/nft';
-
+import { Context } from 'context';
 import styles from 'styles/StatusOptions.module.scss';
 
-const Option = ({ optionKey, titleOption = false }: { optionKey?: StatusType, titleOption?: boolean }) => (
+const Option = ({ optionKey, titleOption = false }: { optionKey?: Status, titleOption?: boolean }) => (
   <div className={cl(styles.option, titleOption ? styles.titleOption : '')}>
     <div className={styles.optionName}>
       {optionKey
@@ -23,27 +22,24 @@ const Option = ({ optionKey, titleOption = false }: { optionKey?: StatusType, ti
   </div>
 );
 
-interface IStatusOptionsProps {
-  activeStatus?: StatusType;
-  setActiveStatus: Dispatch<SetStateAction<StatusType | undefined>>;
-}
-
-export const StatusOptions = ({ activeStatus, setActiveStatus }: IStatusOptionsProps) => {
+export const StatusOptions = () => {
+  const { state, dispatch } = useContext(Context);
   const [isOpen, setOpenStatus] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<StatusType | undefined>();
+  const [selectedStatus, setSelectedStatus] = useState('');
 
   const toggleDropdown = () => setOpenStatus(v => !v);
   const handleRadioCLick = ({ target: { value } }: ChangeEvent<HTMLInputElement>) => {
-    setSelectedStatus(value as StatusType);
+    setSelectedStatus(value);
   };
 
   const applyStatusSelection = () => {
-    setActiveStatus(selectedStatus);
+    dispatch({ type: 'setStatus', payload: selectedStatus as Status });
+    dispatch({ type: 'setPage', payload: 1 });
     setOpenStatus(false);
   };
 
   const handleOutsideClick = () => {
-    setSelectedStatus(activeStatus);
+    setSelectedStatus(state.status);
     setOpenStatus(false);
   };
 
@@ -59,19 +55,19 @@ export const StatusOptions = ({ activeStatus, setActiveStatus }: IStatusOptionsP
           )}
           onClick={toggleDropdown}
         >
-          <Option optionKey={activeStatus} titleOption />
+          <Option optionKey={state.status} titleOption />
         </div>
         {isOpen &&
           <div className={styles.dropdownBody}>
             {Object.keys(Status).map((key) => (
               <div className={styles.optionWrapper} key={key}>
-                <Option optionKey={key as StatusType} />
+                <Option optionKey={key as Status} />
                 <input
                   type="radio"
                   value={key}
-                  checked={selectedStatus === key}
+                  checked={(selectedStatus || state.status) === key}
                   onChange={handleRadioCLick}
-                  style={selectedStatus === key ? {
+                  style={(selectedStatus || state.status) === key ? {
                     // @ts-ignore
                     backgroundColor: STATUS_COLORS[key] || '#000',
                     // @ts-ignore

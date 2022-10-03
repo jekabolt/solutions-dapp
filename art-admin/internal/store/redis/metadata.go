@@ -13,10 +13,12 @@ const (
 )
 
 type Metadata struct {
-	Key string `redis:",key"`
-	Ver int64  `redis:",ver"`
-	Ts  int64  `redis:",ts" json:"ts"`
-	Url string `redis:",url" json:"url"`
+	Key        string `redis:",key"`
+	Ver        int64  `redis:",ver"`
+	Ts         int64  `redis:",ts" json:"ts"`
+	Url        string `redis:",url" json:"url"`
+	IPFSUrl    string `redis:",ipfsUrl" json:"ipfsUrl"`
+	Processing bool   `redis:",processing" json:"processing"`
 }
 
 type MetadataStore interface {
@@ -51,6 +53,34 @@ func (rdb *RDB) AddOffchainMetadata(ctx context.Context, url string) error {
 	err := rdb.metadata.Save(ctx, md)
 	if err != nil {
 		return fmt.Errorf("AddOffchainMetadata:Save [%v]", err.Error())
+	}
+	return nil
+}
+
+func (rdb *RDB) SetIPFSUrl(ctx context.Context, id string, IPFSUrl string) error {
+	md, err := rdb.metadata.Fetch(ctx, id)
+	if err != nil {
+		return fmt.Errorf("no such metadata with provided id %s", id)
+	}
+	md.IPFSUrl = IPFSUrl
+	md.Processing = false
+
+	err = rdb.metadata.Save(ctx, md)
+	if err != nil {
+		return fmt.Errorf("SetIPFSUrl:Save [%v]", err.Error())
+	}
+	return nil
+}
+
+func (rdb *RDB) SetProcessing(ctx context.Context, id string, processing bool) error {
+	md, err := rdb.metadata.Fetch(ctx, id)
+	if err != nil {
+		return fmt.Errorf("no such metadata with provided id %s", id)
+	}
+	md.Processing = processing
+	err = rdb.metadata.Save(ctx, md)
+	if err != nil {
+		return fmt.Errorf("SetProcessing:Save [%v]", err.Error())
 	}
 	return nil
 }

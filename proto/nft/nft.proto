@@ -9,7 +9,7 @@ import "google/protobuf/empty.proto";
 
 
 service Nft {
-  //  Method used in ui for submitting drawing nft reference 
+  //  Method used in ui for submitting drawing nft reference with initial status Unknown
   rpc NewNFTMintRequest (NFTMintRequestToUpload) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft/requests"
@@ -17,7 +17,7 @@ service Nft {
     };
   }
 
-  //  List paged mint requests by status
+  //  List paged mint requests by status. Default page size is 30.
   rpc ListNFTMintRequestsPaged (ListPagedRequest) returns (NFTMintRequestListArray){
     option (google.api.http) = {
       get : "/api/nft/requests/{status}/{page}"
@@ -32,6 +32,7 @@ service Nft {
   }
 
   // Upload resulted nft offchain from b64
+  // possble statuses: Pending, UploadedOffchain, Uploaded
   rpc UpdateNFTOffchainUrl (UpdateNFTOffchainUrlRequest) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft"
@@ -39,28 +40,23 @@ service Nft {
     };
   }
 
-  // Remove nft offchain url from mint request 
+  // Remove nft offchain url from mint request and change status to Pending
   rpc DeleteNFTOffchainUrl (DeleteId) returns (NFTMintRequestWithStatus) {
     option (google.api.http) = {
 			delete: "/api/nft/{id}"
 		};
   }
 
-  // Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
-  rpc UploadOffchainMetadata (google.protobuf.Empty) returns (MetadataOffchainUrl) {
-    option (google.api.http) = {
-      post : "/api/nft/offchain"
-      body : "*"
-    };
-  }
-
+  // Burn remove nft from contract and set shipping info and set status Burned
+  // possble statuses: Uploaded
   rpc Burn (BurnRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/api/nft/burn"
       body : "*"
     };
   }
-
+  // SetTrackingNumber set tracking number for burned nft and set status Shipped 
+  // possble statuses: Burned
   rpc SetTrackingNumber (SetTrackingNumberRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/api/nft/burn/track"
@@ -68,9 +64,27 @@ service Nft {
     };
   }
 
+  // ----- IPFS
+
+  // UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped. 
+  // Create _metadata.json and upload to S3
+  rpc UploadOffchainMetadata (google.protobuf.Empty) returns (MetadataOffchainUrl) {
+    option (google.api.http) = {
+      post : "/api/nft/offchain"
+      body : "*"
+    };
+  }
+
+  // GetAllMetadata Get all uploaded _metadata.json records from S3 with timestamps
+  rpc GetAllMetadata (google.protobuf.Empty) returns (AllMetadataResponse) {
+    option (google.api.http) = {
+      get : "/api/nft/metadata"
+    };
+  }
+
  
-  // TODO: add rpc for getting metadata offchain url
-  rpc UploadIPFSMetadata (google.protobuf.Empty) returns (google.protobuf.Empty) {
+  // UploadIPFSMetadata - upload metadata from given id to IPFS and add uri to db
+  rpc UploadIPFSMetadata (UploadIPFSMetadataRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/api/nft/ipfs"
       body : "*"
@@ -139,15 +153,6 @@ enum Status {
 
 
 // NFT request as is with status 
-// list of statuses 
-// Any = 0;
-// Unknown = 1;
-// Pending = 2;
-// Failed = 3;
-// UploadedOffchain = 4;
-// Uploaded = 5;
-// Burned = 6;
-// Shipped = 7;
 message NFTMintRequestWithStatus {
   // array of images from which nft should be referenced
   repeated ImageList sampleImages = 1;
@@ -170,15 +175,6 @@ message NFTMintRequestListArray {
 
 
 // ListPagedRequest
-// list of statuses 
-// Any = 0;
-// Unknown = 1;
-// Pending = 2;
-// Failed = 3;
-// UploadedOffchain = 4;
-// Uploaded = 5;
-// Burned = 6;
-// Shipped = 7;
 message ListPagedRequest {
   // Mint request status
   Status status = 1;
@@ -210,7 +206,24 @@ message UpdateNFTOffchainUrlRequest {
 // Upload offchain metadata _metadata.json
 message MetadataOffchainUrl {
   // all metadata json url uploaded to s3 will be used to upload to ipfs 
-  string Url = 1;
+  string url = 1;
+  // URL ipfs
+  string ipfsUrl = 2;
+  // timestamp of creation
+  int32 ts = 3;
+  // is uploaded
+  bool processing = 4; 
+}
+
+// Response for GetAllMetadata
+message AllMetadataResponse {
+  repeated MetadataOffchainUrl offchainUrls = 1;
+}
+
+// Request for ploadIPFSMetadata
+message UploadIPFSMetadataRequest {
+  // internal db metadata id 
+  string id = 1;
 }
 
 

@@ -147,19 +147,22 @@ func (rdb *RDB) DeleteNFTMintRequestById(ctx context.Context, id string) error {
 // used to compose _metadata.json
 func (rdb *RDB) GetAllToUpload(ctx context.Context) ([]*pb_nft.NFTMintRequestWithStatus, error) {
 	_, records, err := rdb.mintRequests.Search(ctx, func(search om.FtSearchIndex) om.Completed {
-		return search.Query("*").Build()
+		return search.Query(
+			fmt.Sprintf(
+				`(%s|%s|%s|%s)`,
+				getQueryStatus(pb_nft.Status(pb_nft.Status_Uploaded.Number())),
+				getQueryStatus(pb_nft.Status(pb_nft.Status_UploadedOffchain.Number())),
+				getQueryStatus(pb_nft.Status(pb_nft.Status_Burned.Number())),
+				getQueryStatus(pb_nft.Status(pb_nft.Status_Shipped.Number())),
+			),
+		).Build()
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetAllToUpload:Search [%v]", err.Error())
 	}
 	toUpload := []*pb_nft.NFTMintRequestWithStatus{}
 	for _, mr := range records {
-		if mr.MintWithStatus.Status == pb_nft.Status_Uploaded ||
-			mr.MintWithStatus.Status == pb_nft.Status_UploadedOffchain ||
-			mr.MintWithStatus.Status == pb_nft.Status_Burned ||
-			mr.MintWithStatus.Status == pb_nft.Status_Shipped {
-			toUpload = append(toUpload, mr.MintWithStatus)
-		}
+		toUpload = append(toUpload, mr.MintWithStatus)
 	}
 	return toUpload, nil
 }

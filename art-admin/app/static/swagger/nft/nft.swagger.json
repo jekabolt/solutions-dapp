@@ -18,7 +18,7 @@
   "paths": {
     "/api/nft": {
       "post": {
-        "summary": "Upload resulted nft offchain from b64",
+        "summary": "Upload resulted nft offchain from b64\npossble statuses: Pending, UploadedOffchain, Uploaded",
         "operationId": "UpdateNFTOffchainUrl",
         "responses": {
           "200": {
@@ -51,6 +51,7 @@
     },
     "/api/nft/burn": {
       "post": {
+        "summary": "Burn remove nft from contract and set shipping info and set status Burned\npossble statuses: Uploaded",
         "operationId": "Burn",
         "responses": {
           "200": {
@@ -84,6 +85,7 @@
     },
     "/api/nft/burn/track": {
       "post": {
+        "summary": "SetTrackingNumber set tracking number for burned nft and set status Shipped \npossble statuses: Burned",
         "operationId": "SetTrackingNumber",
         "responses": {
           "200": {
@@ -117,7 +119,7 @@
     },
     "/api/nft/ipfs": {
       "post": {
-        "summary": "TODO: add rpc for getting metadata offchain url",
+        "summary": "UploadIPFSMetadata - upload metadata from given id to IPFS and add uri to db",
         "operationId": "UploadIPFSMetadata",
         "responses": {
           "200": {
@@ -140,8 +142,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/nftUploadIPFSMetadataRequest"
             }
           }
         ],
@@ -150,9 +151,32 @@
         ]
       }
     },
+    "/api/nft/metadata": {
+      "get": {
+        "summary": "GetAllMetadata Get all uploaded _metadata.json records from S3 with timestamps",
+        "operationId": "GetAllMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/nftAllMetadataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Nft"
+        ]
+      }
+    },
     "/api/nft/offchain": {
       "post": {
-        "summary": "Get all metadata with status StatusUploadedOffchain \u0026 StatusUploaded and create _metadata.json",
+        "summary": "UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped. \nCreate _metadata.json and upload to S3",
         "operationId": "UploadOffchainMetadata",
         "responses": {
           "200": {
@@ -186,7 +210,7 @@
     },
     "/api/nft/requests": {
       "post": {
-        "summary": "Method used in ui for submitting drawing nft reference",
+        "summary": "Method used in ui for submitting drawing nft reference with initial status Unknown",
         "operationId": "NewNFTMintRequest",
         "responses": {
           "200": {
@@ -251,7 +275,7 @@
     },
     "/api/nft/requests/{status}/{page}": {
       "get": {
-        "summary": "List paged mint requests by status",
+        "summary": "List paged mint requests by status. Default page size is 30.",
         "operationId": "ListNFTMintRequestsPaged",
         "responses": {
           "200": {
@@ -301,7 +325,7 @@
     },
     "/api/nft/{id}": {
       "delete": {
-        "summary": "Remove nft offchain url from mint request",
+        "summary": "Remove nft offchain url from mint request and change status to Pending",
         "operationId": "DeleteNFTOffchainUrl",
         "responses": {
           "200": {
@@ -350,6 +374,18 @@
           }
         }
       }
+    },
+    "nftAllMetadataResponse": {
+      "type": "object",
+      "properties": {
+        "offchainUrls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nftMetadataOffchainUrl"
+          }
+        }
+      },
+      "title": "Response for GetAllMetadata"
     },
     "nftBurnRequest": {
       "type": "object",
@@ -410,9 +446,22 @@
     "nftMetadataOffchainUrl": {
       "type": "object",
       "properties": {
-        "Url": {
+        "url": {
           "type": "string",
           "title": "all metadata json url uploaded to s3 will be used to upload to ipfs"
+        },
+        "ipfsUrl": {
+          "type": "string",
+          "title": "URL ipfs"
+        },
+        "ts": {
+          "type": "integer",
+          "format": "int32",
+          "title": "timestamp of creation"
+        },
+        "processing": {
+          "type": "boolean",
+          "title": "is uploaded"
         }
       },
       "title": "Upload offchain metadata _metadata.json"
@@ -501,7 +550,7 @@
           "title": "related only if status is burned or shipped"
         }
       },
-      "title": "NFT request as is with status \nlist of statuses \nAny = 0;\nUnknown = 1;\nPending = 2;\nFailed = 3;\nUploadedOffchain = 4;\nUploaded = 5;\nBurned = 6;\nShipped = 7;"
+      "title": "NFT request as is with status"
     },
     "nftSetTrackingNumberRequest": {
       "type": "object",
@@ -582,6 +631,16 @@
         }
       },
       "title": "Update NFT offchain url"
+    },
+    "nftUploadIPFSMetadataRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "internal db metadata id"
+        }
+      },
+      "title": "Request for ploadIPFSMetadata"
     },
     "protobufAny": {
       "type": "object",

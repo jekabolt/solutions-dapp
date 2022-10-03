@@ -131,6 +131,44 @@ func (s *Server) DeleteNFTOffchainUrl(ctx context.Context, req *pb_nft.DeleteId)
 	return nftMR, err
 }
 
+func (s *Server) Burn(ctx context.Context, req *pb_nft.BurnRequest) (*emptypb.Empty, error) {
+	_, err := s.db.UpdateShippingInfo(ctx, req)
+	if err != nil {
+		log.Error().Err(err).Msgf("Burn:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot submit burn data: %s", err.Error())
+	}
+	return nil, err
+}
+
+func (s *Server) SetTrackingNumber(ctx context.Context, req *pb_nft.SetTrackingNumberRequest) (*emptypb.Empty, error) {
+	_, err := s.db.UpdateTrackingNumber(ctx, req)
+	if err != nil {
+		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
+		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
+	}
+	return nil, err
+}
+
+func (s *Server) GetAllMetadata(ctx context.Context, _ *emptypb.Empty) (*pb_nft.AllMetadataResponse, error) {
+	metadata, err := s.db.GetAllOffchainMetadata(ctx)
+	if err != nil {
+		log.Error().Err(err).Msgf("GetAllMetadata:s.db.GetAllOffchainMetadata [%v]", err.Error())
+		return nil, fmt.Errorf("cannot get all metadata: %s", err.Error())
+	}
+	md := []*pb_nft.MetadataOffchainUrl{}
+	for _, m := range metadata {
+		md = append(md, &pb_nft.MetadataOffchainUrl{
+			Url:        m.Url,
+			IpfsUrl:    m.IPFSUrl,
+			Ts:         int32(m.Ts),
+			Processing: m.Processing,
+		})
+	}
+	return &pb_nft.AllMetadataResponse{
+		OffchainUrls: md,
+	}, nil
+}
+
 func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (*pb_nft.MetadataOffchainUrl, error) {
 	mrs, err := s.db.GetAllToUpload(ctx)
 	if err != nil {
@@ -142,9 +180,10 @@ func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (
 		return nil, fmt.Errorf("nothing to upload")
 	}
 
-	// TODO: QUEUE THIS SHIT
-	// TODO: QUEUE THIS SHIT
-	// TODO: QUEUE THIS SHIT
+	//TODO: compose _metadata.json
+	// upload to s3
+	// set metadata url
+
 	metadata, err := s.ipfs.BulkUploadIPFS(mrs)
 	if err != nil {
 		log.Error().Err(err).Msgf("UploadOffchainMetadata:ipfs.BulkUploadIPFS [%v]", err.Error())
@@ -181,25 +220,12 @@ func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (
 	}, nil
 }
 
-func (s *Server) Burn(ctx context.Context, req *pb_nft.BurnRequest) (*emptypb.Empty, error) {
-	_, err := s.db.UpdateShippingInfo(ctx, req)
-	if err != nil {
-		log.Error().Err(err).Msgf("Burn:s.db.BurnNft [%v]", err.Error())
-		return nil, fmt.Errorf("cannot submit burn data: %s", err.Error())
-	}
-	return nil, err
-}
-
-func (s *Server) SetTrackingNumber(ctx context.Context, req *pb_nft.SetTrackingNumberRequest) (*emptypb.Empty, error) {
-	_, err := s.db.UpdateTrackingNumber(ctx, req)
-	if err != nil {
-		log.Error().Err(err).Msgf("GetAllBurned:s.db.BurnNft [%v]", err.Error())
-		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
-	}
-	return nil, err
-}
-
 // TODO: get metadata from
-func (s *Server) UploadIPFSMetadata(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
+func (s *Server) UploadIPFSMetadata(ctx context.Context, _ *pb_nft.UploadIPFSMetadataRequest) (*emptypb.Empty, error) {
 	return nil, nil
+	//TODO: get _metadata.json from given id
+	// mark metadata as processing
+	// upload to ipfs
+	// set finish processing
+	// set ipfs url
 }

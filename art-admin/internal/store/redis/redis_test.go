@@ -11,7 +11,7 @@ import (
 func getRedisAddress() RedisConf {
 	if os.Getenv("REDIS_HOST") == "" {
 		return RedisConf{
-			Host: "localhost:6379",
+			Host: "localhost:9999",
 		}
 	}
 	return RedisConf{

@@ -22,6 +22,7 @@ type Metadata struct {
 type MetadataStore interface {
 	AddOffchainMetadata(ctx context.Context, url string) error
 	GetAllOffchainMetadata(ctx context.Context) ([]*Metadata, error)
+	DeleteMetadataById(ctx context.Context, id string) error
 }
 
 type metadataStore struct {
@@ -57,10 +58,14 @@ func (rdb *RDB) AddOffchainMetadata(ctx context.Context, url string) error {
 
 func (rdb *RDB) GetAllOffchainMetadata(ctx context.Context) ([]*Metadata, error) {
 	_, records, err := rdb.metadata.Search(ctx, func(search om.FtSearchIndex) om.Completed {
-		return search.Query("*").Limit().OffsetNum(0, 1000000).Build()
+		return search.Query("*").Limit().OffsetNum(0, 10000).Build()
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetAllNFTMintRequests:Search [%v]", err.Error())
 	}
 	return records, nil
+}
+
+func (rdb *RDB) DeleteMetadataById(ctx context.Context, id string) error {
+	return rdb.metadata.Remove(ctx, id)
 }

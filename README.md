@@ -121,5 +121,3 @@ todo:
 - [ ] move proto files to upper scope (both client and server generates it)
 - [ ] think of todos
 - [ ] think of authToken lifetime  (locastorage/sessionstorage/best way ?)
-
-artem

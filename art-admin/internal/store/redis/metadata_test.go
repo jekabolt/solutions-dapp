@@ -26,12 +26,12 @@ func TestMetadata(t *testing.T) {
 	ms, err := bdb.MetadataStore(ctx)
 	is.NoErr(err)
 
-	for i := 0; i < 100; i++ {
-		err := ms.AddOffchainMetadata(ctx, fmt.Sprint(i))
-		is.NoErr(err)
-	}
-
 	defer func() {
+		for i := 0; i < 100; i++ {
+			err := ms.AddOffchainMetadata(ctx, fmt.Sprint(i))
+			is.NoErr(err)
+		}
+
 		all, err := ms.GetAllOffchainMetadata(ctx)
 		is.NoErr(err)
 		is.Equal(len(all), 100)

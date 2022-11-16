@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/matryer/is"
 )
@@ -80,29 +79,6 @@ func TestUploadContentImage(t *testing.T) {
 	i, err := b.UploadContentImage(jpg, nil)
 	is.NoErr(err)
 	fmt.Printf("%+v", i)
-}
-
-func TestUploadMetadata(t *testing.T) {
-	skipCI(t)
-
-	is := is.New(t)
-
-	b, err := BucketFromConst()
-	is.NoErr(err)
-
-	url, err := b.UploadMetadata(map[int]Metadata{
-		1: {
-			Name: "test",
-			Date: time.Now().Unix(),
-		},
-		2: {
-			Name: "test2",
-			Date: time.Now().Unix(),
-		},
-	})
-	is.NoErr(err)
-	fmt.Printf("%+v\n\n", url)
-
 }
 
 func TestGetB64FromUrl(t *testing.T) {

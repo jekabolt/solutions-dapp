@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
+	pb_metadata "github.com/jekabolt/solutions-dapp/art-admin/proto/metadata"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 )
 
@@ -16,7 +16,14 @@ const (
 )
 
 type IPFS interface {
-	BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]bucket.Metadata, error)
+	BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]pb_metadata.MetadataUnit, error)
+}
+
+type Metadata struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Image       string `json:"image"`
+	Edition     int    `json:"edition"`
 }
 
 type UploadFolder struct {
@@ -54,19 +61,23 @@ func (ufs *UploadFolder) GetIPFSImage() (*IpfsImage, error) {
 func mintRequestsToUpload(mrs []*pb_nft.NFTMintRequestWithStatus) ([]byte, error) {
 	uf := []UploadFolder{}
 	for _, mr := range mrs {
-		ext, err := bucket.GetExtensionFromB64String(mr.NftOffchainUrl)
+		// TODO: downoad image from from s3
+		//
+		//!!!!!!!!!!!
+		// make option put images to metadata from s3
+		ext, err := bucket.GetExtensionFromB64String(mr.OffchainUrl)
 		if err != nil {
 			return nil, fmt.Errorf("can't get file extension from offchain url")
 		}
 		uf = append(uf, UploadFolder{
 			Path:    fmt.Sprintf("%d.%s", mr.NftMintRequest.MintSequenceNumber, ext),
-			Content: mr.NftOffchainUrl,
+			Content: mr.OffchainUrl,
 		})
 	}
 	return json.Marshal(uf)
 }
 
-func (m *Moralis) BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]bucket.Metadata, error) {
+func (m *Moralis) BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]pb_metadata.MetadataUnit, error) {
 	reqBody, err := mintRequestsToUpload(mrs)
 	if err != nil {
 		return nil, fmt.Errorf("BulkUploadIPFS:mintRequestsToUpload [%v]", err.Error())
@@ -74,19 +85,19 @@ func (m *Moralis) BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[in
 	ufs := []UploadFolder{}
 	err = m.post(uploadFolderPath, reqBody, &ufs)
 
-	meta := map[int]bucket.Metadata{}
+	meta := map[int]pb_metadata.MetadataUnit{}
 
 	for _, uf := range ufs {
 		ipfsImg, err := uf.GetIPFSImage()
 		if err != nil {
 			return nil, fmt.Errorf("BulkUploadIPFS:GetIPFSImage [%v]", err.Error())
 		}
-		meta[ipfsImg.SequenceNumber] = bucket.Metadata{
+		meta[ipfsImg.SequenceNumber] = pb_metadata.MetadataUnit{
 			Name:        m.desc.GetCollectionName(ipfsImg.SequenceNumber),
 			Description: m.desc.GetDescription(ipfsImg.SequenceNumber),
-			Image:       ipfsImg.Path,
-			Edition:     ipfsImg.SequenceNumber,
-			Date:        time.Now().Unix(),
+			// TODO: option for offchain
+			// Image:       ipfsImg.Path,
+			Edition: int32(ipfsImg.SequenceNumber),
 		}
 	}
 	return meta, err

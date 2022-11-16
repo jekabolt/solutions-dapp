@@ -18,7 +18,6 @@ type Config struct {
 
 type FileStore interface {
 	Image
-	Meta
 }
 
 type Bucket struct {

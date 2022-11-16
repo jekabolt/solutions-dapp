@@ -2,15 +2,14 @@ package nft
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/teststore"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
 	"github.com/matryer/is"
@@ -28,25 +27,6 @@ func getRedisAddress() redis.RedisConf {
 	}
 }
 
-// db mock
-func Store() (redis.Store, error) {
-	rc := getRedisAddress()
-	c := redis.Config{
-		Address:  rc.Host,
-		Password: rc.Password,
-		CacheTTL: "1s",
-		PageSize: 30,
-	}
-	ctx := context.Background()
-
-	rdb, err := c.InitDB(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return rdb, nil
-}
-
 // file store mock
 type fs struct{}
 
@@ -56,38 +36,9 @@ func (_ fs) UploadContentImage(rawB64Image string, pe *bucket.PathExtra) (*pb_nf
 		Compressed: "https://example.com/compressed.jpg",
 	}, nil
 }
-func (_ fs) UploadMetadata(metadata map[int]bucket.Metadata) (string, error) {
-	return "http://example.com/metadata.json", nil
-}
 
 func newFileStore() bucket.FileStore {
 	return fs{}
-}
-
-// ipfs mock
-type ipfsStore struct {
-	NFTTotalSupply int
-}
-
-func (ipfs *ipfsStore) BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]bucket.Metadata, error) {
-	meta := map[int]bucket.Metadata{}
-
-	for i := 1; i <= ipfs.NFTTotalSupply; i++ {
-		meta[i] = bucket.Metadata{
-			Name:        fmt.Sprintf("test-%d", i),
-			Description: fmt.Sprintf("description-%d", i),
-			Image:       fmt.Sprintf("https://example.com/image-%d.jpg", i),
-			Edition:     i,
-			Date:        time.Now().Unix(),
-		}
-	}
-	return meta, nil
-}
-
-func newIpfs(nts int) ipfs.IPFS {
-	return &ipfsStore{
-		NFTTotalSupply: nts,
-	}
 }
 
 // descriptions
@@ -109,10 +60,9 @@ func TestNft(t *testing.T) {
 		NFTTotalSupply: 100,
 	}
 
-	db, err := Store()
-	is.NoErr(err)
+	db := teststore.NewTestStore(30)
 	// upload mint request
-	s, err := c.New(db, newFileStore(), newIpfs(c.NFTTotalSupply), newDescriptions(is))
+	s, err := c.New(db, newFileStore())
 	is.NoErr(err)
 	ctx := context.Background()
 	resp, err := s.NewNFTMintRequest(ctx, &pb_nft.NFTMintRequestToUpload{

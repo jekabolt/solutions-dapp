@@ -15,19 +15,24 @@ const (
 
 type MintRequestStore interface {
 	NewNFTMintRequest(ctx context.Context, mr *pb_nft.NFTMintRequestToUpload, il []*pb_nft.ImageList) (*pb_nft.NFTMintRequestWithStatus, error)
+	GetNFTMintRequestById(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error)
 	UpdateStatusNFTMintRequest(ctx context.Context, id string, status pb_nft.Status) (*pb_nft.NFTMintRequestWithStatus, error)
-	DeleteNFTMintRequestById(ctx context.Context, id string) error
 
 	GetAllNFTMintRequests(ctx context.Context, status pb_nft.Status) ([]*pb_nft.NFTMintRequestWithStatus, error)
 	GetNFTMintRequestsPaged(ctx context.Context, listOpts *pb_nft.ListPagedRequest) ([]*pb_nft.NFTMintRequestWithStatus, error)
 
-	UpdateNFTOffchainUrl(ctx context.Context, id string, offchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error)
+	DeleteNFTMintRequestById(ctx context.Context, id string) error
+
+	GetAllToUpload(ctx context.Context) (map[int32]*pb_nft.NFTMintRequestWithStatus, error)
+
+	UpdateOffchainUrl(ctx context.Context, id string, offchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error)
+	UpdateOnchainUrl(ctx context.Context, id string, onchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error)
+
 	DeleteNFTOffchainUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error)
+	DeleteNFTOnchainUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error)
 
 	UpdateShippingInfo(ctx context.Context, shippingReq *pb_nft.BurnRequest) (*pb_nft.NFTMintRequestWithStatus, error)
 	UpdateTrackingNumber(ctx context.Context, req *pb_nft.SetTrackingNumberRequest) (*pb_nft.NFTMintRequestWithStatus, error)
-
-	GetAllToUpload(ctx context.Context) ([]*pb_nft.NFTMintRequestWithStatus, error)
 }
 
 type MintRequestWithStatus struct {
@@ -59,7 +64,8 @@ func (rdb *RDB) NewNFTMintRequest(ctx context.Context, mr *pb_nft.NFTMintRequest
 
 	mrNew := rdb.mintRequests.NewEntity()
 	mrNew.MintWithStatus = &pb_nft.NFTMintRequestWithStatus{}
-	mrNew.MintWithStatus.NftOffchainUrl = ""
+	mrNew.MintWithStatus.OffchainUrl = ""
+	mrNew.MintWithStatus.OnchainUrl = ""
 	mrNew.MintWithStatus.Status = pb_nft.Status_Unknown
 	mrNew.MintWithStatus.NftMintRequest = mr.NftMintRequest
 	mrNew.MintWithStatus.SampleImages = il
@@ -145,7 +151,7 @@ func (rdb *RDB) DeleteNFTMintRequestById(ctx context.Context, id string) error {
 // GetAllToUpload get all mints that ready for to be uploaded to ipfs
 // possible statuses StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped
 // used to compose _metadata.json
-func (rdb *RDB) GetAllToUpload(ctx context.Context) ([]*pb_nft.NFTMintRequestWithStatus, error) {
+func (rdb *RDB) GetAllToUpload(ctx context.Context) (map[int32]*pb_nft.NFTMintRequestWithStatus, error) {
 	_, records, err := rdb.mintRequests.Search(ctx, func(search om.FtSearchIndex) om.Completed {
 		return search.Query(
 			fmt.Sprintf(
@@ -160,35 +166,61 @@ func (rdb *RDB) GetAllToUpload(ctx context.Context) ([]*pb_nft.NFTMintRequestWit
 	if err != nil {
 		return nil, fmt.Errorf("GetAllToUpload:Search [%v]", err.Error())
 	}
-	toUpload := []*pb_nft.NFTMintRequestWithStatus{}
+	toUpload := map[int32]*pb_nft.NFTMintRequestWithStatus{}
 	for _, mr := range records {
-		toUpload = append(toUpload, mr.MintWithStatus)
+		toUpload[mr.MintWithStatus.NftMintRequest.MintSequenceNumber] = mr.MintWithStatus
 	}
 	return toUpload, nil
 }
 
-// UpdateNFTOffchainUrl set final art url to mint request and update status to StatusUploadedOffchain
-func (rdb *RDB) UpdateNFTOffchainUrl(ctx context.Context, id string, offchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error) {
+// UpdateOffchainUrl set final art image url uploaded to s3 and update status to StatusUploadedOffchain
+func (rdb *RDB) UpdateOffchainUrl(ctx context.Context, id string, offchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error) {
 	if offchainUrl == "" {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:offchainUrl is empty")
+		return nil, fmt.Errorf("UpdateOffchainUrl:offchainUrl is empty")
 	}
 	mr, err := rdb.mintRequests.Fetch(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:FetchCache [%v]", err.Error())
+		return nil, fmt.Errorf("UpdateOffchainUrl:FetchCache [%v]", err.Error())
 	}
 
 	if !((mr.MintWithStatus.Status == pb_nft.Status_Pending) ||
 		(mr.MintWithStatus.Status == pb_nft.Status_UploadedOffchain) ||
 		(mr.MintWithStatus.Status == pb_nft.Status_Uploaded)) {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:can change url only for pending and uploaded")
+		return nil, fmt.Errorf("UpdateOffchainUrl:can change url only for pending and uploaded")
 	}
 
-	mr.MintWithStatus.NftOffchainUrl = offchainUrl
+	mr.MintWithStatus.OffchainUrl = offchainUrl
 	mr.MintWithStatus.Status = pb_nft.Status_UploadedOffchain
 
 	err = rdb.mintRequests.Save(ctx, mr)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:Save [%v]", err.Error())
+		return nil, fmt.Errorf("UpdateOffchainUrl:Save [%v]", err.Error())
+	}
+	return mr.MintWithStatus, err
+}
+
+// UpdateNFTOffchainUrl set final art url uploaded to ipfs to mint request and update status to StatusUploaded
+func (rdb *RDB) UpdateOnchainUrl(ctx context.Context, id string, onchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error) {
+	if onchainUrl == "" {
+		return nil, fmt.Errorf("UpdateOnchainUrl:onchainUrl is empty")
+	}
+	mr, err := rdb.mintRequests.Fetch(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateOnchainUrl:FetchCache [%v]", err.Error())
+	}
+
+	if !((mr.MintWithStatus.Status == pb_nft.Status_Pending) ||
+		(mr.MintWithStatus.Status == pb_nft.Status_UploadedOffchain) ||
+		(mr.MintWithStatus.Status == pb_nft.Status_Uploaded)) {
+		return nil, fmt.Errorf("UpdateOnchainUrl:can change url only for pending and uploaded")
+	}
+
+	mr.MintWithStatus.OnchainUrl = onchainUrl
+	mr.MintWithStatus.Status = pb_nft.Status_Uploaded
+
+	err = rdb.mintRequests.Save(ctx, mr)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateOnchainUrl:Save [%v]", err.Error())
 	}
 	return mr.MintWithStatus, err
 }
@@ -197,14 +229,40 @@ func (rdb *RDB) UpdateNFTOffchainUrl(ctx context.Context, id string, offchainUrl
 func (rdb *RDB) DeleteNFTOffchainUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
 	mr, err := rdb.mintRequests.Fetch(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("GetNFTMintRequestById:FetchCache [%v]", err.Error())
+		return nil, fmt.Errorf("DeleteNFTOffchainUrl:FetchCache [%v]", err.Error())
 	}
-	mr.MintWithStatus.NftOffchainUrl = ""
+
+	if !(mr.MintWithStatus.Status == pb_nft.Status_UploadedOffchain) {
+		return nil, fmt.Errorf("DeleteNFTOffchainUrl:can delete offchain url only for uploaded offchain")
+	}
+
+	mr.MintWithStatus.OffchainUrl = ""
 	mr.MintWithStatus.Status = pb_nft.Status_Pending
 
 	err = rdb.mintRequests.Save(ctx, mr)
 	if err != nil {
-		return nil, fmt.Errorf("NewNFTMintRequest:Save [%v]", err.Error())
+		return nil, fmt.Errorf("DeleteNFTOffchainUrl:Save [%v]", err.Error())
+	}
+	return mr.MintWithStatus, err
+}
+
+// DeleteNFTOnchainUrl delete ipfs url for mint and set status to StatusUploadedOffchain
+func (rdb *RDB) DeleteNFTOnchainUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
+	mr, err := rdb.mintRequests.Fetch(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteNFTOnchainUrl:FetchCache [%v]", err.Error())
+	}
+
+	if !(mr.MintWithStatus.Status == pb_nft.Status_Uploaded) {
+		return nil, fmt.Errorf("DeleteNFTOnchainUrl:can delete onchain url only for uploaded")
+	}
+
+	mr.MintWithStatus.OnchainUrl = ""
+	mr.MintWithStatus.Status = pb_nft.Status_UploadedOffchain
+
+	err = rdb.mintRequests.Save(ctx, mr)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteNFTOnchainUrl:Save [%v]", err.Error())
 	}
 	return mr.MintWithStatus, err
 }
@@ -215,6 +273,11 @@ func (rdb *RDB) UpdateShippingInfo(ctx context.Context, shippingReq *pb_nft.Burn
 	if err != nil {
 		return nil, fmt.Errorf("UpdateShippingInfo:Fetch [%v]", err.Error())
 	}
+
+	if !(mr.MintWithStatus.Status == pb_nft.Status_Uploaded) {
+		return nil, fmt.Errorf("UpdateShippingInfo:can update shipping info only for uploaded")
+	}
+
 	mr.MintWithStatus.Shipping = &pb_nft.Shipping{}
 	mr.MintWithStatus.Shipping.Shipping = shippingReq.Shipping
 	mr.MintWithStatus.Status = pb_nft.Status_Burned
@@ -232,6 +295,11 @@ func (rdb *RDB) UpdateTrackingNumber(ctx context.Context, req *pb_nft.SetTrackin
 	if err != nil {
 		return nil, fmt.Errorf("UpdateTrackingNumber:Fetch [%v]", err.Error())
 	}
+
+	if !(mr.MintWithStatus.Status == pb_nft.Status_Burned) {
+		return nil, fmt.Errorf("UpdateTrackingNumber:can update tracking number only for burned")
+	}
+
 	mr.MintWithStatus.Shipping.TrackingNumber = req.TrackingNumber
 	mr.MintWithStatus.Status = pb_nft.Status_Shipped
 

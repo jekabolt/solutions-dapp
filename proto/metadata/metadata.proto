@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package metadata;
+option go_package = "github.com/jekabolt/solutions-dapp/art-admin/metadata";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+
+
+service Metadata {
+  // UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped. 
+  // Create metadata for each nft and save to db
+  rpc UploadOffchainMetadata (google.protobuf.Empty) returns (UploadOffchainMetadataResponse) {
+    option (google.api.http) = {
+      post : "/api/metadata/offchain"
+      body : "*"
+    };
+  }
+
+  // UploadIPFSMetadata get metadata to upload by id and upload to ipfs
+  rpc UploadIPFSMetadata (UploadIPFSMetadataRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/metadata/ipfs"
+      body : "*"
+    };
+  }
+
+  // DeleteIPFSMetadata get metadata to upload by id and upload to ipfs
+  rpc DeleteIPFSMetadata (DeleteIPFSMetadataRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/api/metadata/delete"
+    };
+  }
+
+  // GetAllMetadata get all uploaded offchain metadata from db
+  rpc GetAllMetadata (google.protobuf.Empty) returns (GetAllMetadataResponse) {
+    option (google.api.http) = {
+      get : "/api/metadata/get"
+    };
+  }
+
+}
+
+// UploadOffchainMetadata response
+message UploadOffchainMetadataResponse {
+    // internal id in db
+    string key = 1;
+}
+
+// Request for UploadIPFSMetadataRequest
+message UploadIPFSMetadataRequest {
+    // internal db metadata id 
+    string key = 1;
+}
+
+// Request for UploadIPFSMetadataRequest
+message DeleteIPFSMetadataRequest {
+  // internal db metadata id 
+  string key = 1;
+}
+
+  
+// description of metadata stored in db
+message MetaInfo {
+    string ipfsUrl = 1;
+    bool processing = 3;
+    int64 ts = 4;
+    string key = 5;
+}
+  
+  // Response for GetAllMetadata
+message GetAllMetadataResponse {
+    // array of metadata
+    repeated MetaInfo metaInfo = 1;
+}
+  
+// Single Unit of metadata _metadata.json
+message MetadataUnit {
+  // name of nft
+  string name = 1;
+  // description of nft
+  string description = 2;
+  // image of nft
+  string offchainImage = 3;
+  // image of nft
+  string onchainImage = 4;
+  // edition of nft
+  int32 edition = 5;
+  // sequence number of nft
+  int32 mintSequenceNumber = 6;
+  // date of submit
+  int32 date = 7;
+}

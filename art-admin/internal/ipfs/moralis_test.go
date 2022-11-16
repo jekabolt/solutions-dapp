@@ -49,19 +49,19 @@ func InitMoralisFromConst() (IPFS, error) {
 func getTestMrs() []*pb_nft.NFTMintRequestWithStatus {
 	return []*pb_nft.NFTMintRequestWithStatus{
 		{
-			NftOffchainUrl: testImage,
+			OffchainUrl: testImage,
 			NftMintRequest: &pb_nft.NFTMintRequest{
 				MintSequenceNumber: 1,
 			},
 		},
 		{
-			NftOffchainUrl: testImage,
+			OffchainUrl: testImage,
 			NftMintRequest: &pb_nft.NFTMintRequest{
 				MintSequenceNumber: 2,
 			},
 		},
 		{
-			NftOffchainUrl: testImage,
+			OffchainUrl: testImage,
 			NftMintRequest: &pb_nft.NFTMintRequest{
 				MintSequenceNumber: 3,
 			},

@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Path           string `env:"DESCRIPTIONS_PATH" envDefault:"etc/descriptions.json"`
-	CollectionName string `env:"DESCRIPTIONS_COLLECTION_NAME" envDefault:"Solutions #"`
+	Path            string `env:"DESCRIPTIONS_PATH" envDefault:"etc/descriptions.json"`
+	CollectionName  string `env:"DESCRIPTIONS_COLLECTION_NAME" envDefault:"Solutions #"`
+	CountPerEdition int    `env:"DESCRIPTIONS_COUNT_PER_EDITION" envDefault:"150"`
 }
 
 type Store struct {
@@ -66,4 +67,12 @@ func (s *Store) GetDescription(sequenceNumber int) string {
 
 func (s *Store) GetImage(sequenceNumber int) string {
 	return s.m[sequenceNumber].Image
+}
+
+// TODO: GetEditionBySequence
+func (s *Store) GetEditionBySequence(sequenceNumber int) int32 {
+	// if dbz := sequenceNumber < 0; dbz {
+	// 	return -1
+	// }
+	return 1
 }

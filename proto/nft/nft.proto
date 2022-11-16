@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package nft;
-option go_package = "github.com/jekabolt/solutions-dapp/art-admin";
+option go_package = "github.com/jekabolt/solutions-dapp/art-admin/nft";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -64,34 +64,6 @@ service Nft {
     };
   }
 
-  // ----- IPFS
-
-  // UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped. 
-  // Create _metadata.json and upload to S3
-  rpc UploadOffchainMetadata (google.protobuf.Empty) returns (MetadataOffchainUrl) {
-    option (google.api.http) = {
-      post : "/api/nft/offchain"
-      body : "*"
-    };
-  }
-
-  // GetAllMetadata Get all uploaded _metadata.json records from S3 with timestamps
-  rpc GetAllMetadata (google.protobuf.Empty) returns (AllMetadataResponse) {
-    option (google.api.http) = {
-      get : "/api/nft/metadata"
-    };
-  }
-
- 
-  // UploadIPFSMetadata - upload metadata from given id to IPFS and add uri to db
-  rpc UploadIPFSMetadata (UploadIPFSMetadataRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/api/nft/ipfs"
-      body : "*"
-    };
-  }
-  
-
 }
 
 // Links to images 
@@ -133,7 +105,7 @@ message NFTMintRequestToUpload {
 
 // Status enum for mint request
 enum Status {
-  // Anu used for query all mint requests aka "*"
+  // Any used for query all mint requests aka "*"
   Any = 0;
   // Unknown — status after user upload refs to ddapp tx is unconfirmed; 
   Unknown = 1;
@@ -161,9 +133,11 @@ message NFTMintRequestWithStatus {
   // status
   Status status = 3;
   // resulted nft url uploaded offchain i.e to s3 can be empty 
-  string nftOffchainUrl = 4;
+  string offchainUrl = 4;
+   // resulted nft url uploaded offchain i.e to s3 can be empty 
+  string onchainUrl = 5;
   // related only if status is burned or shipped
-  Shipping shipping = 5;
+  Shipping shipping = 6;
 }
 
 
@@ -201,31 +175,6 @@ message UpdateNFTOffchainUrlRequest {
   // resulted nft raw image b64 encoded
   ImageToUpload nftOffchainUrl = 2;
 }
-
-
-// Upload offchain metadata _metadata.json
-message MetadataOffchainUrl {
-  // all metadata json url uploaded to s3 will be used to upload to ipfs 
-  string url = 1;
-  // URL ipfs
-  string ipfsUrl = 2;
-  // timestamp of creation
-  int32 ts = 3;
-  // is uploaded
-  bool processing = 4; 
-}
-
-// Response for GetAllMetadata
-message AllMetadataResponse {
-  repeated MetadataOffchainUrl offchainUrls = 1;
-}
-
-// Request for ploadIPFSMetadata
-message UploadIPFSMetadataRequest {
-  // internal db metadata id 
-  string id = 1;
-}
-
 
 // Burn
 message BurnRequest {

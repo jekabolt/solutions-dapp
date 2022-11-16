@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: nft/nft.proto
 
-package art_admin
+package nft
 
 import (
 	context "context"
@@ -40,13 +40,6 @@ type NftClient interface {
 	// SetTrackingNumber set tracking number for burned nft and set status Shipped
 	// possble statuses: Burned
 	SetTrackingNumber(ctx context.Context, in *SetTrackingNumberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped.
-	// Create _metadata.json and upload to S3
-	UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error)
-	// GetAllMetadata Get all uploaded _metadata.json records from S3 with timestamps
-	GetAllMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AllMetadataResponse, error)
-	// UploadIPFSMetadata - upload metadata from given id to IPFS and add uri to db
-	UploadIPFSMetadata(ctx context.Context, in *UploadIPFSMetadataRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type nftClient struct {
@@ -120,33 +113,6 @@ func (c *nftClient) SetTrackingNumber(ctx context.Context, in *SetTrackingNumber
 	return out, nil
 }
 
-func (c *nftClient) UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error) {
-	out := new(MetadataOffchainUrl)
-	err := c.cc.Invoke(ctx, "/nft.Nft/UploadOffchainMetadata", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nftClient) GetAllMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AllMetadataResponse, error) {
-	out := new(AllMetadataResponse)
-	err := c.cc.Invoke(ctx, "/nft.Nft/GetAllMetadata", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nftClient) UploadIPFSMetadata(ctx context.Context, in *UploadIPFSMetadataRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/nft.Nft/UploadIPFSMetadata", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // NftServer is the server API for Nft service.
 // All implementations should embed UnimplementedNftServer
 // for forward compatibility
@@ -168,13 +134,6 @@ type NftServer interface {
 	// SetTrackingNumber set tracking number for burned nft and set status Shipped
 	// possble statuses: Burned
 	SetTrackingNumber(context.Context, *SetTrackingNumberRequest) (*emptypb.Empty, error)
-	// UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped.
-	// Create _metadata.json and upload to S3
-	UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error)
-	// GetAllMetadata Get all uploaded _metadata.json records from S3 with timestamps
-	GetAllMetadata(context.Context, *emptypb.Empty) (*AllMetadataResponse, error)
-	// UploadIPFSMetadata - upload metadata from given id to IPFS and add uri to db
-	UploadIPFSMetadata(context.Context, *UploadIPFSMetadataRequest) (*emptypb.Empty, error)
 }
 
 // UnimplementedNftServer should be embedded to have forward compatible implementations.
@@ -201,15 +160,6 @@ func (UnimplementedNftServer) Burn(context.Context, *BurnRequest) (*emptypb.Empt
 }
 func (UnimplementedNftServer) SetTrackingNumber(context.Context, *SetTrackingNumberRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetTrackingNumber not implemented")
-}
-func (UnimplementedNftServer) UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadOffchainMetadata not implemented")
-}
-func (UnimplementedNftServer) GetAllMetadata(context.Context, *emptypb.Empty) (*AllMetadataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllMetadata not implemented")
-}
-func (UnimplementedNftServer) UploadIPFSMetadata(context.Context, *UploadIPFSMetadataRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadIPFSMetadata not implemented")
 }
 
 // UnsafeNftServer may be embedded to opt out of forward compatibility for this service.
@@ -349,60 +299,6 @@ func _Nft_SetTrackingNumber_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Nft_UploadOffchainMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NftServer).UploadOffchainMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/nft.Nft/UploadOffchainMetadata",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).UploadOffchainMetadata(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Nft_GetAllMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NftServer).GetAllMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/nft.Nft/GetAllMetadata",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).GetAllMetadata(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Nft_UploadIPFSMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UploadIPFSMetadataRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NftServer).UploadIPFSMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/nft.Nft/UploadIPFSMetadata",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).UploadIPFSMetadata(ctx, req.(*UploadIPFSMetadataRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Nft_ServiceDesc is the grpc.ServiceDesc for Nft service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -437,18 +333,6 @@ var Nft_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetTrackingNumber",
 			Handler:    _Nft_SetTrackingNumber_Handler,
-		},
-		{
-			MethodName: "UploadOffchainMetadata",
-			Handler:    _Nft_UploadOffchainMetadata_Handler,
-		},
-		{
-			MethodName: "GetAllMetadata",
-			Handler:    _Nft_GetAllMetadata_Handler,
-		},
-		{
-			MethodName: "UploadIPFSMetadata",
-			Handler:    _Nft_UploadIPFSMetadata_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

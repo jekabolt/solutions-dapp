@@ -3,7 +3,7 @@
 
 // Status enum for mint request
 export type Status =
-  // Anu used for query all mint requests aka "*"
+  // Any used for query all mint requests aka "*"
   | "Any"
   // Unknown — status after user upload refs to ddapp tx is unconfirmed;
   | "Unknown"
@@ -64,7 +64,9 @@ export type NFTMintRequestWithStatus = {
   // status
   status: Status | undefined;
   // resulted nft url uploaded offchain i.e to s3 can be empty
-  nftOffchainUrl: string | undefined;
+  offchainUrl: string | undefined;
+  // resulted nft url uploaded offchain i.e to s3 can be empty
+  onchainUrl: string | undefined;
   // related only if status is burned or shipped
   shipping: Shipping | undefined;
 };
@@ -119,29 +121,6 @@ export type UpdateNFTOffchainUrlRequest = {
   nftOffchainUrl: ImageToUpload | undefined;
 };
 
-// Upload offchain metadata _metadata.json
-export type MetadataOffchainUrl = {
-  // all metadata json url uploaded to s3 will be used to upload to ipfs
-  url: string | undefined;
-  // URL ipfs
-  ipfsUrl: string | undefined;
-  // timestamp of creation
-  ts: number | undefined;
-  // is uploaded
-  processing: boolean | undefined;
-};
-
-// Response for GetAllMetadata
-export type AllMetadataResponse = {
-  offchainUrls: MetadataOffchainUrl[] | undefined;
-};
-
-// Request for ploadIPFSMetadata
-export type UploadIPFSMetadataRequest = {
-  // internal db metadata id
-  id: string | undefined;
-};
-
 // Burn
 export type BurnRequest = {
   txid: string | undefined;
@@ -177,13 +156,6 @@ export interface Nft {
   // SetTrackingNumber set tracking number for burned nft and set status Shipped
   // possble statuses: Burned
   SetTrackingNumber(request: SetTrackingNumberRequest): Promise<wellKnownEmpty>;
-  // UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped.
-  // Create _metadata.json and upload to S3
-  UploadOffchainMetadata(request: wellKnownEmpty): Promise<MetadataOffchainUrl>;
-  // GetAllMetadata Get all uploaded _metadata.json records from S3 with timestamps
-  GetAllMetadata(request: wellKnownEmpty): Promise<AllMetadataResponse>;
-  // UploadIPFSMetadata - upload metadata from given id to IPFS and add uri to db
-  UploadIPFSMetadata(request: UploadIPFSMetadataRequest): Promise<wellKnownEmpty>;
 }
 
 type RequestType = {
@@ -296,48 +268,6 @@ export function createNftClient(
     },
     SetTrackingNumber(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/burn/track`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
-      }) as Promise<wellKnownEmpty>;
-    },
-    UploadOffchainMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/offchain`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
-      }) as Promise<MetadataOffchainUrl>;
-    },
-    GetAllMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/metadata`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }) as Promise<AllMetadataResponse>;
-    },
-    UploadIPFSMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/ipfs`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;

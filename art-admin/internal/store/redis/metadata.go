@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	pb_metadata "github.com/jekabolt/solutions-dapp/art-admin/proto/metadata"
 	"github.com/rueian/rueidis/om"
 )
 
@@ -13,17 +14,21 @@ const (
 )
 
 type Metadata struct {
-	Key        string `redis:",key"`
-	Ver        int64  `redis:",ver"`
-	Ts         int64  `redis:",ts" json:"ts"`
-	Url        string `redis:",url" json:"url"`
-	IPFSUrl    string `redis:",ipfsUrl" json:"ipfsUrl"`
-	Processing bool   `redis:",processing" json:"processing"`
+	Key        string                      `redis:",key" json:"key"`
+	Ver        int64                       `redis:",ver"`
+	Meta       []*pb_metadata.MetadataUnit `json:"info"`
+	IPFSUrl    string                      `json:"ipfs_url"`
+	Processing bool                        `json:"processing"`
+	Ts         int64                       `json:"ts"`
 }
 
 type MetadataStore interface {
-	AddOffchainMetadata(ctx context.Context, url string) error
+	AddOffchainMetadata(ctx context.Context, md []*pb_metadata.MetadataUnit) (string, error)
+	SetIPFSUrl(ctx context.Context, key string, IPFSUrl string) error
+	SetProcessing(ctx context.Context, key string, processing bool) error
 	GetAllOffchainMetadata(ctx context.Context) ([]*Metadata, error)
+	GetMetadataByKey(ctx context.Context, key string) (*Metadata, error)
+	DeleteById(ctx context.Context, key string) error
 }
 
 type metadataStore struct {
@@ -45,25 +50,29 @@ func (rdb *RDB) MetadataStore(ctx context.Context) (MetadataStore, error) {
 	}, nil
 }
 
-func (rdb *RDB) AddOffchainMetadata(ctx context.Context, url string) error {
-	md := rdb.metadata.NewEntity()
-	md.Url = url
-	md.Ts = time.Now().Unix()
-
-	err := rdb.metadata.Save(ctx, md)
+// TODO: test
+func (rdb *RDB) AddOffchainMetadata(ctx context.Context, md []*pb_metadata.MetadataUnit) (string, error) {
+	mdE := rdb.metadata.NewEntity()
+	mdE.Meta = md
+	mdE.Ts = time.Now().Unix()
+	err := rdb.metadata.Save(ctx, mdE)
 	if err != nil {
-		return fmt.Errorf("AddOffchainMetadata:Save [%v]", err.Error())
+		return "", fmt.Errorf("AddOffchainMetadata:Save [%v]", err.Error())
 	}
-	return nil
+	return mdE.Key, nil
 }
 
-func (rdb *RDB) SetIPFSUrl(ctx context.Context, id string, IPFSUrl string) error {
-	md, err := rdb.metadata.Fetch(ctx, id)
+// TODO: test
+func (rdb *RDB) SetIPFSUrl(ctx context.Context, key string, IPFSUrl string) error {
+	md, err := rdb.metadata.Fetch(ctx, key)
 	if err != nil {
-		return fmt.Errorf("no such metadata with provided id %s", id)
+		return fmt.Errorf("no such metadata with provided for key %s", key)
 	}
+
+	// set ipfs url and set and terminate processing
 	md.IPFSUrl = IPFSUrl
 	md.Processing = false
+	md.Ts = time.Now().Unix()
 
 	err = rdb.metadata.Save(ctx, md)
 	if err != nil {
@@ -72,10 +81,11 @@ func (rdb *RDB) SetIPFSUrl(ctx context.Context, id string, IPFSUrl string) error
 	return nil
 }
 
-func (rdb *RDB) SetProcessing(ctx context.Context, id string, processing bool) error {
-	md, err := rdb.metadata.Fetch(ctx, id)
+// TODO: test
+func (rdb *RDB) SetProcessing(ctx context.Context, key string, processing bool) error {
+	md, err := rdb.metadata.Fetch(ctx, key)
 	if err != nil {
-		return fmt.Errorf("no such metadata with provided id %s", id)
+		return fmt.Errorf("no such metadata with provided key %s", key)
 	}
 	md.Processing = processing
 	err = rdb.metadata.Save(ctx, md)
@@ -93,4 +103,22 @@ func (rdb *RDB) GetAllOffchainMetadata(ctx context.Context) ([]*Metadata, error)
 		return nil, fmt.Errorf("GetAllNFTMintRequests:Search [%v]", err.Error())
 	}
 	return records, nil
+}
+
+// TODO: test
+func (rdb *RDB) GetMetadataByKey(ctx context.Context, key string) (*Metadata, error) {
+	md, err := rdb.metadata.Fetch(ctx, key)
+	if err != nil {
+		return nil, fmt.Errorf("GetOffchainMetadataById:rdb.metadata.Fetch [%v]", err.Error())
+	}
+	return md, nil
+}
+
+// TODO: test
+func (rdb *RDB) DeleteById(ctx context.Context, key string) error {
+	err := rdb.metadata.Remove(ctx, key)
+	if err != nil {
+		return fmt.Errorf("DeleteById:rdb.metadata.Fetch [%v]", err.Error())
+	}
+	return nil
 }

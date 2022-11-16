@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
@@ -21,8 +18,6 @@ type Server struct {
 	nft    *pb_nft.UnimplementedNftServer
 	db     redis.Store
 	bucket bucket.FileStore
-	ipfs   ipfs.IPFS
-	descs  *descriptions.Store
 	c      *Config
 }
 type Config struct {
@@ -32,19 +27,16 @@ type Config struct {
 func (c *Config) New(
 	db redis.Store,
 	bucket bucket.FileStore,
-	ipfs ipfs.IPFS,
-	descs *descriptions.Store,
 ) (*Server, error) {
 	s := &Server{
 		c:      c,
 		db:     db,
 		bucket: bucket,
-		ipfs:   ipfs,
-		descs:  descs,
 	}
 
 	return s, nil
 }
+
 func (s *Server) UploadRawImage(ito *pb_nft.ImageToUpload, pe *bucket.PathExtra) (*pb_nft.ImageList, error) {
 	switch {
 	case ito.Raw == "":
@@ -114,7 +106,7 @@ func (s *Server) UpdateNFTOffchainUrl(ctx context.Context, req *pb_nft.UpdateNFT
 	if err != nil {
 		return nil, err
 	}
-	nftMR, err := s.db.UpdateNFTOffchainUrl(ctx, req.Id, img.FullSize)
+	nftMR, err := s.db.UpdateOffchainUrl(ctx, req.Id, img.FullSize)
 	if err != nil {
 		log.Error().Err(err).Msgf("UpdateNFTOffchainUrl:s.db.UpdateNFTOffchainUrl [%v]", err.Error())
 		return nil, fmt.Errorf("cannot update nft offchain url request: %s", err.Error())
@@ -147,85 +139,4 @@ func (s *Server) SetTrackingNumber(ctx context.Context, req *pb_nft.SetTrackingN
 		return nil, fmt.Errorf("cannot get burn data: %s", err.Error())
 	}
 	return nil, err
-}
-
-func (s *Server) GetAllMetadata(ctx context.Context, _ *emptypb.Empty) (*pb_nft.AllMetadataResponse, error) {
-	metadata, err := s.db.GetAllOffchainMetadata(ctx)
-	if err != nil {
-		log.Error().Err(err).Msgf("GetAllMetadata:s.db.GetAllOffchainMetadata [%v]", err.Error())
-		return nil, fmt.Errorf("cannot get all metadata: %s", err.Error())
-	}
-	md := []*pb_nft.MetadataOffchainUrl{}
-	for _, m := range metadata {
-		md = append(md, &pb_nft.MetadataOffchainUrl{
-			Url:        m.Url,
-			IpfsUrl:    m.IPFSUrl,
-			Ts:         int32(m.Ts),
-			Processing: m.Processing,
-		})
-	}
-	return &pb_nft.AllMetadataResponse{
-		OffchainUrls: md,
-	}, nil
-}
-
-func (s *Server) UploadOffchainMetadata(ctx context.Context, _ *emptypb.Empty) (*pb_nft.MetadataOffchainUrl, error) {
-	mrs, err := s.db.GetAllToUpload(ctx)
-	if err != nil {
-		log.Error().Err(err).Msgf("UploadOffchainMetadata:s.db.GetAllToUpload [%v]", err.Error())
-		return nil, fmt.Errorf("cannot update get all to upload: %s", err.Error())
-	}
-	if len(mrs) == 0 {
-		log.Error().Err(err).Msgf("UploadOffchainMetadata:nothing to upload ")
-		return nil, fmt.Errorf("nothing to upload")
-	}
-
-	//TODO: compose _metadata.json
-	// upload to s3
-	// set metadata url
-
-	metadata, err := s.ipfs.BulkUploadIPFS(mrs)
-	if err != nil {
-		log.Error().Err(err).Msgf("UploadOffchainMetadata:ipfs.BulkUploadIPFS [%v]", err.Error())
-		return nil, fmt.Errorf("can't upload to ipfs")
-	}
-
-	for i := 0; i < s.c.NFTTotalSupply; i++ {
-		_, ok := metadata[i]
-		if !ok {
-			metadata[i] = bucket.Metadata{
-				Name:        s.descs.GetCollectionName(i),
-				Description: s.descs.GetDescription(i),
-				Image:       s.descs.GetImage(i),
-				Edition:     i,
-				Date:        time.Now().Unix(),
-			}
-		}
-	}
-
-	url, err := s.bucket.UploadMetadata(metadata)
-	if err != nil {
-		log.Error().Err(err).Msgf("UploadOffchainMetadata:s.bucket.UploadMetadata [%v]", err.Error())
-		return nil, fmt.Errorf("can't upload metadata to bucket")
-	}
-
-	err = s.db.AddOffchainMetadata(ctx, url)
-	if err != nil {
-		log.Error().Err(err).Msgf("UploadOffchainMetadata:AddOffchainMetadata [%v]", err.Error())
-		return nil, fmt.Errorf("can't save metadata to db")
-	}
-
-	return &pb_nft.MetadataOffchainUrl{
-		Url: url,
-	}, nil
-}
-
-// TODO: get metadata from
-func (s *Server) UploadIPFSMetadata(ctx context.Context, _ *pb_nft.UploadIPFSMetadataRequest) (*emptypb.Empty, error) {
-	return nil, nil
-	//TODO: get _metadata.json from given id
-	// mark metadata as processing
-	// upload to ipfs
-	// set finish processing
-	// set ipfs url
 }

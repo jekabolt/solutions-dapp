@@ -6,6 +6,7 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/jekabolt/solutions-dapp/art-admin/app"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/auth"
+	"github.com/jekabolt/solutions-dapp/art-admin/app/metadata"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/nft"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
@@ -22,6 +23,7 @@ type Config struct {
 	Descriptions *descriptions.Config
 	Server       *app.Config
 	Nft          *nft.Config
+	Metadata     *metadata.Config
 	Auth         *auth.Config
 
 	Debug bool `env:"DEBUG" envDefault:"false"`

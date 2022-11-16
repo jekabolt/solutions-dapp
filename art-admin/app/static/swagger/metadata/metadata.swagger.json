@@ -1,0 +1,225 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "metadata/metadata.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Metadata"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/metadata/delete": {
+      "delete": {
+        "summary": "DeleteIPFSMetadata get metadata to upload by id and upload to ipfs",
+        "operationId": "DeleteIPFSMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key",
+            "description": "internal db metadata id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Metadata"
+        ]
+      }
+    },
+    "/api/metadata/get": {
+      "get": {
+        "summary": "GetAllMetadata get all uploaded offchain metadata from db",
+        "operationId": "GetAllMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetAllMetadataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Metadata"
+        ]
+      }
+    },
+    "/api/metadata/ipfs": {
+      "post": {
+        "summary": "UploadIPFSMetadata get metadata to upload by id and upload to ipfs",
+        "operationId": "UploadIPFSMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataUploadIPFSMetadataRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Metadata"
+        ]
+      }
+    },
+    "/api/metadata/offchain": {
+      "post": {
+        "summary": "UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped. \nCreate metadata for each nft and save to db",
+        "operationId": "UploadOffchainMetadata",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataUploadOffchainMetadataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        ],
+        "tags": [
+          "Metadata"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "metadataGetAllMetadataResponse": {
+      "type": "object",
+      "properties": {
+        "metaInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metadataMetaInfo"
+          },
+          "title": "array of metadata"
+        }
+      },
+      "title": "Response for GetAllMetadata"
+    },
+    "metadataMetaInfo": {
+      "type": "object",
+      "properties": {
+        "ipfsUrl": {
+          "type": "string"
+        },
+        "processing": {
+          "type": "boolean"
+        },
+        "ts": {
+          "type": "string",
+          "format": "int64"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "title": "description of metadata stored in db"
+    },
+    "metadataUploadIPFSMetadataRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db metadata id"
+        }
+      },
+      "title": "Request for UploadIPFSMetadataRequest"
+    },
+    "metadataUploadOffchainMetadataResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal id in db"
+        }
+      },
+      "title": "UploadOffchainMetadata response"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

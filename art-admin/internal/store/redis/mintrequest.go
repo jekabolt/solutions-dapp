@@ -63,12 +63,13 @@ func (rdb *RDB) MintRequestStore(ctx context.Context) (MintRequestStore, error) 
 func (rdb *RDB) NewNFTMintRequest(ctx context.Context, mr *pb_nft.NFTMintRequestToUpload, il []*pb_nft.ImageList) (*pb_nft.NFTMintRequestWithStatus, error) {
 
 	mrNew := rdb.mintRequests.NewEntity()
-	mrNew.MintWithStatus = &pb_nft.NFTMintRequestWithStatus{}
-	mrNew.MintWithStatus.OffchainUrl = ""
-	mrNew.MintWithStatus.OnchainUrl = ""
-	mrNew.MintWithStatus.Status = pb_nft.Status_Unknown
-	mrNew.MintWithStatus.NftMintRequest = mr.NftMintRequest
-	mrNew.MintWithStatus.SampleImages = il
+	mrNew.MintWithStatus = &pb_nft.NFTMintRequestWithStatus{
+		OffchainUrl:    "",
+		OnchainUrl:     "",
+		Status:         pb_nft.Status_Unknown,
+		NftMintRequest: mr.NftMintRequest,
+		SampleImages:   il,
+	}
 	mrNew.MintWithStatus.NftMintRequest.Id = mrNew.Key
 
 	err := rdb.mintRequests.Save(ctx, mrNew)

@@ -21,6 +21,7 @@ func getId() string {
 type testStore struct {
 	redis.Store
 	metadata    map[string]*redis.Metadata
+	collections map[string]*redis.Collection
 	mintRequest []*pb_nft.NFTMintRequestWithStatus
 	pageSize    int
 }
@@ -28,6 +29,7 @@ type testStore struct {
 func NewTestStore(pageSize int) *testStore {
 	return &testStore{
 		metadata:    make(map[string]*redis.Metadata),
+		collections: make(map[string]*redis.Collection),
 		mintRequest: []*pb_nft.NFTMintRequestWithStatus{},
 		pageSize:    pageSize,
 	}

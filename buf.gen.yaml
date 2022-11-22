@@ -28,4 +28,4 @@ plugins:
 # 	protoc \
 # 		--typescript-http_out=./src/api/proto-http \
 # 		--proto_path=../art-admin/proto \
-# 		../art-admin/proto/nft/nft.proto ../art-admin/proto/auth/auth.proto ../art-admin/proto/metadata/metadata.proto 
+# 		../art-admin/proto/nft/nft.proto ../art-admin/proto/auth/auth.proto ../art-admin/proto/metadata/metadata.proto ../art-admin/proto/collection/collection.proto 

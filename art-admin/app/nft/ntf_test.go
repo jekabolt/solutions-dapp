@@ -2,30 +2,15 @@ package nft
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/teststore"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
 	"github.com/matryer/is"
 )
-
-func getRedisAddress() redis.RedisConf {
-	if os.Getenv("REDIS_HOST") == "" {
-		return redis.RedisConf{
-			Host: "localhost:6379",
-		}
-	}
-	return redis.RedisConf{
-		Host:     os.Getenv("REDIS_HOST"),
-		Password: os.Getenv("REDIS_PASSWORD"),
-	}
-}
 
 // file store mock
 type fs struct{}
@@ -39,18 +24,6 @@ func (_ fs) UploadContentImage(rawB64Image string, pe *bucket.PathExtra) (*pb_nf
 
 func newFileStore() bucket.FileStore {
 	return fs{}
-}
-
-// descriptions
-
-func newDescriptions(is *is.I) *descriptions.Store {
-	c := descriptions.Config{
-		Path:           "../../etc/descriptions.json",
-		CollectionName: "test",
-	}
-	ds, err := c.Init()
-	is.NoErr(err)
-	return ds
 }
 
 func TestNft(t *testing.T) {
@@ -89,7 +62,7 @@ func TestNft(t *testing.T) {
 	time.Sleep(time.Second)
 	// list mint requests
 	list, err := s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
-		Status: resp.Status,
+		Status: pb_nft.Status_Unknown,
 		Page:   1,
 	})
 	is.NoErr(err)

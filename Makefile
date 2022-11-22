@@ -20,7 +20,8 @@ local: build
 generate:
 	buf generate --path proto/nft/nft.proto \
 	--path proto/auth/auth.proto \
-	--path proto/metadata/metadata.proto
+	--path proto/metadata/metadata.proto \
+	--path proto/collection/collection.proto 
 
 abi:
 	solcjs --optimize --bin --abi --include-path contract/truffle/node_modules/ --base-path ./contract/truffle/contracts --output-dir ./art-admin/bin  contract/truffle/contracts/SYSToken.sol

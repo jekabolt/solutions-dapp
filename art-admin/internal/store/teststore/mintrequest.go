@@ -12,6 +12,7 @@ func remove(slice []*pb_nft.NFTMintRequestWithStatus, i int) []*pb_nft.NFTMintRe
 }
 
 func paginate(pageNum int, pageSize int, sliceLength int) (int, int) {
+	pageNum = pageNum - 1
 	start := pageNum * pageSize
 
 	if start > sliceLength {
@@ -28,6 +29,9 @@ func paginate(pageNum int, pageSize int, sliceLength int) (int, int) {
 
 func (ts *testStore) NewNFTMintRequest(ctx context.Context, mr *pb_nft.NFTMintRequestToUpload, il []*pb_nft.ImageList) (*pb_nft.NFTMintRequestWithStatus, error) {
 	mr.NftMintRequest.Id = getId()
+	if mr == nil {
+		return nil, fmt.Errorf("NewNFTMintRequest:mr is nil")
+	}
 	mws := &pb_nft.NFTMintRequestWithStatus{
 		Status:         pb_nft.Status_Unknown,
 		NftMintRequest: mr.NftMintRequest,
@@ -62,9 +66,22 @@ func (ts *testStore) GetAllNFTMintRequests(ctx context.Context, status pb_nft.St
 	return mrs, nil
 }
 
+// TODO: fix
 func (ts *testStore) GetNFTMintRequestsPaged(ctx context.Context, listOpts *pb_nft.ListPagedRequest) ([]*pb_nft.NFTMintRequestWithStatus, error) {
-	start, end := paginate(int(listOpts.Page), ts.pageSize, len(ts.mintRequest))
-	return ts.mintRequest[start:end], nil
+	temp := ts.mintRequest
+
+	if listOpts.Status != pb_nft.Status_Any {
+		temp = []*pb_nft.NFTMintRequestWithStatus{}
+		for _, mr := range ts.mintRequest {
+			if mr.Status.String() == listOpts.Status.String() {
+				temp = append(temp, mr)
+			}
+		}
+	}
+
+	start, end := paginate(int(listOpts.Page), ts.pageSize, len(temp))
+
+	return temp[start:end], nil
 }
 
 func (ts *testStore) DeleteNFTMintRequestById(ctx context.Context, id string) error {
@@ -99,7 +116,7 @@ func (ts *testStore) UpdateOffchainUrl(ctx context.Context, id string, offchainU
 	num := 0
 	mr := &pb_nft.NFTMintRequestWithStatus{}
 	for i, m := range ts.mintRequest {
-		if mr.NftMintRequest.Id == id {
+		if m.NftMintRequest.Id == id {
 			num = i
 			mr = m
 		}
@@ -195,7 +212,7 @@ func (ts *testStore) UpdateShippingInfo(ctx context.Context, req *pb_nft.BurnReq
 	num := 0
 	mr := &pb_nft.NFTMintRequestWithStatus{}
 	for i, m := range ts.mintRequest {
-		if mr.NftMintRequest.Id == req.Id {
+		if m.NftMintRequest.Id == req.Id {
 			num = i
 			mr = m
 		}
@@ -204,8 +221,9 @@ func (ts *testStore) UpdateShippingInfo(ctx context.Context, req *pb_nft.BurnReq
 		return nil, fmt.Errorf("UpdateShippingInfo:can update shipping info only for uploaded")
 	}
 
-	mr.Shipping = &pb_nft.Shipping{}
-	mr.Shipping.Shipping = req.Shipping
+	mr.Shipping = &pb_nft.Shipping{
+		Shipping: req.Shipping,
+	}
 	mr.Status = pb_nft.Status_Burned
 
 	ts.mintRequest[num] = mr
@@ -216,7 +234,7 @@ func (ts *testStore) UpdateTrackingNumber(ctx context.Context, req *pb_nft.SetTr
 	num := 0
 	mr := &pb_nft.NFTMintRequestWithStatus{}
 	for i, m := range ts.mintRequest {
-		if mr.NftMintRequest.Id == req.Id {
+		if m.NftMintRequest.Id == req.Id {
 			num = i
 			mr = m
 		}
@@ -288,7 +306,7 @@ func (ts *testStore) AddMockData(sts []pb_nft.Status, amountPerStatus int) {
 	ts.mintRequest = make([]*pb_nft.NFTMintRequestWithStatus, totalAmount+1)
 	for i, st := range sts {
 		for j := 0; j <= amountPerStatus; j++ {
-			fmt.Println("adding", st, j+1)
+			// fmt.Println("adding", st, j+1)
 			ts.mintRequest[(i*amountPerStatus)+j] = GetMockMrByStatus(st, j+1)
 		}
 	}

@@ -21,6 +21,7 @@ const (
 type Store interface {
 	MintRequestStore
 	MetadataStore
+	CollectionsStore
 }
 
 type RDB struct {
@@ -28,6 +29,7 @@ type RDB struct {
 	ttl          time.Duration
 	mintRequests om.Repository[MintRequestWithStatus]
 	metadata     om.Repository[Metadata]
+	collections  om.Repository[Collection]
 	pageSize     int32
 }
 

@@ -2,11 +2,35 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"testing"
+	"time"
 
+	"github.com/jekabolt/solutions-dapp/art-admin/proto/metadata"
 	"github.com/matryer/is"
 )
+
+func getMetadataUnits() []*metadata.MetadataUnit {
+	return []*metadata.MetadataUnit{
+		{
+			Name:               "MetadataUnit 1 ",
+			Description:        "description 1 ",
+			OffchainImage:      "offchain-image",
+			OnchainImage:       "onchain-image",
+			Edition:            1,
+			MintSequenceNumber: 1,
+			Date:               int32(time.Now().Unix()),
+		},
+		{
+			Name:               "MetadataUnit 1 ",
+			Description:        "description 1 ",
+			OffchainImage:      "offchain-image",
+			OnchainImage:       "onchain-image",
+			Edition:            1,
+			MintSequenceNumber: 1,
+			Date:               int32(time.Now().Unix()),
+		},
+	}
+}
 
 func TestMetadata(t *testing.T) {
 	is := is.New(t)
@@ -26,13 +50,36 @@ func TestMetadata(t *testing.T) {
 	ms, err := bdb.MetadataStore(ctx)
 	is.NoErr(err)
 
+	ids := []string{}
+	defer func() {
+		for _, id := range ids {
+			err := ms.DeleteById(ctx, id)
+			is.NoErr(err)
+		}
+	}()
+
 	for i := 0; i < 100; i++ {
-		err := ms.AddOffchainMetadata(ctx, fmt.Sprint(i))
+		id, err := ms.AddOffchainMetadata(ctx, getMetadataUnits())
 		is.NoErr(err)
+		ids = append(ids, id)
 	}
 
 	all, err := ms.GetAllOffchainMetadata(ctx)
 	is.NoErr(err)
 	is.Equal(len(all), 100)
+
+	err = ms.SetProcessing(ctx, ids[0], true)
+	is.NoErr(err)
+
+	md, err := ms.GetMetadataByKey(ctx, ids[0])
+	is.NoErr(err)
+	is.Equal(md.Processing, true)
+
+	err = ms.SetIPFSUrl(ctx, ids[0], "ipfs-url")
+	is.NoErr(err)
+
+	md, err = ms.GetMetadataByKey(ctx, ids[0])
+	is.NoErr(err)
+	is.Equal(md.IPFSUrl, "ipfs-url")
 
 }

@@ -151,6 +151,12 @@ func (cli *Client) MintStatusUpdate(ctx context.Context) error {
 
 			if ok {
 				// update the status to pending
+				// TODO:
+				// TODO: update mint sequence number
+				// TODO:
+				// TODO:
+				// TODO: upload to ipfs and update the mint request
+				// TODO:
 				_, err := cli.mintStore.UpdateStatusNFTMintRequest(ctx, fmt.Sprint(mr.NftMintRequest.Id), pb_nft.Status_Pending)
 				if err != nil {
 					log.Error().Msgf("MintStatusUpdate:UpdateStatusNFTMintRequest [%s]", err.Error())

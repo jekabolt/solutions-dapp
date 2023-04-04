@@ -18,7 +18,7 @@ func TestXxx(t *testing.T) {
 		status,
 	}, 39)
 
-	mrs, err := s.GetNFTMintRequestsPaged(context.Background(), &pb_nft.ListPagedRequest{
+	mrs, err := s.GetPaged(context.Background(), &pb_nft.ListPagedRequest{
 		Status: status,
 		Page:   1,
 	})

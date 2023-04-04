@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 )
 
@@ -27,22 +28,34 @@ func paginate(pageNum int, pageSize int, sliceLength int) (int, int) {
 	return start, end
 }
 
-func (ts *testStore) NewNFTMintRequest(ctx context.Context, mr *pb_nft.NFTMintRequestToUpload, il []*pb_nft.ImageList) (*pb_nft.NFTMintRequestWithStatus, error) {
-	mr.NftMintRequest.Id = getId()
-	if mr == nil {
-		return nil, fmt.Errorf("NewNFTMintRequest:mr is nil")
-	}
+func (ts *testStore) New(ctx context.Context, mr *pb_nft.NFTMintRequestToUpload, il []*pb_nft.ImageList) (*pb_nft.NFTMintRequestWithStatus, error) {
+	oid := getId()
 	mws := &pb_nft.NFTMintRequestWithStatus{
-		Status:         pb_nft.Status_Unknown,
-		NftMintRequest: mr.NftMintRequest,
-		SampleImages:   il,
+		OffchainUrl: "",
+		OnchainUrl:  "",
+		Status:      pb_nft.Status_Unknown,
+		NftMintRequest: &pb_nft.NFTMintRequest{
+			Id:                 oid,
+			EthAddress:         mr.EthAddress,
+			Description:        mr.Description,
+			MintSequenceNumber: 0,
+		},
+		SampleImages: il,
+		Collection:   "",
+		Duration:     "",
+		Shipping: &pb_nft.Shipping{
+			Shipping: &pb_nft.ShippingTo{},
+		},
+	}
+	if mr == nil {
+		return nil, fmt.Errorf("New:mr is nil")
 	}
 	ts.mintRequest = append(ts.mintRequest, mws)
 
 	return mws, nil
 }
 
-func (ts *testStore) GetNFTMintRequestById(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
+func (ts *testStore) GetById(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
 	ok := false
 	m := &pb_nft.NFTMintRequestWithStatus{}
 	for _, mr := range ts.mintRequest {
@@ -58,16 +71,17 @@ func (ts *testStore) GetNFTMintRequestById(ctx context.Context, id string) (*pb_
 	return m, nil
 }
 
-func (ts *testStore) GetAllNFTMintRequests(ctx context.Context, status pb_nft.Status) ([]*pb_nft.NFTMintRequestWithStatus, error) {
+func (ts *testStore) GetAll(ctx context.Context, status pb_nft.Status) ([]*pb_nft.NFTMintRequestWithStatus, error) {
 	mrs := []*pb_nft.NFTMintRequestWithStatus{}
 	for _, mr := range ts.mintRequest {
-		mrs = append(mrs, mr)
+		if mr.Status == status {
+			mrs = append(mrs, mr)
+		}
 	}
 	return mrs, nil
 }
 
-// TODO: fix
-func (ts *testStore) GetNFTMintRequestsPaged(ctx context.Context, listOpts *pb_nft.ListPagedRequest) ([]*pb_nft.NFTMintRequestWithStatus, error) {
+func (ts *testStore) GetPaged(ctx context.Context, listOpts *pb_nft.ListPagedRequest) ([]*pb_nft.NFTMintRequestWithStatus, error) {
 	temp := ts.mintRequest
 
 	if listOpts.Status != pb_nft.Status_Any {
@@ -84,7 +98,7 @@ func (ts *testStore) GetNFTMintRequestsPaged(ctx context.Context, listOpts *pb_n
 	return temp[start:end], nil
 }
 
-func (ts *testStore) DeleteNFTMintRequestById(ctx context.Context, id string) error {
+func (ts *testStore) DeleteMintById(ctx context.Context, id string) error {
 	for i, mr := range ts.mintRequest {
 		if mr.NftMintRequest.Id == id {
 			ts.mintRequest = remove(ts.mintRequest, i)
@@ -94,24 +108,48 @@ func (ts *testStore) DeleteNFTMintRequestById(ctx context.Context, id string) er
 	return nil
 }
 
-func (ts *testStore) GetAllToUpload(ctx context.Context) (map[int32]*pb_nft.NFTMintRequestWithStatus, error) {
+func (ts *testStore) GetAllToUpload(ctx context.Context) (map[int32]*nft.NFTMintRequestWithStatus, error) {
 	mrs := []*pb_nft.NFTMintRequestWithStatus{}
 	for _, mr := range ts.mintRequest {
 		if mr.Status == pb_nft.Status_Uploaded ||
-			mr.Status == pb_nft.Status_UploadedOffchain ||
 			mr.Status == pb_nft.Status_Burned ||
 			mr.Status == pb_nft.Status_Shipped {
 			mrs = append(mrs, mr)
 		}
-
 	}
-	toUpload := map[int32]*pb_nft.NFTMintRequestWithStatus{}
+	toUpload := map[int32]*nft.NFTMintRequestWithStatus{}
 	for _, mr := range mrs {
 		toUpload[mr.NftMintRequest.MintSequenceNumber] = mr
 	}
 	return toUpload, nil
 }
 
+func (ts *testStore) UpdateIpfsUrl(ctx context.Context, id string, ipfsUrl string) (*pb_nft.NFTMintRequestWithStatus, error) {
+	num := 0
+	mr := &pb_nft.NFTMintRequestWithStatus{}
+	for i, m := range ts.mintRequest {
+		if m.NftMintRequest.Id == id {
+			num = i
+			mr = m
+		}
+	}
+
+	if ipfsUrl == "" {
+		return nil, fmt.Errorf("UpdateIpfsUrl:offchainUrl is empty")
+	}
+
+	if !((mr.Status == pb_nft.Status_UploadedOffchain) ||
+		(mr.Status == pb_nft.Status_Uploaded)) {
+		return nil, fmt.Errorf("UpdateIpfsUrl:can change url only for uploaded onchain & offchain")
+	}
+
+	mr.OnchainUrl = ipfsUrl
+	mr.Status = pb_nft.Status_Uploaded
+
+	ts.mintRequest[num] = mr
+	return mr, nil
+
+}
 func (ts *testStore) UpdateOffchainUrl(ctx context.Context, id string, offchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error) {
 	num := 0
 	mr := &pb_nft.NFTMintRequestWithStatus{}
@@ -123,13 +161,11 @@ func (ts *testStore) UpdateOffchainUrl(ctx context.Context, id string, offchainU
 	}
 
 	if offchainUrl == "" {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:offchainUrl is empty")
+		return nil, fmt.Errorf("UpdateOffchainUrl:offchainUrl is empty")
 	}
 
-	if !((mr.Status == pb_nft.Status_Pending) ||
-		(mr.Status == pb_nft.Status_UploadedOffchain) ||
-		(mr.Status == pb_nft.Status_Uploaded)) {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:can change url only for uploaded onchain & offchain")
+	if !(mr.Status == pb_nft.Status_Pending) {
+		return nil, fmt.Errorf("UpdateOffchainUrl:can change url only for uploaded onchain & offchain")
 	}
 
 	mr.OffchainUrl = offchainUrl
@@ -137,57 +173,9 @@ func (ts *testStore) UpdateOffchainUrl(ctx context.Context, id string, offchainU
 
 	ts.mintRequest[num] = mr
 	return mr, nil
-
 }
 
-func (ts *testStore) UpdateOnchainUrl(ctx context.Context, id string, onchainUrl string) (*pb_nft.NFTMintRequestWithStatus, error) {
-	num := 0
-	mr := &pb_nft.NFTMintRequestWithStatus{}
-	for i, m := range ts.mintRequest {
-		if mr.NftMintRequest.Id == id {
-			num = i
-			mr = m
-		}
-	}
-
-	if onchainUrl == "" {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:offchainUrl is empty")
-	}
-
-	if !((mr.Status == pb_nft.Status_UploadedOffchain) ||
-		(mr.Status == pb_nft.Status_Uploaded)) {
-		return nil, fmt.Errorf("UpdateNFTOffchainUrl:can change url only for pending and uploaded")
-	}
-
-	mr.OnchainUrl = onchainUrl
-	mr.Status = pb_nft.Status_Uploaded
-
-	ts.mintRequest[num] = mr
-	return mr, nil
-}
-
-func (ts *testStore) DeleteNFTOffchainUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
-	num := 0
-	mr := &pb_nft.NFTMintRequestWithStatus{}
-	for i, m := range ts.mintRequest {
-		if mr.NftMintRequest.Id == id {
-			num = i
-			mr = m
-		}
-	}
-
-	if !(mr.Status == pb_nft.Status_UploadedOffchain) {
-		return nil, fmt.Errorf("DeleteNFTOffchainUrl:can delete offchain url only for uploaded offchain")
-	}
-
-	mr.OffchainUrl = ""
-	mr.Status = pb_nft.Status_Pending
-
-	ts.mintRequest[num] = mr
-	return mr, nil
-}
-
-func (ts *testStore) DeleteNFTOnchainUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
+func (ts *testStore) DeleteIpfsUrl(ctx context.Context, id string) (*pb_nft.NFTMintRequestWithStatus, error) {
 	num := 0
 	mr := &pb_nft.NFTMintRequestWithStatus{}
 	for i, m := range ts.mintRequest {
@@ -201,7 +189,6 @@ func (ts *testStore) DeleteNFTOnchainUrl(ctx context.Context, id string) (*pb_nf
 		return nil, fmt.Errorf("DeleteNFTOnchainUrl:can delete onchain url only for uploaded")
 	}
 
-	mr.OnchainUrl = ""
 	mr.Status = pb_nft.Status_UploadedOffchain
 
 	ts.mintRequest[num] = mr
@@ -251,7 +238,7 @@ func (ts *testStore) UpdateTrackingNumber(ctx context.Context, req *pb_nft.SetTr
 	return mr, nil
 }
 
-func (ts *testStore) UpdateStatusNFTMintRequest(ctx context.Context, id string, status pb_nft.Status) (*pb_nft.NFTMintRequestWithStatus, error) {
+func (ts *testStore) UpdateStatus(ctx context.Context, id string, status pb_nft.Status) (*pb_nft.NFTMintRequestWithStatus, error) {
 	ok := false
 	m := &pb_nft.NFTMintRequestWithStatus{}
 	for _, mr := range ts.mintRequest {
@@ -340,7 +327,6 @@ func GetMockMrByStatus(st pb_nft.Status, num int) *pb_nft.NFTMintRequestWithStat
 	case pb_nft.Status_Uploaded:
 		return &pb_nft.NFTMintRequestWithStatus{
 			OffchainUrl:    fmt.Sprintf("https://offchain.com/%d", num),
-			OnchainUrl:     fmt.Sprintf("https://onchain.com/%d", num),
 			Status:         pb_nft.Status_Uploaded,
 			NftMintRequest: newMr(num, st),
 			SampleImages:   newImages(),
@@ -349,7 +335,6 @@ func GetMockMrByStatus(st pb_nft.Status, num int) *pb_nft.NFTMintRequestWithStat
 	case pb_nft.Status_Burned:
 		return &pb_nft.NFTMintRequestWithStatus{
 			OffchainUrl:    fmt.Sprintf("https://offchain.com/%d", num),
-			OnchainUrl:     fmt.Sprintf("https://onchain.com/%d", num),
 			Status:         pb_nft.Status_Burned,
 			NftMintRequest: newMr(num, st),
 			SampleImages:   newImages(),
@@ -359,7 +344,6 @@ func GetMockMrByStatus(st pb_nft.Status, num int) *pb_nft.NFTMintRequestWithStat
 	case pb_nft.Status_Shipped:
 		return &pb_nft.NFTMintRequestWithStatus{
 			OffchainUrl:    fmt.Sprintf("https://offchain.com/%d", num),
-			OnchainUrl:     fmt.Sprintf("https://onchain.com/%d", num),
 			Status:         pb_nft.Status_Shipped,
 			NftMintRequest: newMr(num, st),
 			SampleImages:   newImages(),

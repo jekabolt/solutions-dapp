@@ -31,12 +31,12 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	db, err := cfg.Redis.InitDB(ctx)
+	db, err := cfg.Mongo.InitDB(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init db err:[%s]", err.Error()))
 	}
 
-	desc, err := cfg.Descriptions.Init()
+	desc := cfg.Descriptions.New()
 
 	b, err := cfg.Bucket.Init()
 	if err != nil {
@@ -82,7 +82,7 @@ func main() {
 		log.Warn().Msgf("signal received, exiting [%s]", s.String())
 		app.Stop(ctx)
 		eth.Stop()
-		db.Close()
+		db.Close(ctx)
 		log.Warn().Msg("application exited")
 	case <-app.Done():
 		log.Error().Msg("application exited")

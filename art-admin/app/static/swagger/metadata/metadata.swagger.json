@@ -37,7 +37,7 @@
         },
         "parameters": [
           {
-            "name": "key",
+            "name": "id",
             "description": "internal db metadata id",
             "in": "query",
             "required": false,
@@ -49,15 +49,15 @@
         ]
       }
     },
-    "/api/metadata/get": {
+    "/api/metadata/get/{offchain}": {
       "get": {
-        "summary": "GetAllMetadata get all uploaded offchain metadata from db",
-        "operationId": "GetAllMetadata",
+        "summary": "GetAllMetadata get all metadata submitted on chain or offchain\nthere can be only one offchain metadata",
+        "operationId": "GetMetadata",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/metadataGetAllMetadataResponse"
+              "$ref": "#/definitions/metadataGetMetadataResponse"
             }
           },
           "default": {
@@ -67,6 +67,14 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "offchain",
+            "in": "path",
+            "required": true,
+            "type": "boolean"
+          }
+        ],
         "tags": [
           "Metadata"
         ]
@@ -74,7 +82,7 @@
     },
     "/api/metadata/ipfs": {
       "post": {
-        "summary": "UploadIPFSMetadata get metadata to upload by id and upload to ipfs",
+        "summary": "UploadIPFSMetadata get current state for metadata and upload to ipfs",
         "operationId": "UploadIPFSMetadata",
         "responses": {
           "200": {
@@ -108,7 +116,7 @@
     },
     "/api/metadata/offchain": {
       "post": {
-        "summary": "UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped. \nCreate metadata for each nft and save to db",
+        "summary": "UploadOffchainMetadata initial upload metadata to db",
         "operationId": "UploadOffchainMetadata",
         "responses": {
           "200": {
@@ -142,34 +150,37 @@
     }
   },
   "definitions": {
-    "metadataGetAllMetadataResponse": {
+    "metadataGetMetadataResponse": {
       "type": "object",
       "properties": {
         "metaInfo": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/metadataMetaInfo"
-          },
-          "title": "array of metadata"
+          }
         }
       },
-      "title": "Response for GetAllMetadata"
+      "title": "GetMetadataResponse response"
     },
     "metadataMetaInfo": {
       "type": "object",
       "properties": {
         "ipfsUrl": {
-          "type": "string"
+          "type": "string",
+          "title": "ipfsUrl of metadata"
         },
         "processing": {
-          "type": "boolean"
+          "type": "boolean",
+          "title": "if metadata is uploading now"
         },
         "ts": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "timestamp of metadata creation"
         },
-        "key": {
-          "type": "string"
+        "id": {
+          "type": "string",
+          "title": "internal id in db"
         }
       },
       "title": "description of metadata stored in db"
@@ -177,7 +188,7 @@
     "metadataUploadIPFSMetadataRequest": {
       "type": "object",
       "properties": {
-        "key": {
+        "id": {
           "type": "string",
           "title": "internal db metadata id"
         }
@@ -187,8 +198,8 @@
     "metadataUploadOffchainMetadataResponse": {
       "type": "object",
       "properties": {
-        "key": {
-          "type": "string",
+        "metaInfo": {
+          "$ref": "#/definitions/metadataMetaInfo",
           "title": "internal id in db"
         }
       },

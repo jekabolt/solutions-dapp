@@ -12,11 +12,11 @@ import (
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/eth"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/mongo"
 )
 
 type Config struct {
-	Redis        *redis.Config
+	Mongo        *mongo.Config
 	Bucket       *bucket.Config
 	ETHWatcher   *eth.Config
 	IPFS         *ipfs.Config
@@ -33,7 +33,7 @@ func GetConfig() (*Config, error) {
 	var err error
 
 	cfg := &Config{
-		Redis:        &redis.Config{},
+		Mongo:        &mongo.Config{},
 		Bucket:       &bucket.Config{},
 		ETHWatcher:   &eth.Config{},
 		IPFS:         &ipfs.Config{},

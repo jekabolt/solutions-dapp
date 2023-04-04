@@ -14,19 +14,17 @@ import (
 )
 
 type PathExtra struct {
-	TxHash       string
-	EthAddr      string
-	MintSequence string
+	EthAddr string
 }
 
 type Image interface {
-	UploadContentImage(rawB64Image string, pe *PathExtra) (*pb_nft.ImageList, error)
+	UploadContentImage(rawB64Image, folder, imageName string) (*pb_nft.ImageList, error)
 }
 
 // upload image to bucket return url
-func (b *Bucket) uploadImageToBucket(img io.Reader, contentType string, prefix string, pe *PathExtra) (string, error) {
-
-	fp := b.getImageFullPath(fileExtensionFromContentType(contentType), prefix, pe)
+func (b *Bucket) uploadImageToBucket(img io.Reader, folder, imageName, contentType string) (string, error) {
+	ext := fileExtensionFromContentType(contentType)
+	fp := b.getImageFullPath(folder, imageName, ext)
 
 	userMetaData := map[string]string{"x-amz-acl": "public-read"} // make it public
 	cacheControl := "max-age=31536000"
@@ -84,7 +82,7 @@ func imageFromString(rawB64Image string) (image.Image, error) {
 }
 
 // upload single image with defined quality and	prefix to bucket
-func (b *Bucket) uploadSingleImage(img image.Image, quality int, prefix string, pe *PathExtra) (string, error) {
+func (b *Bucket) uploadSingleImage(img image.Image, quality int, folder, imageName string) (string, error) {
 	var buf bytes.Buffer
 	imgWriter := bufio.NewWriter(&buf)
 
@@ -94,7 +92,7 @@ func (b *Bucket) uploadSingleImage(img image.Image, quality int, prefix string, 
 	}
 
 	imgReader := bufio.NewReader(&buf)
-	url, err := b.uploadImageToBucket(imgReader, contentTypeJPEG, prefix, pe)
+	url, err := b.uploadImageToBucket(imgReader, folder, imageName, contentTypeJPEG)
 	if err != nil {
 		return "", fmt.Errorf("Upload:uploadImageToBucket: [%v]", err.Error())
 	}
@@ -102,27 +100,27 @@ func (b *Bucket) uploadSingleImage(img image.Image, quality int, prefix string, 
 }
 
 // compose internal image object (with FullSize & Compressed formats) and upload it to S3
-func (b *Bucket) uploadImageObj(img image.Image, pe *PathExtra) (*pb_nft.ImageList, error) {
+func (b *Bucket) uploadImageObj(img image.Image, folder, imageName string) (*pb_nft.ImageList, error) {
 	imgObj := &pb_nft.ImageList{}
 	var err error
 
-	imgObj.FullSize, err = b.uploadSingleImage(img, 100, "og", pe)
+	imgObj.FullSize, err = b.uploadSingleImage(img, 100, folder, fmt.Sprintf("%s_%s", imageName, "og"))
 	if err != nil {
 		return nil, fmt.Errorf("UploadProductImage:Upload:FullSize [%v]", err.Error())
 	}
 
-	imgObj.Compressed, err = b.uploadSingleImage(img, 60, "compressed", pe)
+	imgObj.Compressed, err = b.uploadSingleImage(img, 60, folder, fmt.Sprintf("%s_%s", imageName, "compressed"))
 	if err != nil {
 		return nil, fmt.Errorf("UploadProductImage:Upload:Compressed [%v]", err.Error())
 	}
 	return imgObj, nil
 }
 
-// get raw image from b64 encoded string and upload fullsize and compressed images to s3
-func (b *Bucket) UploadContentImage(rawB64Image string, pe *PathExtra) (*pb_nft.ImageList, error) {
+// get raw image from b64 encoded string and upload full size and compressed images to s3
+func (b *Bucket) UploadContentImage(rawB64Image, folder, imageName string) (*pb_nft.ImageList, error) {
 	img, err := imageFromString(rawB64Image)
 	if err != nil {
 		return nil, err
 	}
-	return b.uploadImageObj(img, pe)
+	return b.uploadImageObj(img, folder, imageName)
 }

@@ -138,20 +138,56 @@ func local_request_Metadata_DeleteIPFSMetadata_0(ctx context.Context, marshaler 
 
 }
 
-func request_Metadata_GetAllMetadata_0(ctx context.Context, marshaler runtime.Marshaler, client MetadataClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+func request_Metadata_GetMetadata_0(ctx context.Context, marshaler runtime.Marshaler, client MetadataClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetMetadataRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := client.GetAllMetadata(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["offchain"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "offchain")
+	}
+
+	protoReq.Offchain, err = runtime.Bool(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "offchain", err)
+	}
+
+	msg, err := client.GetMetadata(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Metadata_GetAllMetadata_0(ctx context.Context, marshaler runtime.Marshaler, server MetadataServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+func local_request_Metadata_GetMetadata_0(ctx context.Context, marshaler runtime.Marshaler, server MetadataServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetMetadataRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := server.GetAllMetadata(ctx, &protoReq)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["offchain"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "offchain")
+	}
+
+	protoReq.Offchain, err = runtime.Bool(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "offchain", err)
+	}
+
+	msg, err := server.GetMetadata(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -231,7 +267,7 @@ func RegisterMetadataHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 
 	})
 
-	mux.Handle("GET", pattern_Metadata_GetAllMetadata_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Metadata_GetMetadata_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -242,7 +278,7 @@ func RegisterMetadataHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Metadata_GetAllMetadata_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Metadata_GetMetadata_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -250,7 +286,7 @@ func RegisterMetadataHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 			return
 		}
 
-		forward_Metadata_GetAllMetadata_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Metadata_GetMetadata_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -355,7 +391,7 @@ func RegisterMetadataHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 
 	})
 
-	mux.Handle("GET", pattern_Metadata_GetAllMetadata_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Metadata_GetMetadata_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -364,14 +400,14 @@ func RegisterMetadataHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Metadata_GetAllMetadata_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Metadata_GetMetadata_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Metadata_GetAllMetadata_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Metadata_GetMetadata_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -385,7 +421,7 @@ var (
 
 	pattern_Metadata_DeleteIPFSMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "metadata", "delete"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Metadata_GetAllMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "metadata", "get"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Metadata_GetMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "metadata", "get", "offchain"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -395,5 +431,5 @@ var (
 
 	forward_Metadata_DeleteIPFSMetadata_0 = runtime.ForwardResponseMessage
 
-	forward_Metadata_GetAllMetadata_0 = runtime.ForwardResponseMessage
+	forward_Metadata_GetMetadata_0 = runtime.ForwardResponseMessage
 )

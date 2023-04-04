@@ -3,8 +3,10 @@ package teststore
 import (
 	"math/rand"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/mongo"
 
+	pb_collection "github.com/jekabolt/solutions-dapp/art-admin/proto/collection"
+	pb_metadata "github.com/jekabolt/solutions-dapp/art-admin/proto/metadata"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 )
 
@@ -19,18 +21,24 @@ func getId() string {
 }
 
 type testStore struct {
-	redis.Store
-	metadata    map[string]*redis.Metadata
-	collections map[string]*redis.Collection
+	mongo.Store
+
+	metadata         map[string]*pb_metadata.Meta
+	offchainMetadata *pb_metadata.Meta
+
+	collections map[string]*pb_collection.Collection
+
 	mintRequest []*pb_nft.NFTMintRequestWithStatus
-	pageSize    int
+
+	pageSize int
 }
 
 func NewTestStore(pageSize int) *testStore {
 	return &testStore{
-		metadata:    make(map[string]*redis.Metadata),
-		collections: make(map[string]*redis.Collection),
-		mintRequest: []*pb_nft.NFTMintRequestWithStatus{},
-		pageSize:    pageSize,
+		metadata:         make(map[string]*pb_metadata.Meta),
+		collections:      make(map[string]*pb_collection.Collection),
+		offchainMetadata: &pb_metadata.Meta{},
+		mintRequest:      []*pb_nft.NFTMintRequestWithStatus{},
+		pageSize:         pageSize,
 	}
 }

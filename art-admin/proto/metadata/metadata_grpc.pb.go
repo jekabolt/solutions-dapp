@@ -23,15 +23,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MetadataClient interface {
-	// UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped.
-	// Create metadata for each nft and save to db
+	// UploadOffchainMetadata initial upload metadata to db
 	UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UploadOffchainMetadataResponse, error)
-	// UploadIPFSMetadata get metadata to upload by id and upload to ipfs
+	// UploadIPFSMetadata get current state for metadata and upload to ipfs
 	UploadIPFSMetadata(ctx context.Context, in *UploadIPFSMetadataRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// DeleteIPFSMetadata get metadata to upload by id and upload to ipfs
 	DeleteIPFSMetadata(ctx context.Context, in *DeleteIPFSMetadataRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// GetAllMetadata get all uploaded offchain metadata from db
-	GetAllMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllMetadataResponse, error)
+	// GetAllMetadata get all metadata submitted on chain or offchain
+	// there can be only one offchain metadata
+	GetMetadata(ctx context.Context, in *GetMetadataRequest, opts ...grpc.CallOption) (*GetMetadataResponse, error)
 }
 
 type metadataClient struct {
@@ -69,9 +69,9 @@ func (c *metadataClient) DeleteIPFSMetadata(ctx context.Context, in *DeleteIPFSM
 	return out, nil
 }
 
-func (c *metadataClient) GetAllMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllMetadataResponse, error) {
-	out := new(GetAllMetadataResponse)
-	err := c.cc.Invoke(ctx, "/metadata.Metadata/GetAllMetadata", in, out, opts...)
+func (c *metadataClient) GetMetadata(ctx context.Context, in *GetMetadataRequest, opts ...grpc.CallOption) (*GetMetadataResponse, error) {
+	out := new(GetMetadataResponse)
+	err := c.cc.Invoke(ctx, "/metadata.Metadata/GetMetadata", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,15 +82,15 @@ func (c *metadataClient) GetAllMetadata(ctx context.Context, in *emptypb.Empty, 
 // All implementations should embed UnimplementedMetadataServer
 // for forward compatibility
 type MetadataServer interface {
-	// UploadOffchainMetadata Get all mint requests with status StatusUploaded, StatusUploadedOffchain, StatusBurned, StatusShipped.
-	// Create metadata for each nft and save to db
+	// UploadOffchainMetadata initial upload metadata to db
 	UploadOffchainMetadata(context.Context, *emptypb.Empty) (*UploadOffchainMetadataResponse, error)
-	// UploadIPFSMetadata get metadata to upload by id and upload to ipfs
+	// UploadIPFSMetadata get current state for metadata and upload to ipfs
 	UploadIPFSMetadata(context.Context, *UploadIPFSMetadataRequest) (*emptypb.Empty, error)
 	// DeleteIPFSMetadata get metadata to upload by id and upload to ipfs
 	DeleteIPFSMetadata(context.Context, *DeleteIPFSMetadataRequest) (*emptypb.Empty, error)
-	// GetAllMetadata get all uploaded offchain metadata from db
-	GetAllMetadata(context.Context, *emptypb.Empty) (*GetAllMetadataResponse, error)
+	// GetAllMetadata get all metadata submitted on chain or offchain
+	// there can be only one offchain metadata
+	GetMetadata(context.Context, *GetMetadataRequest) (*GetMetadataResponse, error)
 }
 
 // UnimplementedMetadataServer should be embedded to have forward compatible implementations.
@@ -106,8 +106,8 @@ func (UnimplementedMetadataServer) UploadIPFSMetadata(context.Context, *UploadIP
 func (UnimplementedMetadataServer) DeleteIPFSMetadata(context.Context, *DeleteIPFSMetadataRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteIPFSMetadata not implemented")
 }
-func (UnimplementedMetadataServer) GetAllMetadata(context.Context, *emptypb.Empty) (*GetAllMetadataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllMetadata not implemented")
+func (UnimplementedMetadataServer) GetMetadata(context.Context, *GetMetadataRequest) (*GetMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetadata not implemented")
 }
 
 // UnsafeMetadataServer may be embedded to opt out of forward compatibility for this service.
@@ -175,20 +175,20 @@ func _Metadata_DeleteIPFSMetadata_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Metadata_GetAllMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+func _Metadata_GetMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMetadataRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MetadataServer).GetAllMetadata(ctx, in)
+		return srv.(MetadataServer).GetMetadata(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/metadata.Metadata/GetAllMetadata",
+		FullMethod: "/metadata.Metadata/GetMetadata",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MetadataServer).GetAllMetadata(ctx, req.(*emptypb.Empty))
+		return srv.(MetadataServer).GetMetadata(ctx, req.(*GetMetadataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -213,8 +213,8 @@ var Metadata_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Metadata_DeleteIPFSMetadata_Handler,
 		},
 		{
-			MethodName: "GetAllMetadata",
-			Handler:    _Metadata_GetAllMetadata_Handler,
+			MethodName: "GetMetadata",
+			Handler:    _Metadata_GetMetadata_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

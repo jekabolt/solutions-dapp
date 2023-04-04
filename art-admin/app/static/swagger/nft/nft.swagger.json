@@ -18,7 +18,7 @@
   "paths": {
     "/api/nft": {
       "post": {
-        "summary": "Upload resulted nft offchain from b64\npossble statuses: Pending, UploadedOffchain, Uploaded",
+        "summary": "Upload resulted nft offchain from b64\npossble statuses: Pending, UploadedOffchain, Uploaded\nset status to UploadedOffchain",
         "operationId": "UpdateNFTOffchainUrl",
         "responses": {
           "200": {
@@ -234,8 +234,8 @@
     },
     "/api/nft/{id}": {
       "delete": {
-        "summary": "Remove nft offchain url from mint request and change status to Pending",
-        "operationId": "DeleteNFTOffchainUrl",
+        "summary": "Remove nft onchain url from mint request and change status to Pending",
+        "operationId": "DeleteNFTOnchainUrl",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -288,13 +288,16 @@
       "type": "object",
       "properties": {
         "txid": {
-          "type": "string"
+          "type": "string",
+          "title": "burn transaction"
         },
         "id": {
-          "type": "string"
+          "type": "string",
+          "title": "internal id"
         },
         "address": {
-          "type": "string"
+          "type": "string",
+          "title": "burner address"
         },
         "mintSequenceNumber": {
           "type": "integer",
@@ -351,10 +354,6 @@
           "type": "string",
           "title": "eth address of minter account"
         },
-        "TxHash": {
-          "type": "string",
-          "title": "hash of mint transaction"
-        },
         "mintSequenceNumber": {
           "type": "integer",
           "format": "int32",
@@ -390,9 +389,13 @@
           },
           "title": "array of images from which nft should be referenced"
         },
-        "nftMintRequest": {
-          "$ref": "#/definitions/nftNFTMintRequest",
-          "title": "mint request info"
+        "description": {
+          "type": "string",
+          "title": "user defined description of drawing"
+        },
+        "ethAddress": {
+          "type": "string",
+          "title": "eth address of minter account"
         }
       },
       "title": "Images and request info for submitting nft"
@@ -421,11 +424,23 @@
         },
         "onchainUrl": {
           "type": "string",
-          "title": "resulted nft url uploaded offchain i.e to s3 can be empty"
+          "title": "resulted nft url uploaded to ipfs can be empty"
         },
         "shipping": {
           "$ref": "#/definitions/nftShipping",
           "title": "related only if status is burned or shipped"
+        },
+        "collection": {
+          "type": "string",
+          "title": "collection id"
+        },
+        "duration": {
+          "type": "string",
+          "title": "duration eg 1m, 1h, 2m30s"
+        },
+        "author": {
+          "type": "string",
+          "title": "author of picture"
         }
       },
       "title": "NFT request as is with status"
@@ -493,7 +508,7 @@
         "Shipped"
       ],
       "default": "Any",
-      "description": "- Any: Any used for query all mint requests aka \"*\"\n - Unknown: Unknown — status after user upload refs to ddapp tx is unconfirmed;\n - Pending: Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded\n - Failed: Failed — status after user upload refs to ddapp tx is failed for some reason;\n - UploadedOffchain: UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain;\n - Uploaded: Uploaded — art image is done and uploaded to the blockchain;\n - Burned: Burned — art image is  burned from blockchain and it ready to ship;\n - Shipped: Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.",
+      "description": "- Any: Any used for query all mint requests aka \"*\"\n - Unknown: Unknown — status after user upload refs to ddapp tx is unconfirmed\n - Pending: Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded\n - Failed: Failed — status after user upload refs to ddapp tx is failed for some reason\n - UploadedOffchain: UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain\n - Uploaded: Uploaded — art image is done and uploaded to the blockchain;\n - Burned: Burned — art image is  burned from blockchain and it ready to ship\n - Shipped: Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.",
       "title": "Status enum for mint request"
     },
     "nftUpdateNFTOffchainUrlRequest": {
@@ -506,6 +521,10 @@
         "nftOffchainUrl": {
           "$ref": "#/definitions/nftImageToUpload",
           "title": "resulted nft raw image b64 encoded"
+        },
+        "collectionId": {
+          "type": "string",
+          "title": "collection id"
         }
       },
       "title": "Update NFT offchain url"

@@ -3,7 +3,6 @@ package nft
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/teststore"
@@ -15,7 +14,7 @@ import (
 // file store mock
 type fs struct{}
 
-func (_ fs) UploadContentImage(rawB64Image string, pe *bucket.PathExtra) (*pb_nft.ImageList, error) {
+func (_ fs) UploadContentImage(rawB64Image, folder, imageName string) (*pb_nft.ImageList, error) {
 	return &pb_nft.ImageList{
 		FullSize:   "https://example.com/full.jpg",
 		Compressed: "https://example.com/compressed.jpg",
@@ -39,13 +38,8 @@ func TestNft(t *testing.T) {
 	is.NoErr(err)
 	ctx := context.Background()
 	resp, err := s.NewNFTMintRequest(ctx, &pb_nft.NFTMintRequestToUpload{
-		NftMintRequest: &pb_nft.NFTMintRequest{
-			Id:                 "",
-			EthAddress:         "0x0",
-			TxHash:             "0x0",
-			MintSequenceNumber: 1,
-			Description:        "test",
-		},
+		Description: "test",
+		EthAddress:  "0x0",
 		SampleImages: []*pb_nft.ImageToUpload{
 			{
 				Raw: "https://grbpwr.com/img/small-logo.png",
@@ -54,12 +48,11 @@ func TestNft(t *testing.T) {
 	})
 
 	defer func() {
-		err = db.DeleteNFTMintRequestById(ctx, resp.GetNftMintRequest().GetId())
+		err = db.DeleteById(ctx, resp.GetNftMintRequest().GetId())
 		is.NoErr(err)
 	}()
 	is.NoErr(err)
 	is.Equal(resp.Status, pb_nft.Status_Unknown)
-	time.Sleep(time.Second)
 	// list mint requests
 	list, err := s.ListNFTMintRequestsPaged(ctx, &pb_nft.ListPagedRequest{
 		Status: pb_nft.Status_Unknown,
@@ -68,7 +61,7 @@ func TestNft(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(len(list.NftMintRequests), 1)
 
-	_, err = s.db.UpdateStatusNFTMintRequest(
+	_, err = s.db.UpdateStatus(
 		ctx,
 		list.NftMintRequests[0].NftMintRequest.Id,
 		pb_nft.Status_Pending)
@@ -81,9 +74,13 @@ func TestNft(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(len(list.NftMintRequests), 1)
 
+	collectionId, err := s.db.AddCollection(ctx, "test", 100)
+	is.NoErr(err)
+
 	// update mint offchain url
 	resp, err = s.UpdateNFTOffchainUrl(ctx, &pb_nft.UpdateNFTOffchainUrlRequest{
-		Id: list.NftMintRequests[0].NftMintRequest.Id,
+		CollectionId: collectionId,
+		Id:           list.NftMintRequests[0].NftMintRequest.Id,
 		NftOffchainUrl: &pb_nft.ImageToUpload{
 			Raw: "https://example.com/offchain.jpg",
 		},
@@ -98,7 +95,7 @@ func TestNft(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(len(list.NftMintRequests), 1)
 
-	_, err = s.db.UpdateStatusNFTMintRequest(
+	_, err = s.db.UpdateStatus(
 		ctx,
 		list.NftMintRequests[0].NftMintRequest.Id,
 		pb_nft.Status_Uploaded)

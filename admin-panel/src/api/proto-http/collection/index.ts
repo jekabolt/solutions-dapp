@@ -91,7 +91,7 @@ type RequestType = {
   body: string | null;
 };
 
-type RequestHandler = (request: RequestType) => Promise<unknown>;
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
 
 export function createCollectionsClient(
   handler: RequestHandler
@@ -109,6 +109,9 @@ export function createCollectionsClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Collections",
+        method: "CreateNewCollection",
       }) as Promise<CreateNewCollectionResponse>;
     },
     DeleteCollection(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -126,6 +129,9 @@ export function createCollectionsClient(
         path: uri,
         method: "DELETE",
         body,
+      }, {
+        service: "Collections",
+        method: "DeleteCollection",
       }) as Promise<DeleteCollectionResponse>;
     },
     UpdateCollectionCapacity(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -140,6 +146,9 @@ export function createCollectionsClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Collections",
+        method: "UpdateCollectionCapacity",
       }) as Promise<UpdateCollectionCapacityResponse>;
     },
     UpdateCollectionName(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -154,6 +163,9 @@ export function createCollectionsClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Collections",
+        method: "UpdateCollectionName",
       }) as Promise<UpdateCollectionNameResponse>;
     },
     GetAllCollections(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -168,6 +180,9 @@ export function createCollectionsClient(
         path: uri,
         method: "GET",
         body,
+      }, {
+        service: "Collections",
+        method: "GetAllCollections",
       }) as Promise<GetAllCollectionsResponse>;
     },
     GetCollectionByKey(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -185,6 +200,9 @@ export function createCollectionsClient(
         path: uri,
         method: "GET",
         body,
+      }, {
+        service: "Collections",
+        method: "GetCollectionByKey",
       }) as Promise<Collection>;
     },
   };

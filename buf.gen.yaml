@@ -23,6 +23,9 @@ plugins:
     out: admin-panel/src/api/proto-http
     opt:
       - paths=source_relative
+  # - name: gotag
+  #   out: ./tmp
+  #   opt: paths=source_relative,xxx=graphql+"-" bson+"-",outdir=art-admin/proto
 
 # build-proto: ## Generate proto-http files from nft.proto and auth.proto
 # 	protoc \

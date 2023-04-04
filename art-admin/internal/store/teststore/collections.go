@@ -3,19 +3,17 @@ package teststore
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	pb_collection "github.com/jekabolt/solutions-dapp/art-admin/proto/collection"
 )
 
 func (ts *testStore) AddCollection(ctx context.Context, name string, capacity int32) (string, error) {
 	id := getId()
-	ts.collections[id] = &redis.Collection{
+	ts.collections[id] = &pb_collection.Collection{
 		Key:      id,
-		Ver:      1,
 		Name:     name,
 		Capacity: capacity,
-		Ts:       time.Now().Unix(),
+		Used:     0,
 	}
 	return id, nil
 }
@@ -71,13 +69,21 @@ func (ts *testStore) IncrementUsed(ctx context.Context, key string) error {
 	return nil
 }
 
-func (ts *testStore) GetAllCollections(ctx context.Context) ([]*redis.Collection, error) {
-	c := []*redis.Collection{}
+func (ts *testStore) GetAllCollections(ctx context.Context) ([]*pb_collection.Collection, error) {
+	c := []*pb_collection.Collection{}
 	for _, m := range ts.collections {
 		c = append(c, m)
 	}
 	return c, nil
 }
-func (ts *testStore) GetCollectionByKey(ctx context.Context, key string) (*redis.Collection, error) {
+func (ts *testStore) GetCollectionByKey(ctx context.Context, key string) (*pb_collection.Collection, error) {
 	return ts.collections[key], nil
+}
+
+func (ts *testStore) IsFull(ctx context.Context, key string) (bool, error) {
+	c, ok := ts.collections[key]
+	if !ok {
+		return false, fmt.Errorf("no such key")
+	}
+	return c.Used >= c.Capacity, nil
 }

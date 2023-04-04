@@ -19,8 +19,7 @@ const (
 	bucketLocation    = "fra-1"
 	imageStorePrefix  = "grbpwr-com"
 
-	baseFolder          = "solutions"
-	metadataStorePrefix = "metadata"
+	baseFolder = "solutions"
 
 	jpgFilePath = "files/test.jpg"
 )
@@ -39,9 +38,7 @@ func BucketFromConst() (FileStore, error) {
 		S3BucketName:      bucketName,
 		S3BucketLocation:  bucketLocation,
 		ImageStorePrefix:  imageStorePrefix,
-
-		BaseFolder:          "solutions",
-		MetadataStorePrefix: "metadata",
+		BaseFolder:        "solutions",
 	}
 	return c.Init()
 }
@@ -76,7 +73,7 @@ func TestUploadContentImage(t *testing.T) {
 	jpg, err := imageToB64ByPath(jpgFilePath)
 	is.NoErr(err)
 
-	i, err := b.UploadContentImage(jpg, nil)
+	i, err := b.UploadContentImage(jpg, "test", "test")
 	is.NoErr(err)
 	fmt.Printf("%+v", i)
 }

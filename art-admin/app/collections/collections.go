@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/mongo"
 	pb_collection "github.com/jekabolt/solutions-dapp/art-admin/proto/collection"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -12,14 +12,14 @@ import (
 
 type Server struct {
 	nft *pb_collection.UnimplementedCollectionsServer
-	db  redis.CollectionsStore
+	db  mongo.CollectionsStore
 	c   *Config
 }
 type Config struct {
 }
 
 func (c *Config) New(
-	db redis.Store,
+	db mongo.Store,
 ) *Server {
 	s := &Server{
 		c:  c,

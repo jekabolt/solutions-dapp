@@ -1,16 +1,20 @@
 package ipfs
 
 import (
-	"encoding/json"
 	"fmt"
-	"net"
-	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/valyala/fasthttp"
 )
+
+const (
+	uploadFolderPath = "/api/v2/ipfs/uploadFolder"
+)
+
+type Uploader interface {
+	UploadData(data []byte) (string, error)
+}
 
 type Config struct {
 	APIKey  string `env:"MORALIS_API_KEY"`
@@ -18,14 +22,13 @@ type Config struct {
 	BaseURL string `env:"MORALIS_BASE_URL" envDefault:"https://deep-index.moralis.io/api/v2/"`
 }
 
-type Moralis struct {
+type IPFS struct {
 	cli     *fasthttp.Client
 	c       *Config
 	BaseURL *url.URL
-	desc    *descriptions.Store
 }
 
-func (c *Config) Init(desc *descriptions.Store) (IPFS, error) {
+func (c *Config) New() (Uploader, error) {
 	tOut, err := time.ParseDuration(c.Timeout)
 	if err != nil && c.Timeout != "" {
 		return nil, fmt.Errorf("init ipfs:time.ParseDuration [%s]", err.Error())
@@ -36,50 +39,51 @@ func (c *Config) Init(desc *descriptions.Store) (IPFS, error) {
 	}
 	hc := initHTTPClient(tOut)
 
-	return &Moralis{
+	return &IPFS{
 		c:       c,
 		cli:     hc,
 		BaseURL: baseURL,
-		desc:    desc,
 	}, nil
 }
 
-func initHTTPClient(timeout time.Duration) *fasthttp.Client {
-	return &fasthttp.Client{
-		Dial: func(addr string) (net.Conn, error) {
-			return fasthttp.DialTimeout(addr, timeout)
-		},
-	}
-}
-
-func (m *Moralis) makeURL(path string) string {
-	m.BaseURL.Path = path
-	return m.BaseURL.String()
-}
-
-func (m *Moralis) post(path string, reqBody []byte, data interface{}) error {
-
-	req := fasthttp.AcquireRequest()
-	req.SetBody(reqBody)
-	req.Header.SetMethod(http.MethodPost)
-	req.Header.SetContentType("application/json")
-	req.SetRequestURI(m.makeURL(path))
-	req.Header.Set("X-API-Key", m.c.APIKey)
-
-	res := fasthttp.AcquireResponse()
-	if err := m.cli.Do(req, res); err != nil {
-		return fmt.Errorf("request:m.cli.Do %s", err.Error())
-	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("request:bad status code %d %s", res.StatusCode(), res.Body())
-	}
-	fasthttp.ReleaseRequest(req)
-
-	defer fasthttp.ReleaseResponse(res)
-
-	err := json.Unmarshal(res.Body(), &data)
+func (i IPFS) UploadData(data []byte) (string, error) {
+	ufs := []UploadFolder{}
+	err := i.post(uploadFolderPath, data, &ufs)
 	if err != nil {
-		return fmt.Errorf("json.Unmarshal [%v]", err.Error())
+		return "", fmt.Errorf("UploadData:m.post [%v]", err.Error())
 	}
-	return err
+	if len(ufs) == 0 {
+		return "", fmt.Errorf("UploadData:empty response")
+	}
+	url, err := ufs[0].GetIPFSUrl()
+	if err != nil {
+		return "", fmt.Errorf("UploadData:ufs[0].GetIPFSImage [%v]", err.Error())
+	}
+	return url, nil
 }
+
+// func (i IPFS) BulkUploadIPFS(mrs []*pb_nft.NFTMintRequestWithStatus) (map[int]pb_metadata.MetadataUnit, error) {
+
+// 	reqBody, err := mintRequestsToUpload(mrs)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("BulkUploadIPFS:mintRequestsToUpload [%v]", err.Error())
+// 	}
+// 	ufs := []UploadFolder{}
+// 	err = m.post(uploadFolderPath, reqBody, &ufs)
+
+// 	meta := map[int]pb_metadata.MetadataUnit{}
+
+// 	for _, uf := range ufs {
+// 		ipfsImg, err := uf.GetIPFSImage()
+// 		if err != nil {
+// 			return nil, fmt.Errorf("BulkUploadIPFS:GetIPFSImage [%v]", err.Error())
+// 		}
+// 		meta[ipfsImg.SequenceNumber] = pb_metadata.MetadataUnit{
+// 			Name:        m.desc.GetCollectionName(ipfsImg.SequenceNumber),
+// 			Description: m.desc.GetDescription(ipfsImg.SequenceNumber),
+// 			// TODO: option for offchain
+// 			// Image:       ipfsImg.Path,
+// 		}
+// 	}
+// 	return meta, err
+// }

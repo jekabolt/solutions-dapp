@@ -6,7 +6,8 @@ import (
 
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/metadata"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/mongo"
 	pb_metadata "github.com/jekabolt/solutions-dapp/art-admin/proto/metadata"
 
 	"github.com/rs/zerolog/log"
@@ -15,26 +16,50 @@ import (
 
 type Server struct {
 	nft   *pb_metadata.UnimplementedMetadataServer
-	db    redis.Store
+	db    mongo.Store
 	ipfs  ipfs.IPFS
-	descs *descriptions.Store
+	descs *descriptions.MintDescription
+	md    *metadata.MetaManager
 	c     *Config
 }
 type Config struct {
 }
 
 func (c *Config) New(
-	db redis.Store,
+	db mongo.Store,
 	ipfs ipfs.IPFS,
-	descs *descriptions.Store,
+	descs *descriptions.MintDescription,
+	md *metadata.MetaManager,
 ) *Server {
 	s := &Server{
 		c:     c,
 		db:    db,
 		ipfs:  ipfs,
 		descs: descs,
+		md:    md,
 	}
 	return s
+}
+
+func (s *Server) UploadOffchainMetadata(ctx context.Context, _ emptypb.Empty) (*pb_metadata.UploadOffchainMetadataResponse, error) {
+	md, err := s.db.GetOffchainMetadata(ctx)
+	if err != nil {
+		log.Error().Err(err).Msgf("UploadOffchainMetadata:s.db.GetOffchainMetadata [%v]", err.Error())
+		return nil, fmt.Errorf("cannot get offchain metadata: %s", err.Error())
+	}
+	if md.MetaInfo.IpfsUrl == "" {
+		s.md.UploadInitial()
+	}
+
+}
+func (s *Server) UploadIPFSMetadata(ctx context.Context, in *pb_metadata.UploadIPFSMetadataRequest) (*emptypb.Empty, error) {
+
+}
+func (s *Server) DeleteIPFSMetadata(ctx context.Context, in *pb_metadata.DeleteIPFSMetadataRequest) (*emptypb.Empty, error) {
+
+}
+func (s *Server) GetMetadata(ctx context.Context, in *pb_metadata.GetMetadataRequest) (*GetMetadataResponse, error) {
+
 }
 
 func (s *Server) GetAllMetadata(ctx context.Context, _ *emptypb.Empty) (*pb_metadata.GetAllMetadataResponse, error) {

@@ -5,6 +5,7 @@ option go_package = "github.com/jekabolt/solutions-dapp/art-admin/nft";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "tagger/tagger.proto";
 // import "google/protobuf/timestamp.proto";
 
 
@@ -33,6 +34,7 @@ service Nft {
 
   // Upload resulted nft offchain from b64
   // possble statuses: Pending, UploadedOffchain, Uploaded
+  // set status to UploadedOffchain
   rpc UpdateNFTOffchainUrl (UpdateNFTOffchainUrlRequest) returns (NFTMintRequestWithStatus){
     option (google.api.http) = {
       post : "/api/nft"
@@ -40,8 +42,8 @@ service Nft {
     };
   }
 
-  // Remove nft offchain url from mint request and change status to Pending
-  rpc DeleteNFTOffchainUrl (DeleteId) returns (NFTMintRequestWithStatus) {
+  // Remove nft onchain url from mint request and change status to Pending
+  rpc DeleteNFTOnchainUrl (DeleteId) returns (NFTMintRequestWithStatus) {
     option (google.api.http) = {
 			delete: "/api/nft/{id}"
 		};
@@ -64,60 +66,76 @@ service Nft {
     };
   }
 
+  // // ImageBySequenceNumber checks mint request status by sequence number 
+  // // if UploadedOffchain Uploaded, Burned, Shiped
+  // // return image link to ipfs or s3
+  // // if any other status return or mint request not found 
+  // // retutn random image from list 
+  // rpc ImageBySequenceNumber(ImageBySequenceNumberRequest) returns (google.protobuf.Empty) {
+  //   option (google.api.http) = {
+  //     get : "/api/nft/image/{sequenceNumber}"
+  //   };
+  // }
+
+}
+
+// Request for ImageBySequenceNumber
+message ImageBySequenceNumberRequest {
+  int32 sequenceNumber = 1 [(tagger.tags) = "bson:\"sequenceNumber\"" ];
 }
 
 // Links to images 
 message ImageList {
   // link to fullsized image 
-  string fullSize = 1;
+  string fullSize = 1 [(tagger.tags) = "bson:\"fullSize\"" ];
   // link to compressed image 
-  string compressed = 2;
+  string compressed = 2 [(tagger.tags) = "bson:\"compressed\"" ];
 }
 
 // B64 raw image or link
 message ImageToUpload {
   // base64 encoded image if it starts from "http://" or  "https://" will be stored as link if not will be uploaded to s3
-  string raw = 1;
+  string raw = 1 [(tagger.tags) = "bson:\"raw\"" ];
 }
 
 
 // Mint request info 
 message NFTMintRequest {
   // internal id in db 
-  string id = 1;
+  string id = 1 [(tagger.tags) = "bson:\"id\"" ];
   // eth address of minter account 
-  string ethAddress = 2;
-  // hash of mint transaction 
-  string TxHash = 3;
+  string ethAddress = 2 [(tagger.tags) = "bson:\"ethAddress\"" ];
   // sequence number of minted nft 
-  int32  mintSequenceNumber = 4;
+  int32  mintSequenceNumber = 4 [(tagger.tags) = "bson:\"mintSequenceNumber\"" ];
   // user defined description of drawing 
-  string description = 6;
+  string description = 6 [(tagger.tags) = "bson:\"description\"" ];
 }
 
 // Images and request info for submitting nft
 message NFTMintRequestToUpload {
   // array of images from which nft should be referenced
-  repeated ImageToUpload sampleImages = 1;
-  // mint request info 
-  NFTMintRequest nftMintRequest = 2;
+  repeated ImageToUpload sampleImages = 1 [(tagger.tags) = "bson:\"sampleImages\"" ];
+  // user defined description of drawing
+  string description = 2 [(tagger.tags) = "bson:\"description\"" ];
+  // eth address of minter account
+  string ethAddress = 3 [(tagger.tags) = "bson:\"ethAddress\"" ];
 }
 
 // Status enum for mint request
 enum Status {
   // Any used for query all mint requests aka "*"
   Any = 0;
-  // Unknown — status after user upload refs to ddapp tx is unconfirmed; 
+  // Unknown — status after user upload refs to ddapp tx is unconfirmed
   Unknown = 1;
   // Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded 
   Pending = 2;
-  // Failed — status after user upload refs to ddapp tx is failed for some reason;  
+  // Failed — status after user upload refs to ddapp tx is failed for some reason
   Failed = 3;
-  // UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain;  
+  // UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain
   UploadedOffchain = 4;
   // Uploaded — art image is done and uploaded to the blockchain; 
   Uploaded = 5;
-  // Burned — art image is  burned from blockchain and it ready to ship; 
+  // Burned — art image is  burned from blockchain and it ready to ship 
   Burned = 6;
   // Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.
   Shipped = 7;
@@ -127,84 +145,92 @@ enum Status {
 // NFT request as is with status 
 message NFTMintRequestWithStatus {
   // array of images from which nft should be referenced
-  repeated ImageList sampleImages = 1;
+  repeated ImageList sampleImages = 1 [(tagger.tags) = "bson:\"sampleImages\"" ];
   // mint request info 
-  NFTMintRequest nftMintRequest = 2;
+  NFTMintRequest nftMintRequest = 2 [(tagger.tags) = "bson:\"nftMintRequest\"" ];
   // status
-  Status status = 3;
+  Status status = 3 [(tagger.tags) = "bson:\"status\"" ];
   // resulted nft url uploaded offchain i.e to s3 can be empty 
-  string offchainUrl = 4;
-   // resulted nft url uploaded offchain i.e to s3 can be empty 
-  string onchainUrl = 5;
+  string offchainUrl = 4 [(tagger.tags) = "bson:\"offchainUrl\"" ];
+  // resulted nft url uploaded to ipfs can be empty
+  string onchainUrl = 5 [(tagger.tags) = "bson:\"onchainUrl\"" ];
   // related only if status is burned or shipped
-  Shipping shipping = 6;
+  Shipping shipping = 6 [(tagger.tags) = "bson:\"shipping\"" ];
+  // collection id
+  string collection = 7 [(tagger.tags) = "bson:\"collection\"" ];
+  // duration eg 1m, 1h, 2m30s
+  string duration = 8 [(tagger.tags) = "bson:\"duration\"" ];
+  // author of picture
+  string author = 9 [(tagger.tags) = "bson:\"author\"" ];
 }
 
 
 // List of all submitted mint requests 
 message NFTMintRequestListArray {
   // uploaded mint request with status
-  repeated NFTMintRequestWithStatus nftMintRequests = 1;
+  repeated NFTMintRequestWithStatus nftMintRequests = 1 [(tagger.tags) = "bson:\"nftMintRequests\"" ];
 }
 
 
 // ListPagedRequest
 message ListPagedRequest {
   // Mint request status
-  Status status = 1;
+  Status status = 1 [(tagger.tags) = "bson:\"status\"" ];
   // page number
-  int32 page = 2;
+  int32 page = 2 [(tagger.tags) = "bson:\"page\"" ];
 }
 
 // Delete mint request offchain url 
 message DeleteId {
   // internal id in db 
-  string id = 1;
+  string id = 1 [(tagger.tags) = "bson:\"id\"" ];
 }
 
 // response for deleteing status 
 message DeleteStatus {
   // error message 
-  string message = 1;
+  string message = 1 [(tagger.tags) = "bson:\"message\"" ];
 }
 
 // Update NFT offchain url 
 message UpdateNFTOffchainUrlRequest {
   // internai id 
-  string id = 1;
+  string id = 1 [(tagger.tags) = "bson:\"id\"" ];
   // resulted nft raw image b64 encoded
-  ImageToUpload nftOffchainUrl = 2;
+  ImageToUpload nftOffchainUrl = 2 [(tagger.tags) = "bson:\"nftOffchainUrl\"" ];
+  // collection id
+  string collectionId = 3 [(tagger.tags) = "bson:\"collectionId\"" ];
 }
 
 // Burn
 message BurnRequest {
-  string txid = 1; // burn transaction
-  string id = 2; // internal id
-  string address = 3; // burner address 
-  int32  mintSequenceNumber = 4;
-  ShippingTo shipping = 5;
+  string txid = 1 [(tagger.tags) = "bson:\"txid\"" ]; // burn transaction
+  string id = 2 [(tagger.tags) = "bson:\"id\"" ]; // internal id
+  string address = 3 [(tagger.tags) = "bson:\"address\"" ]; // burner address 
+  int32  mintSequenceNumber = 4 [(tagger.tags) = "bson:\"mintSequenceNumber\"" ];
+  ShippingTo shipping = 5 [(tagger.tags) = "bson:\"shipping\"" ];
 }
 
 // ShippingTo shipping info
 message ShippingTo {
-  string fullName = 1; 
-  string address = 2; 
-  string zipCode = 3; 
-  string city = 4; 
-  string country = 5; 
-  string email = 6; 
+  string fullName = 1 [(tagger.tags) = "bson:\"fullName\"" ]; 
+  string address = 2 [(tagger.tags) = "bson:\"address\"" ]; 
+  string zipCode = 3 [(tagger.tags) = "bson:\"zipCode\"" ]; 
+  string city = 4 [(tagger.tags) = "bson:\"city\"" ]; 
+  string country = 5 [(tagger.tags) = "bson:\"country\"" ]; 
+  string email = 6 [(tagger.tags) = "bson:\"email\"" ]; 
 }
 
 // Shipping info
 message Shipping {
-  ShippingTo shipping = 1;
-  string trackingNumber = 2; 
+  ShippingTo shipping = 1 [(tagger.tags) = "bson:\"shipping\"" ];
+  string trackingNumber = 2 [(tagger.tags) = "bson:\"trackingNumber\"" ]; 
 }
 
 // SetTrackingNumberRequest update tracking number for shipping
 message SetTrackingNumberRequest {
   // internai id 
-  string id = 1;
+  string id = 1 [(tagger.tags) = "bson:\"id\"" ];
   // resulted nft raw image b64 encoded
-  string trackingNumber = 2;
+  string trackingNumber = 2 [(tagger.tags) = "bson:\"trackingNumber\"" ];
 }

@@ -1,0 +1,347 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "collection/collection.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Collections"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/collection/all": {
+      "get": {
+        "operationId": "GetAllCollections",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/collectionGetAllCollectionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/collection/delete": {
+      "delete": {
+        "operationId": "DeleteCollection",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/collectionDeleteCollectionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key",
+            "description": "internal db collections id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/collection/new": {
+      "post": {
+        "operationId": "CreateNewCollection",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/collectionCreateNewCollectionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/collectionCreateNewCollectionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/collection/update/capacity": {
+      "post": {
+        "operationId": "UpdateCollectionCapacity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/collectionUpdateCollectionCapacityResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/collectionUpdateCollectionCapacityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/collection/update/name": {
+      "post": {
+        "operationId": "UpdateCollectionName",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/collectionUpdateCollectionNameResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/collectionUpdateCollectionNameRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/api/collection/{key}": {
+      "get": {
+        "operationId": "GetCollectionByKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/collectionCollection"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key",
+            "description": "internal db collections id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Collections"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "collectionCollection": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        },
+        "name": {
+          "type": "string",
+          "title": "collection name"
+        },
+        "capacity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "collection capacity"
+        },
+        "used": {
+          "type": "integer",
+          "format": "int32",
+          "title": "collection remained capacity"
+        }
+      }
+    },
+    "collectionCreateNewCollectionRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "collcection name"
+        },
+        "capacity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "collection capacity"
+        }
+      },
+      "title": "Request for CreateNewCollection"
+    },
+    "collectionCreateNewCollectionResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        }
+      },
+      "title": "Response for CreateNewCollection"
+    },
+    "collectionDeleteCollectionResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        }
+      },
+      "title": "Response for DeleteCollection"
+    },
+    "collectionGetAllCollectionsResponse": {
+      "type": "object",
+      "properties": {
+        "collections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/collectionCollection"
+          }
+        }
+      }
+    },
+    "collectionUpdateCollectionCapacityRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        },
+        "capacity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "new capacity"
+        }
+      },
+      "title": "Request for UpdateCollectionCapacity"
+    },
+    "collectionUpdateCollectionCapacityResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        }
+      },
+      "title": "Response for UpdateCollectionCapacity"
+    },
+    "collectionUpdateCollectionNameRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        },
+        "name": {
+          "type": "string",
+          "title": "new collection name"
+        }
+      },
+      "title": "Request for UpdateCollectionName"
+    },
+    "collectionUpdateCollectionNameResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "internal db collections id"
+        }
+      },
+      "title": "Response for UpdateCollectionName"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

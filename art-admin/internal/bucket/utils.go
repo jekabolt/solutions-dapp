@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"strings"
-	"time"
 )
 
 const (
@@ -37,23 +37,8 @@ func fileExtensionFromContentType(contentType string) string {
 	}
 }
 
-func (b *Bucket) getImageFullPath(filenameExtension, prefix string, pe *PathExtra) string {
-	now := time.Now()
-	if pe == nil {
-		return fmt.Sprintf("%d/%s/%d-%s.%s", now.Year(), now.Month().String(), now.UnixNano(), prefix, filenameExtension)
-	}
-	if prefix == "" || filenameExtension == "" || pe.EthAddr == "" || pe.TxHash == "" {
-		return fmt.Sprintf("%d/%s/%d-%s.%s", now.Year(), now.Month().String(), now.UnixNano(), prefix, filenameExtension)
-	}
-	return fmt.Sprintf("%s/%s/%s/%s-%s-%s.%s", b.ImageStorePrefix, b.BaseFolder, pe.TxHash, prefix, pe.EthAddr, pe.MintSequence, filenameExtension)
-}
-
-func (b *Bucket) getMetadataFullPath() string {
-	return fmt.Sprintf("%s/%s/%s/%s/_metadata.json",
-		b.BaseFolder,
-		b.MetadataStorePrefix,
-		time.Now().Format("2006-01-02"),
-		time.Now().Format(time.Kitchen))
+func (b *Bucket) getImageFullPath(folderPath, imageName, filenameExtension string) string {
+	return path.Clean(path.Join(b.BaseFolder, folderPath, imageName) + "." + filenameExtension)
 }
 
 func (b *Bucket) GetCDNURL(path string) string {

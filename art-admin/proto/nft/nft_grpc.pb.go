@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: nft/nft.proto
 
-package art_admin
+package nft
 
 import (
 	context "context"
@@ -23,22 +23,24 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NftClient interface {
-	// Method used in ui for submitting drawing nft reference
+	// Method used in ui for submitting drawing nft reference with initial status Unknown
 	NewNFTMintRequest(ctx context.Context, in *NFTMintRequestToUpload, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
-	// List paged mint requests by status
+	// List paged mint requests by status. Default page size is 30.
 	ListNFTMintRequestsPaged(ctx context.Context, in *ListPagedRequest, opts ...grpc.CallOption) (*NFTMintRequestListArray, error)
 	// Delete mint requests by internal id
 	DeleteNFTMintRequestById(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*DeleteStatus, error)
 	// Upload resulted nft offchain from b64
+	// possble statuses: Pending, UploadedOffchain, Uploaded
+	// set status to UploadedOffchain
 	UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffchainUrlRequest, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
-	// Remove nft offchain url from mint request
-	DeleteNFTOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
-	// Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
-	UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error)
+	// Remove nft onchain url from mint request and change status to Pending
+	DeleteNFTOnchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error)
+	// Burn remove nft from contract and set shipping info and set status Burned
+	// possble statuses: Uploaded
 	Burn(ctx context.Context, in *BurnRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// SetTrackingNumber set tracking number for burned nft and set status Shipped
+	// possble statuses: Burned
 	SetTrackingNumber(ctx context.Context, in *SetTrackingNumberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// TODO: add rpc for getting metadata offchain url
-	UploadIPFSMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type nftClient struct {
@@ -85,18 +87,9 @@ func (c *nftClient) UpdateNFTOffchainUrl(ctx context.Context, in *UpdateNFTOffch
 	return out, nil
 }
 
-func (c *nftClient) DeleteNFTOffchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error) {
+func (c *nftClient) DeleteNFTOnchainUrl(ctx context.Context, in *DeleteId, opts ...grpc.CallOption) (*NFTMintRequestWithStatus, error) {
 	out := new(NFTMintRequestWithStatus)
-	err := c.cc.Invoke(ctx, "/nft.Nft/DeleteNFTOffchainUrl", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nftClient) UploadOffchainMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MetadataOffchainUrl, error) {
-	out := new(MetadataOffchainUrl)
-	err := c.cc.Invoke(ctx, "/nft.Nft/UploadOffchainMetadata", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/nft.Nft/DeleteNFTOnchainUrl", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,35 +114,28 @@ func (c *nftClient) SetTrackingNumber(ctx context.Context, in *SetTrackingNumber
 	return out, nil
 }
 
-func (c *nftClient) UploadIPFSMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/nft.Nft/UploadIPFSMetadata", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // NftServer is the server API for Nft service.
 // All implementations should embed UnimplementedNftServer
 // for forward compatibility
 type NftServer interface {
-	// Method used in ui for submitting drawing nft reference
+	// Method used in ui for submitting drawing nft reference with initial status Unknown
 	NewNFTMintRequest(context.Context, *NFTMintRequestToUpload) (*NFTMintRequestWithStatus, error)
-	// List paged mint requests by status
+	// List paged mint requests by status. Default page size is 30.
 	ListNFTMintRequestsPaged(context.Context, *ListPagedRequest) (*NFTMintRequestListArray, error)
 	// Delete mint requests by internal id
 	DeleteNFTMintRequestById(context.Context, *DeleteId) (*DeleteStatus, error)
 	// Upload resulted nft offchain from b64
+	// possble statuses: Pending, UploadedOffchain, Uploaded
+	// set status to UploadedOffchain
 	UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error)
-	// Remove nft offchain url from mint request
-	DeleteNFTOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error)
-	// Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
-	UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error)
+	// Remove nft onchain url from mint request and change status to Pending
+	DeleteNFTOnchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error)
+	// Burn remove nft from contract and set shipping info and set status Burned
+	// possble statuses: Uploaded
 	Burn(context.Context, *BurnRequest) (*emptypb.Empty, error)
+	// SetTrackingNumber set tracking number for burned nft and set status Shipped
+	// possble statuses: Burned
 	SetTrackingNumber(context.Context, *SetTrackingNumberRequest) (*emptypb.Empty, error)
-	// TODO: add rpc for getting metadata offchain url
-	UploadIPFSMetadata(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 }
 
 // UnimplementedNftServer should be embedded to have forward compatible implementations.
@@ -168,20 +154,14 @@ func (UnimplementedNftServer) DeleteNFTMintRequestById(context.Context, *DeleteI
 func (UnimplementedNftServer) UpdateNFTOffchainUrl(context.Context, *UpdateNFTOffchainUrlRequest) (*NFTMintRequestWithStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNFTOffchainUrl not implemented")
 }
-func (UnimplementedNftServer) DeleteNFTOffchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNFTOffchainUrl not implemented")
-}
-func (UnimplementedNftServer) UploadOffchainMetadata(context.Context, *emptypb.Empty) (*MetadataOffchainUrl, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadOffchainMetadata not implemented")
+func (UnimplementedNftServer) DeleteNFTOnchainUrl(context.Context, *DeleteId) (*NFTMintRequestWithStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNFTOnchainUrl not implemented")
 }
 func (UnimplementedNftServer) Burn(context.Context, *BurnRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Burn not implemented")
 }
 func (UnimplementedNftServer) SetTrackingNumber(context.Context, *SetTrackingNumberRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetTrackingNumber not implemented")
-}
-func (UnimplementedNftServer) UploadIPFSMetadata(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadIPFSMetadata not implemented")
 }
 
 // UnsafeNftServer may be embedded to opt out of forward compatibility for this service.
@@ -267,38 +247,20 @@ func _Nft_UpdateNFTOffchainUrl_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Nft_DeleteNFTOffchainUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Nft_DeleteNFTOnchainUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NftServer).DeleteNFTOffchainUrl(ctx, in)
+		return srv.(NftServer).DeleteNFTOnchainUrl(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/nft.Nft/DeleteNFTOffchainUrl",
+		FullMethod: "/nft.Nft/DeleteNFTOnchainUrl",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).DeleteNFTOffchainUrl(ctx, req.(*DeleteId))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Nft_UploadOffchainMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NftServer).UploadOffchainMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/nft.Nft/UploadOffchainMetadata",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).UploadOffchainMetadata(ctx, req.(*emptypb.Empty))
+		return srv.(NftServer).DeleteNFTOnchainUrl(ctx, req.(*DeleteId))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -339,24 +301,6 @@ func _Nft_SetTrackingNumber_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Nft_UploadIPFSMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NftServer).UploadIPFSMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/nft.Nft/UploadIPFSMetadata",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NftServer).UploadIPFSMetadata(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Nft_ServiceDesc is the grpc.ServiceDesc for Nft service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -381,12 +325,8 @@ var Nft_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Nft_UpdateNFTOffchainUrl_Handler,
 		},
 		{
-			MethodName: "DeleteNFTOffchainUrl",
-			Handler:    _Nft_DeleteNFTOffchainUrl_Handler,
-		},
-		{
-			MethodName: "UploadOffchainMetadata",
-			Handler:    _Nft_UploadOffchainMetadata_Handler,
+			MethodName: "DeleteNFTOnchainUrl",
+			Handler:    _Nft_DeleteNFTOnchainUrl_Handler,
 		},
 		{
 			MethodName: "Burn",
@@ -395,10 +335,6 @@ var Nft_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetTrackingNumber",
 			Handler:    _Nft_SetTrackingNumber_Handler,
-		},
-		{
-			MethodName: "UploadIPFSMetadata",
-			Handler:    _Nft_UploadIPFSMetadata_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

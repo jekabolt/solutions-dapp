@@ -1,69 +1,64 @@
 package descriptions
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"strings"
+
+	"golang.org/x/exp/rand"
 )
 
+type MintDescription interface {
+	GetDescriptionOn(sequenceNumber int) (*Description, error)
+}
+
 type Config struct {
-	Path           string `env:"DESCRIPTIONS_PATH" envDefault:"etc/descriptions.json"`
-	CollectionName string `env:"DESCRIPTIONS_COLLECTION_NAME" envDefault:"Solutions #"`
+	CollectionName  string `env:"DESCRIPTIONS_COLLECTION_NAME" envDefault:"Solutions #"`
+	CountPerEdition int    `env:"DESCRIPTIONS_COUNT_PER_EDITION" envDefault:"150"`
+	RandSeed        int64  `env:"DESCRIPTIONS_RAND_SEED" envDefault:"1337"`
+	TotalCount      int
 }
 
-type Store struct {
-	m map[int]desc
-	c *Config
+func (c *Config) New(total int) MintDescription {
+	rand.Seed(uint64(c.RandSeed))
+	c.TotalCount = total
+	nums := make([]int, c.CountPerEdition*c.TotalCount)
+	for i := 0; i < c.CountPerEdition*c.TotalCount; i++ {
+		nums[i] = rand.Intn(len(adjectives))
+	}
+
+	return &Descriptions{
+		adjectives: adjectives,
+		c:          c,
+		nums:       nums,
+	}
 }
 
-type adj struct {
-	Adjectives []string `json:"adjectives"`
+type Descriptions struct {
+	nums       []int
+	adjectives []string
+	c          *Config
 }
 
-type mockImages struct {
-	MockUrls []string `json:"mockUrls"`
-}
-
-type desc struct {
+type Description struct {
 	Description []string `json:"description"`
 	MintNumber  int      `json:"mintNumber"`
-	Image       string   `json:"image"`
 }
 
-func (c *Config) Init() (*Store, error) {
-	s := &Store{
-		m: make(map[int]desc),
-		c: c,
-	}
-	return s, s.InitialUpload()
+func (d *Description) String() string {
+	return fmt.Sprintf("%v", d.Description)
 }
 
-func (s *Store) InitialUpload() error {
-	bs, err := ioutil.ReadFile(s.c.Path)
-	if err != nil {
-		return err
+func (d *Descriptions) GetDescriptionOn(sequenceNumber int) (*Description, error) {
+	if sequenceNumber < 0 || sequenceNumber > d.c.TotalCount {
+		return nil, fmt.Errorf("invalid sequence number: %d should be greater than zero and less or equal to total count", sequenceNumber)
 	}
-	descs := []desc{}
-	err = json.Unmarshal(bs, &descs)
-	if err != nil {
-		return err
+	rand.Seed(uint64(d.c.RandSeed))
+	desc := &Description{
+		Description: []string{},
+		MintNumber:  sequenceNumber,
 	}
 
-	for i, d := range descs {
-		s.m[i] = d
+	for i := 1; i <= d.c.CountPerEdition; i++ {
+		desc.Description = append(desc.Description, d.adjectives[d.nums[(i*sequenceNumber)-1]])
 	}
-	return nil
-}
-
-func (s *Store) GetCollectionName(number int) string {
-	return fmt.Sprintf("%s%d", s.c.CollectionName, number)
-}
-
-func (s *Store) GetDescription(sequenceNumber int) string {
-	return strings.Join(s.m[sequenceNumber].Description, ",")
-}
-
-func (s *Store) GetImage(sequenceNumber int) string {
-	return s.m[sequenceNumber].Image
+	return desc, nil
 }

@@ -11,8 +11,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/auth"
+	"github.com/jekabolt/solutions-dapp/art-admin/app/metadata"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/nft"
 	pb_auth "github.com/jekabolt/solutions-dapp/art-admin/proto/auth"
+	pb_metadata "github.com/jekabolt/solutions-dapp/art-admin/proto/metadata"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/http2"
@@ -63,11 +65,13 @@ func (s *Server) Done() chan struct{} {
 func (s *Server) Start(ctx context.Context,
 	authServer *auth.Server,
 	nftServer *nft.Server,
+	metadataServer *metadata.Server,
 ) (err error) {
 
 	s.gs = grpc.NewServer()
 	pb_auth.RegisterAuthServer(s.gs, authServer)
 	pb_nft.RegisterNftServer(s.gs, nftServer)
+	pb_metadata.RegisterMetadataServer(s.gs, metadataServer)
 
 	var clientHTTPHandler http.Handler
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +107,12 @@ func (s *Server) setupHTTPAPI(auth *auth.Server) (http.Handler, error) {
 		return nil, err
 	}
 
-	airdropHandler, err := s.nftHandler(context.Background())
+	nftHandler, err := s.nftHandler(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	metadataHandler, err := s.metadataHandler(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +137,8 @@ func (s *Server) setupHTTPAPI(auth *auth.Server) (http.Handler, error) {
 		}
 	})
 
-	r.Mount("/api/nft", auth.CheckAuth(airdropHandler))
+	r.Mount("/api/nft", auth.CheckAuth(nftHandler))
+	r.Mount("/api/metadata", auth.CheckAuth(metadataHandler))
 	r.Mount("/api/auth", authHandler)
 
 	log.Ctx(ctx).Info().Msg("api ok")
@@ -170,6 +180,26 @@ func (s *Server) nftHandler(ctx context.Context) (http.Handler, error) {
 	))
 
 	err := pb_nft.RegisterNftHandlerFromEndpoint(ctx, mux, apiEndpoint,
+		[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+	if err != nil {
+		return nil, err
+	}
+
+	return mux, nil
+}
+
+func (s *Server) metadataHandler(ctx context.Context) (http.Handler, error) {
+	apiEndpoint := fmt.Sprintf("0.0.0.0:%d", s.c.Port)
+
+	mux := runtime.NewServeMux(runtime.WithMarshalerOption(
+		runtime.MIMEWildcard,
+		&runtime.JSONPb{
+			EnumsAsInts:  true,
+			EmitDefaults: true,
+		},
+	))
+
+	err := pb_metadata.RegisterMetadataHandlerFromEndpoint(ctx, mux, apiEndpoint,
 		[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 	if err != nil {
 		return nil, err

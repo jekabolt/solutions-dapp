@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package metadata;
+option go_package = "github.com/jekabolt/solutions-dapp/art-admin/metadata";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "tagger/tagger.proto";
+
+
+
+service Metadata {
+  // UploadOffchainMetadata initial upload metadata to db
+  rpc UploadOffchainMetadata (google.protobuf.Empty) returns (UploadOffchainMetadataResponse) {
+    option (google.api.http) = {
+      post : "/api/metadata/offchain"
+      body : "*"
+    };
+  }
+
+  // UploadIPFSMetadata get current state for metadata and upload to ipfs
+  rpc UploadIPFSMetadata (UploadIPFSMetadataRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/metadata/ipfs"
+      body : "*"
+    };
+  }
+
+  // DeleteIPFSMetadata get metadata to upload by id and upload to ipfs
+  rpc DeleteIPFSMetadata (DeleteIPFSMetadataRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/api/metadata/delete"
+    };
+  }
+
+  // GetAllMetadata get all metadata submitted on chain or offchain
+  // there can be only one offchain metadata
+  rpc GetMetadata (GetMetadataRequest) returns (GetMetadataResponse) {
+    option (google.api.http) = {
+      get : "/api/metadata/get/{offchain}"
+    };
+  }
+
+}
+
+// GetMetadataRequest request
+message GetMetadataRequest {
+    bool offchain = 1;
+}
+
+// GetMetadataResponse response
+message GetMetadataResponse {
+    repeated MetaInfo metaInfo = 1;
+}
+
+// UploadOffchainMetadata response
+message UploadOffchainMetadataResponse {
+    // internal id in db
+    MetaInfo metaInfo = 1;
+}
+
+// Request for UploadIPFSMetadataRequest
+message UploadIPFSMetadataRequest {
+    // internal db metadata id 
+    string id = 1  [(tagger.tags) = "bson:\"id\"" ];
+}
+
+// Request for UploadIPFSMetadataRequest
+message DeleteIPFSMetadataRequest {
+  // internal db metadata id 
+  string id = 1  [(tagger.tags) = "bson:\"id\"" ];
+}
+
+  
+// description of metadata stored in db
+message MetaInfo {
+    // ipfsUrl of metadata
+    string ipfsUrl = 1  [(tagger.tags) = "bson:\"ipfsUrl\"" ];
+    // if metadata is uploading now
+    bool processing = 3  [(tagger.tags) = "bson:\"processing\"" ];
+    // timestamp of metadata creation
+    int64 ts = 4  [(tagger.tags) = "bson:\"ts\"" ];
+    // internal id in db
+    string id = 5  [(tagger.tags) = "bson:\"id\"" ];
+}
+  
+  // Response for GetAllMetadata
+message GetAllMetadataResponse {
+    // array of metadata
+    repeated MetaInfo metaInfo = 1  [(tagger.tags) = "bson:\"metaInfo\"" ];
+}
+
+// Meta is a ipfs metadata representation + meta info
+message Meta {
+  // array of metadata
+  repeated MetadataUnit metadata = 1  [(tagger.tags) = "bson:\"metadata\"" ];
+  // meta info of metadata
+  MetaInfo metaInfo = 2  [(tagger.tags) = "bson:\"metaInfo\"" ];
+}
+
+  
+// Single Unit of metadata _metadata.json
+message MetadataUnit {
+  // mint sequence number of nft
+  int32 mint_sequence_number = 1  [(tagger.tags) = "bson:\"mintSequenceNumber\"" ];
+  // generated description for nft can't be changed
+  string description = 2  [(tagger.tags) = "bson:\"description\"" ];
+  // external url for nft can't be changed
+  string external_url = 3  [(tagger.tags) = "bson:\"externalUrl\"" ];
+  // image url
+  string image = 4  [(tagger.tags) = "bson:\"image\"" ];
+  // name of nft
+  string name = 5  [(tagger.tags) = "bson:\"name\"" ];
+  // array of attributes
+  repeated Attributes attributes = 6  [(tagger.tags) = "bson:\"attributes\"" ];
+}
+
+message Attributes {
+  // type of attribute (color, size, etc)
+  string trait_type = 1  [(tagger.tags) = "bson:\"traitType\"" ];
+  // value of attribute (red, 42, etc)
+  string value = 2  [(tagger.tags) = "bson:\"value\"" ];
+  // display type of attribute (number, string, etc)
+  string display_type = 3  [(tagger.tags) = "bson:\"displayType\"" ];
+}

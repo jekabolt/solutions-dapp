@@ -5,20 +5,18 @@ import (
 )
 
 type Config struct {
-	S3AccessKey         string `env:"S3_ACCESS_KEY" envDefault:"xxx"`
-	S3SecretAccessKey   string `env:"S3_SECRET_ACCESS_KEY" envDefault:"xxx"`
-	S3Endpoint          string `env:"S3_ENDPOINT" envDefault:"fra1.digitaloceanspaces.com"`
-	S3BucketName        string `env:"S3_BUCKET_NAME" envDefault:"grbpwr"`
-	S3BucketLocation    string `env:"S3_BUCKET_LOCATION" envDefault:"fra-1"`
-	BaseFolder          string `env:"S3_BASE_FOLDER" envDefault:"solutions"`
-	ImageStorePrefix    string `env:"S3_IMAGE_STORE_PREFIX" envDefault:"grbpwr-com"`
-	MetadataStorePrefix string `env:"S3_METADATA_STORE_PREFIX" envDefault:"metadata"`
-	IPFSStoragePath     string `env:"S3_IPFS_STORAGE_PATH" envDefault:""`
+	S3AccessKey       string `env:"S3_ACCESS_KEY" envDefault:"xxx"`
+	S3SecretAccessKey string `env:"S3_SECRET_ACCESS_KEY" envDefault:"xxx"`
+	S3Endpoint        string `env:"S3_ENDPOINT" envDefault:"fra1.digitaloceanspaces.com"`
+	S3BucketName      string `env:"S3_BUCKET_NAME" envDefault:"grbpwr"`
+	S3BucketLocation  string `env:"S3_BUCKET_LOCATION" envDefault:"fra-1"`
+	BaseFolder        string `env:"S3_BASE_FOLDER" envDefault:"solutions"`
+	ImageStorePrefix  string `env:"S3_IMAGE_STORE_PREFIX" envDefault:"grbpwr-com"`
+	IPFSStoragePath   string `env:"S3_IPFS_STORAGE_PATH" envDefault:""`
 }
 
 type FileStore interface {
 	Image
-	Meta
 }
 
 type Bucket struct {

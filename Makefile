@@ -19,7 +19,13 @@ local: build
 
 generate:
 	buf generate --path proto/nft/nft.proto \
-	--path proto/auth/auth.proto
+	--path proto/auth/auth.proto \
+	--path proto/metadata/metadata.proto \
+	--path proto/collection/collection.proto 
+	buf generate --template buf.gen.tag.yaml --path proto/nft/nft.proto \
+	--path proto/auth/auth.proto \
+	--path proto/metadata/metadata.proto \
+	--path proto/collection/collection.proto 
 
 abi:
 	solcjs --optimize --bin --abi --include-path contract/truffle/node_modules/ --base-path ./contract/truffle/contracts --output-dir ./art-admin/bin  contract/truffle/contracts/SYSToken.sol
@@ -48,6 +54,7 @@ install:
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 	go install golang.org/x/text/cmd/gotext@latest
 	go install go.einride.tech/protoc-gen-typescript-http@latest
+	go install github.com/srikrsna/protoc-gen-gotag@latest
 
 
 BUF_VERSION 		:= 1.7.0

@@ -1,13 +1,9 @@
 package ipfs
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"math/rand"
 	"os"
 	"testing"
 
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	pb_nft "github.com/jekabolt/solutions-dapp/art-admin/proto/nft"
 
 	"github.com/matryer/is"
@@ -29,39 +25,22 @@ const (
 	MORALIS_BASE_URL = "https://deep-index.moralis.io/api/v2/"
 )
 
-func InitMoralisFromConst() (IPFS, error) {
-	cfgMoralis := &Config{
-		APIKey:  MORALIS_API_KEY,
-		Timeout: MORALIS_TIMEOUT,
-		BaseURL: MORALIS_BASE_URL,
-	}
-	cfgDecription := &descriptions.Config{
-		Path:           "../../etc/descriptions.json",
-		CollectionName: "Solutions #",
-	}
-	desc, err := cfgDecription.Init()
-	if err != nil {
-		return nil, err
-	}
-	return cfgMoralis.Init(desc)
-}
-
 func getTestMrs() []*pb_nft.NFTMintRequestWithStatus {
 	return []*pb_nft.NFTMintRequestWithStatus{
 		{
-			NftOffchainUrl: testImage,
+			OffchainUrl: testImage,
 			NftMintRequest: &pb_nft.NFTMintRequest{
 				MintSequenceNumber: 1,
 			},
 		},
 		{
-			NftOffchainUrl: testImage,
+			OffchainUrl: testImage,
 			NftMintRequest: &pb_nft.NFTMintRequest{
 				MintSequenceNumber: 2,
 			},
 		},
 		{
-			NftOffchainUrl: testImage,
+			OffchainUrl: testImage,
 			NftMintRequest: &pb_nft.NFTMintRequest{
 				MintSequenceNumber: 3,
 			},
@@ -73,57 +52,18 @@ func TestUploadToIPFSFolder(t *testing.T) {
 	skipCI(t)
 
 	is := is.New(t)
-	m, err := InitMoralisFromConst()
+	c := Config{
+		APIKey:  MORALIS_API_KEY,
+		Timeout: MORALIS_TIMEOUT,
+		BaseURL: MORALIS_BASE_URL,
+	}
+	i, err := c.New()
 	is.NoErr(err)
 
-	resp, err := m.BulkUploadIPFS(getTestMrs())
+	testData := []byte("TODO:")
+
+	resp, err := i.UploadData(testData)
 	is.NoErr(err)
 	t.Logf("%+v", resp)
-
-}
-
-type adj struct {
-	Adjectives []string `json:"adjectives"`
-}
-
-type desc struct {
-	Description []string `json:"description"`
-	MintNumber  int      `json:"mintNumber"`
-}
-
-func TestGenDescriptions(t *testing.T) {
-	skipCI(t)
-	is := is.New(t)
-
-	a, err := os.Open("../../etc/adjectives.json")
-	is.NoErr(err)
-
-	bs, err := ioutil.ReadAll(a)
-	is.NoErr(err)
-
-	adj := adj{}
-
-	err = json.Unmarshal(bs, &adj)
-	is.NoErr(err)
-
-	totalDescriptions := 10000
-	wordsInDescription := 3
-	descs := make([]desc, totalDescriptions)
-
-	for i := 0; i < totalDescriptions; i++ {
-		for j := 0; j < wordsInDescription; j++ {
-			descs[i].Description = append(descs[i].Description, adj.Adjectives[rand.Intn(len(adj.Adjectives))])
-			descs[i].MintNumber = i + 1
-		}
-	}
-
-	bs, err = json.Marshal(descs)
-	is.NoErr(err)
-
-	f, err := os.Create("../../etc/descriptions.json")
-	is.NoErr(err)
-
-	_, err = f.WriteString(string(bs))
-	is.NoErr(err)
 
 }

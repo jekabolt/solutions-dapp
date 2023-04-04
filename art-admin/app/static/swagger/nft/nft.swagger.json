@@ -18,7 +18,7 @@
   "paths": {
     "/api/nft": {
       "post": {
-        "summary": "Upload resulted nft offchain from b64",
+        "summary": "Upload resulted nft offchain from b64\npossble statuses: Pending, UploadedOffchain, Uploaded\nset status to UploadedOffchain",
         "operationId": "UpdateNFTOffchainUrl",
         "responses": {
           "200": {
@@ -51,6 +51,7 @@
     },
     "/api/nft/burn": {
       "post": {
+        "summary": "Burn remove nft from contract and set shipping info and set status Burned\npossble statuses: Uploaded",
         "operationId": "Burn",
         "responses": {
           "200": {
@@ -84,6 +85,7 @@
     },
     "/api/nft/burn/track": {
       "post": {
+        "summary": "SetTrackingNumber set tracking number for burned nft and set status Shipped \npossble statuses: Burned",
         "operationId": "SetTrackingNumber",
         "responses": {
           "200": {
@@ -115,78 +117,9 @@
         ]
       }
     },
-    "/api/nft/ipfs": {
-      "post": {
-        "summary": "TODO: add rpc for getting metadata offchain url",
-        "operationId": "UploadIPFSMetadata",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          }
-        ],
-        "tags": [
-          "Nft"
-        ]
-      }
-    },
-    "/api/nft/offchain": {
-      "post": {
-        "summary": "Get all metadata with status StatusUploadedOffchain \u0026 StatusUploaded and create _metadata.json",
-        "operationId": "UploadOffchainMetadata",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/nftMetadataOffchainUrl"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          }
-        ],
-        "tags": [
-          "Nft"
-        ]
-      }
-    },
     "/api/nft/requests": {
       "post": {
-        "summary": "Method used in ui for submitting drawing nft reference",
+        "summary": "Method used in ui for submitting drawing nft reference with initial status Unknown",
         "operationId": "NewNFTMintRequest",
         "responses": {
           "200": {
@@ -251,7 +184,7 @@
     },
     "/api/nft/requests/{status}/{page}": {
       "get": {
-        "summary": "List paged mint requests by status",
+        "summary": "List paged mint requests by status. Default page size is 30.",
         "operationId": "ListNFTMintRequestsPaged",
         "responses": {
           "200": {
@@ -301,8 +234,8 @@
     },
     "/api/nft/{id}": {
       "delete": {
-        "summary": "Remove nft offchain url from mint request",
-        "operationId": "DeleteNFTOffchainUrl",
+        "summary": "Remove nft onchain url from mint request and change status to Pending",
+        "operationId": "DeleteNFTOnchainUrl",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -355,13 +288,16 @@
       "type": "object",
       "properties": {
         "txid": {
-          "type": "string"
+          "type": "string",
+          "title": "burn transaction"
         },
         "id": {
-          "type": "string"
+          "type": "string",
+          "title": "internal id"
         },
         "address": {
-          "type": "string"
+          "type": "string",
+          "title": "burner address"
         },
         "mintSequenceNumber": {
           "type": "integer",
@@ -407,16 +343,6 @@
       },
       "title": "B64 raw image or link"
     },
-    "nftMetadataOffchainUrl": {
-      "type": "object",
-      "properties": {
-        "Url": {
-          "type": "string",
-          "title": "all metadata json url uploaded to s3 will be used to upload to ipfs"
-        }
-      },
-      "title": "Upload offchain metadata _metadata.json"
-    },
     "nftNFTMintRequest": {
       "type": "object",
       "properties": {
@@ -427,10 +353,6 @@
         "ethAddress": {
           "type": "string",
           "title": "eth address of minter account"
-        },
-        "TxHash": {
-          "type": "string",
-          "title": "hash of mint transaction"
         },
         "mintSequenceNumber": {
           "type": "integer",
@@ -467,9 +389,13 @@
           },
           "title": "array of images from which nft should be referenced"
         },
-        "nftMintRequest": {
-          "$ref": "#/definitions/nftNFTMintRequest",
-          "title": "mint request info"
+        "description": {
+          "type": "string",
+          "title": "user defined description of drawing"
+        },
+        "ethAddress": {
+          "type": "string",
+          "title": "eth address of minter account"
         }
       },
       "title": "Images and request info for submitting nft"
@@ -492,16 +418,32 @@
           "$ref": "#/definitions/nftStatus",
           "title": "status"
         },
-        "nftOffchainUrl": {
+        "offchainUrl": {
           "type": "string",
           "title": "resulted nft url uploaded offchain i.e to s3 can be empty"
+        },
+        "onchainUrl": {
+          "type": "string",
+          "title": "resulted nft url uploaded to ipfs can be empty"
         },
         "shipping": {
           "$ref": "#/definitions/nftShipping",
           "title": "related only if status is burned or shipped"
+        },
+        "collection": {
+          "type": "string",
+          "title": "collection id"
+        },
+        "duration": {
+          "type": "string",
+          "title": "duration eg 1m, 1h, 2m30s"
+        },
+        "author": {
+          "type": "string",
+          "title": "author of picture"
         }
       },
-      "title": "NFT request as is with status \nlist of statuses \nAny = 0;\nUnknown = 1;\nPending = 2;\nFailed = 3;\nUploadedOffchain = 4;\nUploaded = 5;\nBurned = 6;\nShipped = 7;"
+      "title": "NFT request as is with status"
     },
     "nftSetTrackingNumberRequest": {
       "type": "object",
@@ -566,7 +508,7 @@
         "Shipped"
       ],
       "default": "Any",
-      "description": "- Any: Anu used for query all mint requests aka \"*\"\n - Unknown: Unknown — status after user upload refs to ddapp tx is unconfirmed;\n - Pending: Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded\n - Failed: Failed — status after user upload refs to ddapp tx is failed for some reason;\n - UploadedOffchain: UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain;\n - Uploaded: Uploaded — art image is done and uploaded to the blockchain;\n - Burned: Burned — art image is  burned from blockchain and it ready to ship;\n - Shipped: Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.",
+      "description": "- Any: Any used for query all mint requests aka \"*\"\n - Unknown: Unknown — status after user upload refs to ddapp tx is unconfirmed\n - Pending: Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded\n - Failed: Failed — status after user upload refs to ddapp tx is failed for some reason\n - UploadedOffchain: UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain\n - Uploaded: Uploaded — art image is done and uploaded to the blockchain;\n - Burned: Burned — art image is  burned from blockchain and it ready to ship\n - Shipped: Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.",
       "title": "Status enum for mint request"
     },
     "nftUpdateNFTOffchainUrlRequest": {
@@ -579,6 +521,10 @@
         "nftOffchainUrl": {
           "$ref": "#/definitions/nftImageToUpload",
           "title": "resulted nft raw image b64 encoded"
+        },
+        "collectionId": {
+          "type": "string",
+          "title": "collection id"
         }
       },
       "title": "Update NFT offchain url"

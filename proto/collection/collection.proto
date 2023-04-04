@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package collection;
+option go_package = "github.com/jekabolt/solutions-dapp/art-admin/metadata";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "tagger/tagger.proto";
+
+
+
+service Collections {
+  rpc CreateNewCollection(CreateNewCollectionRequest) returns (CreateNewCollectionResponse) {
+    option (google.api.http) = {
+      post : "/api/collection/new"
+      body : "*"
+    };
+  }
+
+  rpc DeleteCollection(DeleteCollectionRequest) returns (DeleteCollectionResponse) {
+    option (google.api.http) = {
+      delete : "/api/collection/delete"
+    };
+  }
+
+  rpc UpdateCollectionCapacity(UpdateCollectionCapacityRequest) returns (UpdateCollectionCapacityResponse) {
+    option (google.api.http) = {
+      post : "/api/collection/update/capacity"
+      body : "*"
+    };
+  }
+
+  rpc UpdateCollectionName(UpdateCollectionNameRequest) returns (UpdateCollectionNameResponse) {
+    option (google.api.http) = {
+      post : "/api/collection/update/name"
+      body : "*"
+    };
+  }
+
+  rpc GetAllCollections(google.protobuf.Empty) returns (GetAllCollectionsResponse) {
+    option (google.api.http) = {
+      get : "/api/collection/all"
+    };
+  }
+
+  rpc GetCollectionByKey(GetCollectionByKeyRequest) returns (Collection) {
+    option (google.api.http) = {
+      get : "/api/collection/{key}"
+    };
+  }
+  
+}
+
+// Request for CreateNewCollection
+message CreateNewCollectionRequest {
+    // collcection name
+    string name = 1 [(tagger.tags) = "bson:\"name\"" ];
+    // collection capacity
+    int32 capacity = 2 [(tagger.tags) = "bson:\"capacity\"" ];
+}
+
+
+// Response for CreateNewCollection
+message CreateNewCollectionResponse {
+    // internal db collections id 
+    string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+}
+
+// Request for DeleteCollection
+message DeleteCollectionRequest {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+}
+
+// Response for DeleteCollection
+message DeleteCollectionResponse {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+}
+
+
+// Request for UpdateCollectionCapacity
+message UpdateCollectionCapacityRequest  {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+  // new capacity
+  int32 capacity = 2 [(tagger.tags) = "bson:\"capacity\"" ];
+}
+
+// Response for UpdateCollectionCapacity
+message UpdateCollectionCapacityResponse  {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+}
+
+
+// Request for UpdateCollectionName
+message UpdateCollectionNameRequest  {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+  // new collection name
+  string name = 2 [(tagger.tags) = "bson:\"name\"" ];
+}
+
+// Response for UpdateCollectionName
+message UpdateCollectionNameResponse  {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+}
+
+
+message GetAllCollectionsResponse {
+  repeated Collection collections = 1 [(tagger.tags) = "bson:\"collections\"" ];
+}
+
+// Request for GetCollectionByKey
+message GetCollectionByKeyRequest  {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+}
+
+  
+
+message Collection {
+  // internal db collections id 
+  string key = 1 [(tagger.tags) = "bson:\"key\"" ];
+  // collection name
+  string name = 2 [(tagger.tags) = "bson:\"name\"" ];
+  // collection capacity
+  int32 capacity = 3 [(tagger.tags) = "bson:\"capacity\"" ];
+  // collection remained capacity
+  int32 used = 4 [(tagger.tags) = "bson:\"used\"" ];
+}

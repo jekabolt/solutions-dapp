@@ -31,12 +31,12 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	db, err := cfg.Redis.InitDB(ctx)
+	db, err := cfg.Mongo.InitDB(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init db err:[%s]", err.Error()))
 	}
 
-	desc, err := cfg.Descriptions.Init()
+	desc := cfg.Descriptions.New()
 
 	b, err := cfg.Bucket.Init()
 	if err != nil {
@@ -58,17 +58,19 @@ func main() {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to init ipfs uploader err:[%s]", err.Error()))
 	}
 
-	nftS, err := cfg.Nft.New(db, b, ipfs, desc)
+	nftS, err := cfg.Nft.New(db, b)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to create new nft server:[%s]", err.Error()))
 	}
+	metadataS := cfg.Metadata.New(db, ipfs, desc)
+
 	authS, err := cfg.Auth.New()
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to create new auth server:[%s]", err.Error()))
 	}
 
 	app := cfg.Server.Init()
-	err = app.Start(ctx, authS, nftS)
+	err = app.Start(ctx, authS, nftS, metadataS)
 	if err != nil {
 		log.Fatal().Err(err).Msg(fmt.Sprintf("Failed to start server:[%s]", err.Error()))
 	}
@@ -80,7 +82,7 @@ func main() {
 		log.Warn().Msgf("signal received, exiting [%s]", s.String())
 		app.Stop(ctx)
 		eth.Stop()
-		db.Close()
+		db.Close(ctx)
 		log.Warn().Msg("application exited")
 	case <-app.Done():
 		log.Error().Msg("application exited")

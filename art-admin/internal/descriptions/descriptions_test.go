@@ -1,10 +1,6 @@
 package descriptions
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"math/rand"
-	"os"
 	"testing"
 
 	"github.com/matryer/is"
@@ -13,51 +9,34 @@ import (
 func TestGenDescriptions(t *testing.T) {
 	is := is.New(t)
 
-	// Load adjectives
-	a, err := os.Open("../../etc/adjectives.json")
-	is.NoErr(err)
+	c := Config{
+		CollectionName:  "test",
+		CountPerEdition: 3,
+		TotalCount:      100,
+		RandSeed:        1337,
+	}
+	d := c.New(100)
 
-	bs, err := ioutil.ReadAll(a)
-	is.NoErr(err)
-
-	adj := adj{}
-
-	err = json.Unmarshal(bs, &adj)
-	is.NoErr(err)
-
-	err = json.Unmarshal(bs, &adj)
-	is.NoErr(err)
-
-	// Load images
-	i, err := os.Open("../../etc/mockimages.json")
-	is.NoErr(err)
-
-	bs, err = ioutil.ReadAll(i)
-	is.NoErr(err)
-
-	mi := mockImages{}
-
-	err = json.Unmarshal(bs, &mi)
-	is.NoErr(err)
-
-	totalDescriptions := 10000
-	wordsInDescription := 3
-	descs := make([]desc, totalDescriptions)
-
-	for i := 0; i < totalDescriptions; i++ {
-		for j := 0; j < wordsInDescription; j++ {
-			descs[i].Description = append(descs[i].Description, adj.Adjectives[rand.Intn(len(adj.Adjectives))])
-			descs[i].MintNumber = i + 1
-			descs[i].Image = mi.MockUrls[rand.Intn(len(mi.MockUrls))]
-		}
+	d1 := []Description{}
+	d2 := []Description{}
+	for i := 1; i <= 100; i++ {
+		desc, err := d.GetDescriptionOn(i)
+		is.NoErr(err)
+		d1 = append(d1, *desc)
 	}
 
-	bs, err = json.Marshal(descs)
-	is.NoErr(err)
+	for i := 1; i <= 100; i++ {
+		desc, err := d.GetDescriptionOn(i)
+		is.NoErr(err)
+		d2 = append(d2, *desc)
+	}
 
-	f, err := os.Create("../../etc/descriptions.json")
-	is.NoErr(err)
+	is.Equal(d1, d2)
 
-	_, err = f.WriteString(string(bs))
-	is.NoErr(err)
+	_, err := d.GetDescriptionOn(101)
+	is.True(err != nil)
+
+	_, err = d.GetDescriptionOn(-1)
+	is.True(err != nil)
+
 }

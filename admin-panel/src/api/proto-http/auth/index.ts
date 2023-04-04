@@ -19,7 +19,7 @@ type RequestType = {
   body: string | null;
 };
 
-type RequestHandler = (request: RequestType) => Promise<unknown>;
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
 
 export function createAuthClient(
   handler: RequestHandler
@@ -37,6 +37,9 @@ export function createAuthClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Auth",
+        method: "Login",
       }) as Promise<LoginResponse>;
     },
   };

@@ -3,22 +3,27 @@
 
 // Status enum for mint request
 export type Status =
-  // Anu used for query all mint requests aka "*"
+  // Any used for query all mint requests aka "*"
   | "Any"
-  // Unknown — status after user upload refs to ddapp tx is unconfirmed;
+  // Unknown — status after user upload refs to ddapp tx is unconfirmed
   | "Unknown"
   // Pending — status after user upload refs to ddapp tx is  confirmed and art can be uploaded
   | "Pending"
-  // Failed — status after user upload refs to ddapp tx is failed for some reason;
+  // Failed — status after user upload refs to ddapp tx is failed for some reason
   | "Failed"
-  // UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain;
+  // UploadedOffchain — status after we draw art image and its ready to be uploaded to the blockchain
   | "UploadedOffchain"
   // Uploaded — art image is done and uploaded to the blockchain;
   | "Uploaded"
-  // Burned — art image is  burned from blockchain and it ready to ship;
+  // Burned — art image is  burned from blockchain and it ready to ship
   | "Burned"
   // Shipped — art image is  burned from blockchain and actual piece of art is shipped irl.
   | "Shipped";
+// Request for ImageBySequenceNumber
+export type ImageBySequenceNumberRequest = {
+  sequenceNumber: number | undefined;
+};
+
 // Links to images
 export type ImageList = {
   // link to fullsized image
@@ -39,8 +44,6 @@ export type NFTMintRequest = {
   id: string | undefined;
   // eth address of minter account
   ethAddress: string | undefined;
-  // hash of mint transaction
-  TxHash: string | undefined;
   // sequence number of minted nft
   mintSequenceNumber: number | undefined;
   // user defined description of drawing
@@ -51,20 +54,13 @@ export type NFTMintRequest = {
 export type NFTMintRequestToUpload = {
   // array of images from which nft should be referenced
   sampleImages: ImageToUpload[] | undefined;
-  // mint request info
-  nftMintRequest: NFTMintRequest | undefined;
+  // user defined description of drawing
+  description: string | undefined;
+  // eth address of minter account
+  ethAddress: string | undefined;
 };
 
 // NFT request as is with status
-// list of statuses
-// Any = 0;
-// Unknown = 1;
-// Pending = 2;
-// Failed = 3;
-// UploadedOffchain = 4;
-// Uploaded = 5;
-// Burned = 6;
-// Shipped = 7;
 export type NFTMintRequestWithStatus = {
   // array of images from which nft should be referenced
   sampleImages: ImageList[] | undefined;
@@ -73,9 +69,17 @@ export type NFTMintRequestWithStatus = {
   // status
   status: Status | undefined;
   // resulted nft url uploaded offchain i.e to s3 can be empty
-  nftOffchainUrl: string | undefined;
+  offchainUrl: string | undefined;
+  // resulted nft url uploaded to ipfs can be empty
+  onchainUrl: string | undefined;
   // related only if status is burned or shipped
   shipping: Shipping | undefined;
+  // collection id
+  collection: string | undefined;
+  // duration eg 1m, 1h, 2m30s
+  duration: string | undefined;
+  // author of picture
+  author: string | undefined;
 };
 
 // Shipping info
@@ -101,15 +105,6 @@ export type NFTMintRequestListArray = {
 };
 
 // ListPagedRequest
-// list of statuses
-// Any = 0;
-// Unknown = 1;
-// Pending = 2;
-// Failed = 3;
-// UploadedOffchain = 4;
-// Uploaded = 5;
-// Burned = 6;
-// Shipped = 7;
 export type ListPagedRequest = {
   // Mint request status
   status: Status | undefined;
@@ -135,12 +130,8 @@ export type UpdateNFTOffchainUrlRequest = {
   id: string | undefined;
   // resulted nft raw image b64 encoded
   nftOffchainUrl: ImageToUpload | undefined;
-};
-
-// Upload offchain metadata _metadata.json
-export type MetadataOffchainUrl = {
-  // all metadata json url uploaded to s3 will be used to upload to ipfs
-  Url: string | undefined;
+  // collection id
+  collectionId: string | undefined;
 };
 
 // Burn
@@ -161,22 +152,24 @@ export type SetTrackingNumberRequest = {
 };
 
 export interface Nft {
-  // Method used in ui for submitting drawing nft reference
+  // Method used in ui for submitting drawing nft reference with initial status Unknown
   NewNFTMintRequest(request: NFTMintRequestToUpload): Promise<NFTMintRequestWithStatus>;
-  // List paged mint requests by status
+  // List paged mint requests by status. Default page size is 30.
   ListNFTMintRequestsPaged(request: ListPagedRequest): Promise<NFTMintRequestListArray>;
   // Delete mint requests by internal id
   DeleteNFTMintRequestById(request: DeleteId): Promise<DeleteStatus>;
   // Upload resulted nft offchain from b64
+  // possble statuses: Pending, UploadedOffchain, Uploaded
+  // set status to UploadedOffchain
   UpdateNFTOffchainUrl(request: UpdateNFTOffchainUrlRequest): Promise<NFTMintRequestWithStatus>;
-  // Remove nft offchain url from mint request
-  DeleteNFTOffchainUrl(request: DeleteId): Promise<NFTMintRequestWithStatus>;
-  // Get all metadata with status StatusUploadedOffchain & StatusUploaded and create _metadata.json
-  UploadOffchainMetadata(request: wellKnownEmpty): Promise<MetadataOffchainUrl>;
+  // Remove nft onchain url from mint request and change status to Pending
+  DeleteNFTOnchainUrl(request: DeleteId): Promise<NFTMintRequestWithStatus>;
+  // Burn remove nft from contract and set shipping info and set status Burned
+  // possble statuses: Uploaded
   Burn(request: BurnRequest): Promise<wellKnownEmpty>;
+  // SetTrackingNumber set tracking number for burned nft and set status Shipped
+  // possble statuses: Burned
   SetTrackingNumber(request: SetTrackingNumberRequest): Promise<wellKnownEmpty>;
-  // TODO: add rpc for getting metadata offchain url
-  UploadIPFSMetadata(request: wellKnownEmpty): Promise<wellKnownEmpty>;
 }
 
 type RequestType = {
@@ -185,7 +178,7 @@ type RequestType = {
   body: string | null;
 };
 
-type RequestHandler = (request: RequestType) => Promise<unknown>;
+type RequestHandler = (request: RequestType, meta: { service: string, method: string }) => Promise<unknown>;
 
 export function createNftClient(
   handler: RequestHandler
@@ -203,6 +196,9 @@ export function createNftClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Nft",
+        method: "NewNFTMintRequest",
       }) as Promise<NFTMintRequestWithStatus>;
     },
     ListNFTMintRequestsPaged(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -223,6 +219,9 @@ export function createNftClient(
         path: uri,
         method: "GET",
         body,
+      }, {
+        service: "Nft",
+        method: "ListNFTMintRequestsPaged",
       }) as Promise<NFTMintRequestListArray>;
     },
     DeleteNFTMintRequestById(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -240,6 +239,9 @@ export function createNftClient(
         path: uri,
         method: "DELETE",
         body,
+      }, {
+        service: "Nft",
+        method: "DeleteNFTMintRequestById",
       }) as Promise<DeleteStatus>;
     },
     UpdateNFTOffchainUrl(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -254,9 +256,12 @@ export function createNftClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Nft",
+        method: "UpdateNFTOffchainUrl",
       }) as Promise<NFTMintRequestWithStatus>;
     },
-    DeleteNFTOffchainUrl(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    DeleteNFTOnchainUrl(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
       if (!request.id) {
         throw new Error("missing required field request.id");
       }
@@ -271,21 +276,10 @@ export function createNftClient(
         path: uri,
         method: "DELETE",
         body,
+      }, {
+        service: "Nft",
+        method: "DeleteNFTOnchainUrl",
       }) as Promise<NFTMintRequestWithStatus>;
-    },
-    UploadOffchainMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/offchain`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
-      }) as Promise<MetadataOffchainUrl>;
     },
     Burn(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
       const path = `api/nft/burn`; // eslint-disable-line quotes
@@ -299,6 +293,9 @@ export function createNftClient(
         path: uri,
         method: "POST",
         body,
+      }, {
+        service: "Nft",
+        method: "Burn",
       }) as Promise<wellKnownEmpty>;
     },
     SetTrackingNumber(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -313,20 +310,9 @@ export function createNftClient(
         path: uri,
         method: "POST",
         body,
-      }) as Promise<wellKnownEmpty>;
-    },
-    UploadIPFSMetadata(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `api/nft/ipfs`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
+      }, {
+        service: "Nft",
+        method: "SetTrackingNumber",
       }) as Promise<wellKnownEmpty>;
     },
   };

@@ -6,22 +6,24 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/jekabolt/solutions-dapp/art-admin/app"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/auth"
+	"github.com/jekabolt/solutions-dapp/art-admin/app/metadata"
 	"github.com/jekabolt/solutions-dapp/art-admin/app/nft"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/bucket"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/descriptions"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/eth"
 	"github.com/jekabolt/solutions-dapp/art-admin/internal/ipfs"
-	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/redis"
+	"github.com/jekabolt/solutions-dapp/art-admin/internal/store/mongo"
 )
 
 type Config struct {
-	Redis        *redis.Config
+	Mongo        *mongo.Config
 	Bucket       *bucket.Config
 	ETHWatcher   *eth.Config
 	IPFS         *ipfs.Config
 	Descriptions *descriptions.Config
 	Server       *app.Config
 	Nft          *nft.Config
+	Metadata     *metadata.Config
 	Auth         *auth.Config
 
 	Debug bool `env:"DEBUG" envDefault:"false"`
@@ -31,7 +33,7 @@ func GetConfig() (*Config, error) {
 	var err error
 
 	cfg := &Config{
-		Redis:        &redis.Config{},
+		Mongo:        &mongo.Config{},
 		Bucket:       &bucket.Config{},
 		ETHWatcher:   &eth.Config{},
 		IPFS:         &ipfs.Config{},
